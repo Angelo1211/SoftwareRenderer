@@ -28,7 +28,9 @@ void loop();
 
 //Global variables
 SDL_Window  *gWindow = nullptr;
-SDL_Surface *gScreen = nullptr;
+SDL_Renderer *gRenderer = nullptr;
+SDL_Texture *gTexture = nullptr;
+Uint32 *gBuffer = nullptr;
 bool quitFlag = false;
 
 bool init(){
@@ -47,7 +49,26 @@ bool init(){
             success = false;
         }
         else{
-            gScreen = SDL_GetWindowSurface(gWindow);
+            //Create render instance
+            gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_PRESENTVSYNC);
+            if(gRenderer == nullptr){
+                printf("Could not create renderer context. Error: %s\n", SDL_GetError());
+                success = false;
+            }
+            else{
+
+                //Create Texture instance
+                gTexture = SDL_CreateTexture(gRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, SCREEN_WIDTH, SCREEN_HEIGHT);
+                if(gTexture == nullptr){
+                    printf("Could not create texture. Error: %s\n", SDL_GetError());
+                    success = false;
+                }
+                else{
+                    //Create pixel buffer
+                    gBuffer = new Uint32[SCREEN_HEIGHT * SCREEN_WIDTH];
+                    SDL_memset(gBuffer, 0, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(Uint32) );
+                }
+            }
         }
 
     }
@@ -56,10 +77,14 @@ bool init(){
 }
 
 void close(){
-    SDL_FreeSurface(gScreen);
+    delete[] gBuffer;
+    SDL_DestroyTexture(gTexture);
+    SDL_DestroyRenderer(gRenderer);
     SDL_DestroyWindow(gWindow);
     SDL_Quit();
-    gScreen = nullptr;
+    gBuffer = nullptr;
+    gTexture = nullptr;
+    gRenderer = nullptr;
     gWindow = nullptr;
 }
 
@@ -72,39 +97,62 @@ void eventManager(){
     }
 }
 
-void clearScreen(){
-    int memSize = gScreen->h * gScreen->pitch;
-    SDL_memset(gScreen->pixels, 0, memSize );
+void modifyPixels(){
+    //Get window pixel format
+    Uint32 format = SDL_PIXELFORMAT_RGBA8888;
+    SDL_PixelFormat *mappingFormat = SDL_AllocFormat (format);
+
+    //Get pixel count
+    int pixelCount = SCREEN_HEIGHT * SCREEN_WIDTH;
+
+    //Set color data
+    Uint32 red1 = SDL_MapRGBA(mappingFormat, 0xFF,0x00,0x00,0x60);
+    Uint32 green = SDL_MapRGBA(mappingFormat, 0x00,0xFF,0x00,0x80);
+    Uint32 blue = SDL_MapRGBA(mappingFormat, 0x00,0x00,0xFF,0xFF);
+    //Color in certain pixels
+    for(int i = 0; i < pixelCount; ++i){
+        if( (i % 50) == 0){
+            gBuffer[i] = red1;
+        }
+        if((i % 1000) == 0){
+            gBuffer[i] = green;
+        }
+        if((i % 2000) == 0){
+            gBuffer[i] = blue;
+        }
+    }
 }
 
-void modifyPixels(){
-    Uint32 *pixels =(Uint32 *)gScreen->pixels;
-    int size = gScreen->h * gScreen->w;
-        for(int i = 0; i < size; i++){
-            if ((i % 10) == 0){
-                pixels[i] = 0xFF0000;
-            }
-            if ((i % 20) == 0){
-                pixels[i] = 0x00FF00;
-            }
-        }
-}
+// Uint32 getPixel(SDL_Surface &surface, int x, int y){
+//     Uint32 *pixels = (Uint32 *)gScreen->pixels;
+//     int arrayIndex = x + (gScreen->pitch * y);
+//     return  pixels[arrayIndex];
+// }
+
+// void setPixel(SDL_Surface &surface, int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a){
+//     Uint32 *pixels = (Uint32 *)gScreen->pixels;
+//     int arrayIndex = x + (gScreen->pitch * y);
+//     pixels[arrayIndex] == r;
+// }
 
 void render(){
-    //Open surface for pixel editing
-    SDL_LockSurface(gScreen);
 
     //Clear Screen back to black
-    clearScreen();
-    
-    //Perform modification function
+    SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+    SDL_RenderClear(gRenderer);
+    //Perform any modifications we want on the pixels
     modifyPixels();
 
-    //Close surface for pixel editing
-    SDL_UnlockSurface(gScreen);
+    //Apply the pixel change to the texture
+    SDL_UpdateTexture(gTexture, NULL, gBuffer, SCREEN_WIDTH*sizeof(Uint32) );
     
+    //Render texture to screen
+    SDL_SetTextureBlendMode(gTexture, SDL_BLENDMODE_BLEND);
+    SDL_RenderCopy(gRenderer, gTexture, NULL , NULL);
+
     //Update screen to window
-    SDL_UpdateWindowSurface(gWindow);
+    //SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+    SDL_RenderPresent( gRenderer );
 }
 
 void loop(){
@@ -116,8 +164,7 @@ void loop(){
         //Render pipeline
         render();
 
-        //Wait in between frames
-        SDL_Delay(16);
+        SDL_Delay(500);
     }
 }
 
@@ -130,6 +177,7 @@ int main(int argc, char *argv[]){
        //Main loop
         loop();
    }
+   //Free all memory and set all pointers to null
    close();
 
    return 0;
