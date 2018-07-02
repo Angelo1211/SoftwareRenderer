@@ -3,11 +3,12 @@ project(softwareRenderer)
 
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
-set(SDL2_PATH "C:\\vs_dev_lib\\SDL2-2.0.8")
+#set(SDL2_PATH "C:\\vs_dev_lib\\SDL2-2.0.8")
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIR})
+include_directories(${SDL2_INCLUDE_DIR} include)
 
-add_executable(softwareRenderer src/main.cpp)
+file(GLOB source_files "*.h" "*.cpp" "src/*.cpp" "include/*.h")
+add_executable(softwareRenderer ${source_files})
 target_link_libraries(softwareRenderer ${SDL2_LIBRARY})
 
 
