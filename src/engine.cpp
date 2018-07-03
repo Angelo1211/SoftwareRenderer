@@ -46,7 +46,7 @@ void Engine::mainLoop(){
     printf("Entered Main Loop!\n");
     
     while(!done){
-        count++;
+        ++count;
 
         //Handle all user input
         done = FEInputManager.processInput();
