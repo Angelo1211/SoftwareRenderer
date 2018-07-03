@@ -6,8 +6,8 @@
 class WindowManager{
 
     public:
-    const static int SCREEN_WIDTH  = 640;
-    const static int SCREEN_HEIGHT = 480;
+    const static int SCREEN_WIDTH  = 640; //640
+    const static int SCREEN_HEIGHT = 480; //480
     WindowManager();
 
     ~WindowManager();

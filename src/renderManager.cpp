@@ -67,13 +67,13 @@ void RenderManager::shutDown(){
     mainRenderer = nullptr;
 }
 
-void RenderManager::render(){
+void RenderManager::render(Model *models){
 
     //Clear Screen back to black
     clearScreen();
 
     //Perform any modifications we want on the pixels
-    raster->makeCoolPattern();
+    raster->drawModels(models);
 
     //Apply the pixel change to the texture
     screenTexture.updateTexture(mainCanvas->mBuffer);

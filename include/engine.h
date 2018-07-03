@@ -5,6 +5,7 @@
 #include "windowManager.h"
 #include "renderManager.h"
 #include "inputManager.h"
+#include "model.h"
 
 class Engine{
 
@@ -25,7 +26,7 @@ class Engine{
         WindowManager FEWindowManager;
         RenderManager FERenderManager;
         InputManager  FEInputManager;
+        Model        *sceneModels;
 };
-
 
 #endif

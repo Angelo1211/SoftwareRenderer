@@ -5,7 +5,7 @@ int main(int argc, char *argv[]){
     Engine mainEngine;
     if(mainEngine.startUp()){
         mainEngine.loadModels();
-        //mainEngine.mainLoop();
+        mainEngine.mainLoop();
     }
     else{
         printf("Engine could not initialize successfully. Shutting down.\n");

@@ -1,7 +1,9 @@
 #include "rasterizer.h"
+#include "vector"
+
+const SDL_PixelFormat* Rasterizer::mappingFormat( SDL_AllocFormat(PIXEL_FORMAT));
 
 void Rasterizer::makeCoolPattern(){
-    SDL_PixelFormat *mappingFormat = SDL_AllocFormat (PIXEL_FORMAT);
     Uint32 red = SDL_MapRGBA(mappingFormat, 0xFF,0x00,0x00,0xFF);
     Uint32 green = SDL_MapRGBA(mappingFormat, 0x00,0xFF,0x00,0xFF);
     Uint32 blue = SDL_MapRGBA(mappingFormat, 0x00,0x00,0xFF,0xFF);
@@ -16,6 +18,29 @@ void Rasterizer::makeCoolPattern(){
         }
     }
 }
+
+void Rasterizer::testPattern(){
+    Uint32 red = SDL_MapRGBA(mappingFormat, 0xFF,0x00,0x00,0xFF);
+    Uint32 green = SDL_MapRGBA(mappingFormat, 0x00,0xFF,0x00,0xFF);
+    Uint32 blue = SDL_MapRGBA(mappingFormat, 0x00,0x00,0xFF,0xFF);
+    setPixelColor(red,600,200);
+    setPixelColor(green,400,200);
+    setPixelColor(blue,200,200);
+
+}
+
+void Rasterizer::drawModels(Model * models){
+    Uint32 red = SDL_MapRGBA(mappingFormat, 0xFF,0x00,0x00,0xFF);
+    std::vector<Vector3> vertices = (models->getMesh()).vertices;
+    for (Vector3 v : vertices ){
+        int x = (v.x * 12 ) + mCanvas->mWidth/2;
+        int y = (-v.y * 12 ) + mCanvas->mHeight/2;
+        if( (x >= 0 ) && (y >= 0) && (x < mCanvas->mWidth) && (y < mCanvas->mHeight) ){
+            setPixelColor(red,x,y);
+        }
+    }
+
+}   
 
 void Rasterizer::setPixelColor(Uint32 color, int x, int y){
     int arrayCoordinates = convertCoordinates(x,y);

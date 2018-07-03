@@ -6,6 +6,7 @@
 #include "texture.h"
 #include "rasterizer.h"
 #include "canvas.h"
+#include "model.h"
 
 class RenderManager{
 
@@ -26,7 +27,7 @@ class RenderManager{
 
         bool createCanvas();
 
-        void render();
+        void render(Model *models);
 
         void shutDown();
 

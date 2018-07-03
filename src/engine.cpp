@@ -1,13 +1,5 @@
 #include "engine.h"
-#include "windowManager.h"
-#include "renderManager.h"
-#include "inputManager.h"
-#include <stdio.h>
-#include <fstream>
-#include <sstream>
 #include <string>
-#include "vector3.h"
-#include "mesh.h"
 
 Engine::Engine(){
 
@@ -40,9 +32,12 @@ bool Engine::startUp(){
 }
 
 void Engine::shutDown(){
+    delete sceneModels;
+    sceneModels = nullptr;
     FEInputManager.shutDown();
     FERenderManager.shutDown();
     FEWindowManager.shutDown();
+
 }
 
 void Engine::mainLoop(){
@@ -60,7 +55,7 @@ void Engine::mainLoop(){
         //TO DO
 
         //Perform all render calculations and update screen
-        FERenderManager.render();
+        FERenderManager.render(sceneModels);
 
         SDL_Delay(500);
         printf("Loop Iteration N:%d\n",count);
@@ -68,34 +63,12 @@ void Engine::mainLoop(){
 }
 
 void Engine::loadModels(){
-    printf("loading models");
-    std::fstream file;
-    std::string line, path, v, x ,y ,z;
+    //In the future I want to read all o the models in the model folder
+    //And build them here.  For now I force it to be only one.
+    std::string path = "../models/teapot.obj";
+    sceneModels = new Model(path);
 
-    Mesh cube;
-
-    path = "../models/cube.obj";
-    file.open(path.c_str());
-
-    //Get vertices into mesh
-    while(!file.eof()){
-
-        std::getline(file,line);
-        std::istringstream iss(line);
-        if(line[0] == 'v'){
-            iss >> v >> x >> y >> z;
-            Vector3 vertex(x,y,z);
-            cube.vertices.push_back(vertex);
-        }
-
-    }
-    file.close();
-    int meshSize = cube.vertices.size();
-    printf("Meshsize is: %d \n", meshSize);
-    for(int i = 0; i < meshSize; ++i){
-        Vector3 vertex = cube.vertices[i];
-        printf("Vertex  %2.1d: %f, %f, %f \n",i,vertex.x, vertex.y, vertex.z);
-    }
+    //sceneModels->describeMesh();
 }
 
 

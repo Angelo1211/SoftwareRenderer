@@ -12,7 +12,7 @@ struct Vector3{
     {}
 
     Vector3(std::string x1, std::string y1, std::string z1):
-        x(std::stof(x1)), y(std::stof(x1)), z(std::stof(x1))
+        x(std::stof(x1)), y(std::stof(y1)), z(std::stof(z1))
     {}
 };
 
