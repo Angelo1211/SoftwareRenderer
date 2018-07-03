@@ -8,8 +8,6 @@
 class Rasterizer{
 
     public:
-
-
         Rasterizer(Canvas *canvas) :mCanvas(canvas){}
 
         void drawModels(Model * models);
@@ -24,6 +22,8 @@ class Rasterizer{
         static const SDL_PixelFormat* mappingFormat;
 
         Uint32 getPixelColor(int x, int y);
+
+        void drawLine(Vector3 vertex1, Vector3 vertex2, Uint32 color);
 
         void setPixelColor(Uint32 color, int x, int y);
 

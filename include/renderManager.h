@@ -8,7 +8,7 @@
 #include "canvas.h"
 #include "model.h"
 
-class RenderManager{
+class RenderManager {
 
     public:
         RenderManager();

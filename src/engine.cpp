@@ -57,7 +57,7 @@ void Engine::mainLoop(){
         //Perform all render calculations and update screen
         FERenderManager.render(sceneModels);
 
-        SDL_Delay(500);
+        SDL_Delay(100);
         printf("Loop Iteration N:%d\n",count);
     }
 }
