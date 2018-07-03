@@ -9,7 +9,7 @@ class Model{
     public:
         Model(std::string path); 
         void describeMesh();
-        Mesh getMesh();
+        Mesh *getMesh();
 
     private:
         void buildMesh(std::string path);

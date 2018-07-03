@@ -9,8 +9,8 @@ Model::Model(std::string path){
     buildMesh(path);
 }
 
-Mesh Model::getMesh(){
-    return mMesh;
+Mesh * Model::getMesh(){
+    return &mMesh;
 }
 
 void Model::describeMesh(){
