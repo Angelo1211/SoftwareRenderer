@@ -19,6 +19,8 @@ class Engine{
 
         void mainLoop();
 
+        void loadModels();
+
     private:
         WindowManager FEWindowManager;
         RenderManager FERenderManager;
