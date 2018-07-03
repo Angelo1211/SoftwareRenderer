@@ -33,30 +33,60 @@ void Rasterizer::drawModels(Model * models){
     Uint32 white = SDL_MapRGBA(mappingFormat, 0xFF,0xFF,0xFF,0xFF);
     Uint32 red = SDL_MapRGBA(mappingFormat, 0xFF,0x00,0x00,0xFF);
     Uint32 green = SDL_MapRGBA(mappingFormat, 0x00,0xFF,0x00,0xFF);
+    Uint32 blue = SDL_MapRGBA(mappingFormat, 0x00,0x00,0xFF,0xFF);
     for (Vector3 f : (models->getMesh()).faces ){
         Vector3 v1 = (models->getMesh()).vertices[f.x-1];
         Vector3 v2 = (models->getMesh()).vertices[f.y-1];
         Vector3 v3 = (models->getMesh()).vertices[f.z-1];
-        drawLine(v1, v2, white);
-        drawLine(v2, v3, red);
-        drawLine(v1, v3, green);
+        drawLine(v1, v2, red);
+        drawLine(v2, v3, green);
+        drawLine(v1, v3, blue);
     }
 
 }   
 
 void Rasterizer::drawLine(Vector3 vertex1, Vector3 vertex2, Uint32 color){
-        int scalingFactor = 65;
+        int scalingFactor = 90;
         int x1 = (vertex1.x  * scalingFactor) + mCanvas->mWidth * 1 / 2;
         int y1 = (-vertex1.y  * scalingFactor) + mCanvas->mHeight * 2 / 3;
         int x2 = (vertex2.x  * scalingFactor) + mCanvas->mWidth  * 1 / 2;
         int y2 = (-vertex2.y  * scalingFactor) + mCanvas->mHeight * 2 / 3;
+        
+        //transpose line if it is too steep
+        bool steep = false;
+        if (std::abs(x1-x2) < std::abs(y1-y2) ){
+            std::swap(x1,y1);
+            std::swap(x2,y2);
+            steep = true;
+        }
 
-        for(float t=0.; t <1. ; t+=.11){
-            int xf = x1*(1.-t) + x2*t;
-            int yf = y1*(1.-t) + y2*t;
-            if( (xf >= 0 ) && (yf >= 0) && (xf < mCanvas->mWidth) && (yf < mCanvas->mHeight) ){
-                setPixelColor(color,xf,yf);
+        //Redefine line so that it is left to right
+        if ( x1  > x2 ){
+            std::swap(x1,x2);
+            std::swap(y1,y2);
+        }
+        int dx = x2 - x1;
+        int dy = y2 - y1;
+        int derror2 = std::abs(dy)*2;
+        int error2 = 0;
+        int y = y1;
+
+        for(int x=x1; x <= x2 ; x++){
+            if(steep){
+                    setPixelColor(color, y, x);
+                }
+                else{
+                    setPixelColor(color, x, y);
+                }
+            error2 += derror2;
+            if (error2 > dx){
+                y += (y2 > y1  ? 1 : -1);
+                error2 -= dx*2;
             }
+            // if( (x >= 0 ) && (yf >= 0) && (x < mCanvas->mWidth) && (yf < mCanvas->mHeight) ){
+                
+                
+            // }
         }
         
 }
