@@ -22,6 +22,8 @@ class Engine{
 
         void loadModels();
 
+        void moveModels();
+
     private:
         WindowManager FEWindowManager;
         RenderManager FERenderManager;

@@ -93,5 +93,6 @@ void RenderManager::updateScreen(){
 void RenderManager::clearScreen(){
     SDL_SetRenderDrawColor(mainRenderer, 0x00, 0x00, 0x00, 0xFF);
     SDL_RenderClear(mainRenderer);
+    memset(mainCanvas->mBuffer,0, mainCanvas->mPitch*mainCanvas->mHeight);
 }
 

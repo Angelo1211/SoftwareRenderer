@@ -86,17 +86,17 @@ void Rasterizer::drawLine(Vector3 vertex1, Vector3 vertex2, Uint32 color){
                 y += (y2 > y1  ? 1 : -1);
                 error2 -= dx*2;
             }
-            // if( (x >= 0 ) && (yf >= 0) && (x < mCanvas->mWidth) && (yf < mCanvas->mHeight) ){
-                
-                
-            // }
+
         }
         
 }
 
 void Rasterizer::setPixelColor(Uint32 color, int x, int y){
     int arrayCoordinates = convertCoordinates(x,y);
+    if( ((x >= 0 ) && (y >= 0)) && ((x < mCanvas->mWidth ) && (y < mCanvas->mHeight))  ){   
     mCanvas->mBuffer[arrayCoordinates] = color;
+    }
+    
 }
 
 int Rasterizer::convertCoordinates(int x, int y){
