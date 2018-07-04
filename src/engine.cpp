@@ -1,6 +1,6 @@
 #include "engine.h"
 #include <string>
-#include <math.h>
+#include <vector3.h>
 
 Engine::Engine(){
 
@@ -54,6 +54,8 @@ void Engine::mainLoop(){
         done = FEInputManager.processInput();
 
         //Update entities here in the future
+        //Right now only does simple demo stuff
+        //Maybe physics based in the future??
         moveModels();
 
         //Perform all render calculations and update screen
@@ -67,26 +69,32 @@ void Engine::mainLoop(){
 void Engine::loadModels(){
     //In the future I want to read all o the models in the model folder
     //And build them here.  For now I force it to be only one.
+    //Probably should be its own class in the future
     std::string path = "../models/teapot.obj";
     sceneModels = new Model(path);
 
     //sceneModels->describeMesh();
 }
 
-void Engine::moveModels(){
-    float theta  = 0.01;
-    float cosine = std::cos(theta);
-    float sine    = std::sin(theta);
 
+//Engine class moves stuff, for now
+//Some kind of physics module should be responsible of this in the future
+void Engine::moveModels(){
+    float thetax  = 0.001;
+    float thetay  = 0.001;
+    float thetaz  = 0.00;
+    float scale   = 0.999;
+    float dd      = 0.0;
     Mesh * modelMesh = sceneModels->getMesh();
     int size = modelMesh->numVertices;
-    std::vector<Vector3> * vertices = &modelMesh->vertices;
+    std::vector<Vector3> *   vertices = &modelMesh->vertices;
 
     for (int i = 0;i < size; ++i){
-        float xOld = (*vertices)[i].x;
-        float zOld = (*vertices)[i].z;
-        (*vertices)[i].x = xOld*cosine + zOld*sine;
-        (*vertices)[i].z = -xOld*sine   + zOld*cosine;
+        (*vertices)[i].scale(scale);
+        (*vertices)[i].rotX(thetax);
+        (*vertices)[i].rotY(thetay);
+        (*vertices)[i].rotZ(thetaz);
+        (*vertices)[i].translate(dd, dd, dd);
     }
 
 }
