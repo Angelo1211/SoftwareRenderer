@@ -49,11 +49,14 @@ void Rasterizer::drawModels(Model * models){
 }   
 
 void Rasterizer::drawLine(Vector3 vertex1, Vector3 vertex2, Uint32 color){
-        int scalingFactor = 90;
-        int x1 = (vertex1.x  * scalingFactor) + mCanvas->mWidth * 1 / 2;
-        int y1 = (-vertex1.y  * scalingFactor) + mCanvas->mHeight * 2 / 3;
-        int x2 = (vertex2.x  * scalingFactor) + mCanvas->mWidth  * 1 / 2;
-        int y2 = (-vertex2.y  * scalingFactor) + mCanvas->mHeight * 2 / 3;
+        //COMPLETE HACK, REMOVE ASAP
+        int scale = 90;
+        //BAD CODE, BAD BAD BAD
+
+        int x1 = (vertex1.x * scale ) + mCanvas->mWidth * 1 / 2;
+        int y1 = (-vertex1.y * scale ) + mCanvas->mHeight * 2 / 3;
+        int x2 = (vertex2.x * scale ) + mCanvas->mWidth  * 1 / 2;
+        int y2 = (-vertex2.y * scale ) + mCanvas->mHeight * 2 / 3;
         
         //transpose line if it is too steep
         bool steep = false;
@@ -94,9 +97,8 @@ void Rasterizer::drawLine(Vector3 vertex1, Vector3 vertex2, Uint32 color){
 void Rasterizer::setPixelColor(Uint32 color, int x, int y){
     int arrayCoordinates = convertCoordinates(x,y);
     if( ((x >= 0 ) && (y >= 0)) && ((x < mCanvas->mWidth ) && (y < mCanvas->mHeight))  ){   
-    mCanvas->mBuffer[arrayCoordinates] = color;
+        mCanvas->mBuffer[arrayCoordinates] = color;
     }
-    
 }
 
 int Rasterizer::convertCoordinates(int x, int y){
