@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include "vector3.h"
+#include "matrix.h"
 
 Model::Model(std::string path){
     buildMesh(path);
@@ -30,16 +31,16 @@ void Model::buildMesh(std::string path){
     file.open(path.c_str());
 
     //Get vertices into mesh
-    getVertices(file);
+    loadVertices(file);
 
     //Get faces
-    getFaces(file);
+    loadFaces(file);
 
     //Close file after reading
     file.close();
 }
 
-void Model::getFaces(std::ifstream &file){
+void Model::loadFaces(std::ifstream &file){
     std::string line, f, x ,y ,z;
     while(!file.eof()){
         
@@ -57,7 +58,7 @@ void Model::getFaces(std::ifstream &file){
     file.seekg(0, file.beg);
 }
 
-void Model::getVertices(std::ifstream &file){
+void Model::loadVertices(std::ifstream &file){
     std::string line, v, x ,y ,z;
     while(!file.eof()){
         std::getline(file,line);
@@ -72,4 +73,15 @@ void Model::getVertices(std::ifstream &file){
     mMesh.numVertices = mMesh.vertices.size();
     file.clear();
     file.seekg(0, file.beg);
+}
+
+void Model::initPosition(TransformParameters initVals){
+    Matrix4 modelMatrix = Matrix4::transformMatrix(initVals);
+    int size = mMesh.numVertices;
+    std::vector<Vector3> * vertices = &mMesh.vertices;
+
+    //Applying the multiplication
+    for (int i = 0;i < size; ++i){
+        (*vertices)[i] = modelMatrix.matMultVec((*vertices)[i],1);
+    }
 }

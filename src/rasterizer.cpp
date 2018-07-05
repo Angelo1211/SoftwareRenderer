@@ -37,10 +37,20 @@ void Rasterizer::drawModels(Model * models){
     Mesh * modelMesh = models->getMesh();
     std::vector<Vector3> * faces = &modelMesh->faces;
     std::vector<Vector3> * vertices = &modelMesh->vertices;
+
+    float t = static_cast<float>(SDL_GetTicks());
+    float radius = 10;
+    float camX   = std::sin(t/4000) * radius;
+    float camZ   = std::cos(t/4000) * radius;
+    Vector3 pos(camX, 0, camZ);
+    Vector3 tar;
+    Vector3 v(0,1,0);
+    Matrix4 viewMatrix = Matrix4::lookAt(pos,tar,v);
+
     for (Vector3 f : *faces ){
-        Vector3 v1 = (*vertices)[f.x-1];
-        Vector3 v2 = (*vertices)[f.y-1];
-        Vector3 v3 = (*vertices)[f.z-1];
+        Vector3 v1 = viewMatrix.matMultVec((*vertices)[f.x-1],1); //-1 because .obj file starts face count
+        Vector3 v2 = viewMatrix.matMultVec((*vertices)[f.y-1],1); // from 1. Should probably fix this 
+        Vector3 v3 = viewMatrix.matMultVec((*vertices)[f.z-1],1); // At some point
         drawLine(v1, v2, red);
         drawLine(v2, v3, green);
         drawLine(v1, v3, blue);
@@ -49,14 +59,11 @@ void Rasterizer::drawModels(Model * models){
 }   
 
 void Rasterizer::drawLine(Vector3 vertex1, Vector3 vertex2, Uint32 color){
-        //COMPLETE HACK, REMOVE ASAP
-        int scale = 90;
-        //BAD CODE, BAD BAD BAD
 
-        int x1 = (vertex1.x * scale ) + mCanvas->mWidth * 1 / 2;
-        int y1 = (-vertex1.y * scale ) + mCanvas->mHeight * 2 / 3;
-        int x2 = (vertex2.x * scale ) + mCanvas->mWidth  * 1 / 2;
-        int y2 = (-vertex2.y * scale ) + mCanvas->mHeight * 2 / 3;
+        int x1 = (vertex1.x ) + mCanvas->mWidth * 1 / 2;
+        int y1 = (-vertex1.y ) + mCanvas->mHeight * 2 / 3;
+        int x2 = (vertex2.x  ) + mCanvas->mWidth  * 1 / 2;
+        int y2 = (-vertex2.y ) + mCanvas->mHeight * 2 / 3;
         
         //transpose line if it is too steep
         bool steep = false;

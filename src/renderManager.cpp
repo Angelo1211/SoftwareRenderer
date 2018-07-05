@@ -71,18 +71,18 @@ void RenderManager::render(Model *models){
 
     //Clear Screen back to black
     clearScreen();
-
+    
     //Perform any modifications we want on the pixels
     raster->drawModels(models);
 
-    //Apply the pixel change to the texture
-    screenTexture.updateTexture(mainCanvas->mBuffer);
-
-    //Switch screen texture with back texture and re-draw
+    //Apply the pixel changes and redraw
     updateScreen();
 }
 
 void RenderManager::updateScreen(){
+    
+    screenTexture.updateTexture(mainCanvas->mBuffer);
+
     //Render texture to screen
     screenTexture.renderToScreen(mainRenderer);
 

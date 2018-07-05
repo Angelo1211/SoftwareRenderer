@@ -11,12 +11,22 @@ struct Vector3{
     Vector3(float x1, float y1, float z1) : x(x1), y(y1), z(z1)
     {}
 
+    Vector3(){};
+
     Vector3(std::string x1, std::string y1, std::string z1):
         x(std::stof(x1)), y(std::stof(y1)), z(std::stof(z1))
     {}
 
-    void scale(float scale);
-    void translate(float dx, float dy, float dz);
+    Vector3 operator-(Vector3 &rhs);
+
+    Vector3&  normalized();
+
+    float length();
+
+    Vector3 crossProduct(Vector3 &rhs);
+
+    float   dotProduct(Vector3 &rhs);
+
 };
 
 #endif

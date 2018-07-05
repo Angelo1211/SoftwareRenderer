@@ -3,6 +3,7 @@
 
 #include "mesh.h"
 #include "string"
+#include <matrix.h>
 
 class Model{
 
@@ -10,11 +11,12 @@ class Model{
         Model(std::string path); 
         void describeMesh();
         Mesh *getMesh();
+        void initPosition(TransformParameters initPos);
 
     private:
         void buildMesh(std::string path);
-        void getVertices(std::ifstream &fileHandle);
-        void getFaces(std::ifstream &fileHandle);
+        void loadVertices(std::ifstream &fileHandle);
+        void loadFaces(std::ifstream &fileHandle);
         Mesh mMesh;
 };
 

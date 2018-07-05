@@ -100,12 +100,11 @@ void Matrix4::printMat(){
     printf("\n");
 }
 
-
 //Way too general, should probably change in the future since I think
 //I'll only need 4x4 stuff and this technically allows for any n matrix.
 //Traverse the matrix cell by cell and find the final value through a step of 
 //sub multiplications that are then added together
-Matrix4 Matrix4::operator*(Matrix4 rhs){
+Matrix4 Matrix4::operator*(Matrix4 &rhs){
     //Matrix dimensions
     Matrix4 results;
     int n = 4;
@@ -137,10 +136,64 @@ Matrix4 Matrix4::operator*(Matrix4 rhs){
     return results;
 }
 
-Matrix4 Matrix4::modelMatrix(Vector3 pos, Vector3 rot, Vector3 scale){
-    Matrix4 rotMatrix = Matrix4::makeFullRotMat(rot.x, rot.y, rot.z);
-    Matrix4 scaleMatrix = Matrix4::makeScaleMat(scale.x, scale.y, scale.z);
-    Matrix4 translationMatrix = Matrix4::makeTranslateMat(pos.x, pos.y, pos.z);
+Matrix4 Matrix4::transformMatrix(TransformParameters transform){
+    Matrix4 rotMatrix = Matrix4::makeFullRotMat(transform.rotation.x,
+                         transform.rotation.y, transform.rotation.z);
+    Matrix4 scaleMatrix = Matrix4::makeScaleMat(transform.scaling.x,
+                         transform.scaling.y, transform.scaling.z);
+    Matrix4 translationMatrix = Matrix4::makeTranslateMat(transform.translation.x,
+                         transform.translation.y, transform.translation.z);
+    Matrix4 temp = (rotMatrix*scaleMatrix);
+    return  translationMatrix*(temp);
+}
 
-    return  translationMatrix*(rotMatrix*scaleMatrix);
+Matrix4 Matrix4::makeProjectionMatrix(float fov, float far, float near){
+    Matrix4 projectionMat;
+    //float scale   = 1 / tan( (fov/2) * (M_PI / 180) );
+    //float zScale1 = 
+
+    projectionMat(0,0) = 1;
+    projectionMat(1,1) = 1;
+    projectionMat(2,2) = -1;
+    projectionMat(3,2) = -1;
+
+}
+
+Matrix4 Matrix4::lookAt(Vector3& position, Vector3& target, Vector3& temp){
+
+    Vector3 forward = (position - target).normalized();
+    Vector3 side    = forward.crossProduct(temp.normalized());
+    Vector3 up      = forward.crossProduct(side);
+
+    //We will now build the inverse transform from the world position to the camera
+    //The idea is that we don't care where the camera is, we only care about what
+    //transformation would put the origin at the camera world space position
+    //With the z axis behind the camera.
+    //I bet you this will be really confusing in a couple of weeks
+    Matrix4 worldToCam;
+    
+    
+    //First row
+    worldToCam(0,0) = side.x;
+    worldToCam(0,1) = side.y;
+    worldToCam(0,2) = side.z;
+    worldToCam(0,3) = -side.dotProduct(position);
+
+
+    //First row
+    worldToCam(1,0) = up.x;
+    worldToCam(1,1) = up.y;
+    worldToCam(1,2) = up.z;
+    worldToCam(1,3) = -up.dotProduct(position);
+
+    //First row
+    worldToCam(2,0) = forward.x;
+    worldToCam(2,1) = forward.y;
+    worldToCam(2,2) = forward.z;
+    worldToCam(2,3) = -forward.dotProduct(position);
+
+    //Fourth row
+    worldToCam(3,3) = 1;
+
+    return worldToCam;
 }

@@ -2,13 +2,12 @@
 #include <string>
 #include <vector3.h>
 #include <matrix.h>
+#include <math.h>
 
 Engine::Engine(){
-
 }
 
 Engine::~Engine(){
-    
 }
 
 bool Engine::startUp(){
@@ -77,30 +76,34 @@ void Engine::loadModels(){
     std::string path = "../models/teapot.obj";
     sceneModels = new Model(path);
 
+    //We also initialize the model position here position here
+    TransformParameters initParameters;
+    initParameters.scaling = Vector3(90, 90, 90);
+    initParameters.rotation = Vector3(0,0,0);
+    initParameters.translation = Vector3(0, 0, 0);
+
+    sceneModels->initPosition(initParameters);
+
     //sceneModels->describeMesh();
 }
-
 
 //Engine class moves stuff, for now
 //Some kind of physics module should be responsible of this in the future
 //Actually it should probably be moved by user input
 void Engine::moveModels(int dt){
 
-    //Creating model matrix
-    Vector3 position = Vector3(0, 0, 0);
-    Vector3 rotation = Vector3(0.01, 0.01, 0.01);
-    Vector3 scaling  = Vector3(1, 1, 1);
-    Matrix4 modelMatrix = Matrix4::modelMatrix(position, rotation, scaling);
+    //Creating view matrix
+    
 
 
-    //Getting vector of vertices
-    Mesh * modelMesh = sceneModels->getMesh();
-    int size = modelMesh->numVertices;
-    std::vector<Vector3> * vertices = &modelMesh->vertices;
+    // //Getting vector of vertices
+    // Mesh * modelMesh = sceneModels->getMesh();
+    // int size = modelMesh->numVertices;
+    // std::vector<Vector3> * vertices = &modelMesh->vertices;
 
-    //Applying the multiplication
-    for (int i = 0;i < size; ++i){
-        (*vertices)[i] = modelMatrix.matMultVec((*vertices)[i],1);
-    }
+    // //Applying the multiplication
+    // for (int i = 0;i < size; ++i){
+    //     (*vertices)[i] = viewMatrix.matMultVec((*vertices)[i],1);
+    // }
 
 }
