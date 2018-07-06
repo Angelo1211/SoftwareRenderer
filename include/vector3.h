@@ -27,6 +27,8 @@ struct Vector3{
 
     float   dotProduct(Vector3 &rhs);
 
+    void print();
+
 };
 
 #endif

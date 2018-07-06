@@ -1,22 +1,40 @@
 #include "matrix.h"
 #include <math.h>
 
-Vector3 Matrix4::matMultVec(Vector3 &vec, float w){
+
+Vector3 Matrix4::matMultVec(Vector3 &vec){
+
     Vector3 newVec(0,0,0);
+    float w2 = 0;
     newVec.x = vec.x*(*this)(0,0)+
                vec.y*(*this)(0,1)+
                vec.z*(*this)(0,2)+
-               w*(*this)(0,3);
+               (*this)(0,3); //Assuming wO of vec always  = 1
 
     newVec.y = vec.x*(*this)(1,0)+
                vec.y*(*this)(1,1)+
                vec.z*(*this)(1,2)+
-               w*(*this)(1,3);
+               (*this)(1,3); //Assuming wO of vec always  = 1
 
     newVec.z = vec.x*(*this)(2,0)+
                vec.y*(*this)(2,1)+
                vec.z*(*this)(2,2)+
-               w*(*this)(2,3);
+               (*this)(2,3); //Assuming wO of vec always  = 1
+
+    w2       = vec.x*(*this)(3,0)+
+               vec.y*(*this)(3,1)+
+               vec.z*(*this)(3,2)+
+               (*this)(3,3); //Assuming wO of vec always  = 1
+    
+    //Division is expensive, only do it if you need it
+    //Also here is where perspective divide happens!
+    //vec.print();
+    //printf("%f\n",w2);
+    if(w2 != 1){
+        newVec.x /= w2;
+        newVec.y /= w2;
+        newVec.z /= w2;
+    }
 
     return newVec;
 }
@@ -147,16 +165,31 @@ Matrix4 Matrix4::transformMatrix(TransformParameters transform){
     return  translationMatrix*(temp);
 }
 
-Matrix4 Matrix4::makeProjectionMatrix(float fov, float far, float near){
+Matrix4 Matrix4::makeProjectionMatrix(float fov, float AR, float near, float far){
+    float top   =  tan( (fov/2) * (M_PI / 180) ) * near;
+    float bot   =  -top;
+    float right =  top * AR;
+    float left  =  bot * AR;
     Matrix4 projectionMat;
-    //float scale   = 1 / tan( (fov/2) * (M_PI / 180) );
-    //float zScale1 = 
+    float scale   = 1 / tan( (fov/2) * (M_PI / 180) );
 
-    projectionMat(0,0) = 1;
-    projectionMat(1,1) = 1;
-    projectionMat(2,2) = -1;
+
+    //First Row
+    projectionMat(0,0) = 2 * near / (right - left);
+    projectionMat(0,2) = (right + left) / (right - left);
+
+    //Second row
+    projectionMat(1,1) = 2 * near / (top - bot);
+    projectionMat(1,2) = (top+bot) / (top - bot);
+
+    //Third row
+    projectionMat(2,2) = - (far + near) / (far - near);
+    projectionMat(2,3) = -2 * (far * near) / (far - near);
+    
+    //Fourth row
     projectionMat(3,2) = -1;
-
+    
+    return projectionMat;
 }
 
 Matrix4 Matrix4::lookAt(Vector3& position, Vector3& target, Vector3& temp){

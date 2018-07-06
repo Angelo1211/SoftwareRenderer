@@ -82,6 +82,6 @@ void Model::initPosition(TransformParameters initVals){
 
     //Applying the multiplication
     for (int i = 0;i < size; ++i){
-        (*vertices)[i] = modelMatrix.matMultVec((*vertices)[i],1);
+        (*vertices)[i] = modelMatrix.matMultVec((*vertices)[i]);
     }
 }

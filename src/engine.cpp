@@ -78,9 +78,9 @@ void Engine::loadModels(){
 
     //We also initialize the model position here position here
     TransformParameters initParameters;
-    initParameters.scaling = Vector3(90, 90, 90);
+    //initParameters.scaling = Vector3(1, 60, 60);
     initParameters.rotation = Vector3(0,0,0);
-    initParameters.translation = Vector3(0, 0, 0);
+    initParameters.translation = Vector3(0, -1, 0);
 
     sceneModels->initPosition(initParameters);
 
@@ -92,18 +92,7 @@ void Engine::loadModels(){
 //Actually it should probably be moved by user input
 void Engine::moveModels(int dt){
 
-    //Creating view matrix
-    
-
-
-    // //Getting vector of vertices
-    // Mesh * modelMesh = sceneModels->getMesh();
-    // int size = modelMesh->numVertices;
-    // std::vector<Vector3> * vertices = &modelMesh->vertices;
-
-    // //Applying the multiplication
-    // for (int i = 0;i < size; ++i){
-    //     (*vertices)[i] = viewMatrix.matMultVec((*vertices)[i],1);
-    // }
+    //I freed the engine from moving stuff!
+    //Now it's technically the camera that moves and everything else follows
 
 }

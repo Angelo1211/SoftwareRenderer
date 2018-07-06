@@ -40,3 +40,7 @@ float Vector3::length(){
                      (this->y * this->y) +
                      (this->z * this->z));
 }
+
+void Vector3::print(){
+    printf("Vec: %f\t%f\t%f\n",x,y,z);
+}
