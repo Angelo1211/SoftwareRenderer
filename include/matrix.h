@@ -37,9 +37,10 @@ class Matrix4{
         //2D to 3D projection matrix
         Matrix4 static makeProjectionMatrix(float fov, float AR, float near, float far);
 
+        Matrix4(){};
 
     private:
-        Matrix4(){};
+        
         std::array<float, 16> mMatrix{};
 };
 

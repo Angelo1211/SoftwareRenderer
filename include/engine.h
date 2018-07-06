@@ -22,13 +22,15 @@ class Engine{
 
         void loadModels();
 
-        void moveModels(int dt);
+        //Will not be here forever
+        void updateCamera();
 
     private:
         WindowManager FEWindowManager;
         RenderManager FERenderManager;
         InputManager  FEInputManager;
         Model        *sceneModels;
+        Matrix4      viewMatrix;
 };
 
 #endif

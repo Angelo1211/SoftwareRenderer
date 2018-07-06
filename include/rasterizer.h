@@ -10,7 +10,7 @@ class Rasterizer{
     public:
         Rasterizer(Canvas *canvas) :mCanvas(canvas){}
 
-        void drawModels(Model * models);
+        void drawModels(Vector3 &v1, Vector3 &v2, Vector3 &v3);
 
         void testPattern();
 
@@ -30,6 +30,11 @@ class Rasterizer{
         int convertCoordinates(int x, int y);
 
         Canvas * mCanvas;
+
+        Uint32 white = SDL_MapRGBA(mappingFormat, 0xFF,0xFF,0xFF,0xFF);
+        Uint32 red = SDL_MapRGBA(mappingFormat, 0xFF,0x00,0x00,0xFF);
+        Uint32 green = SDL_MapRGBA(mappingFormat, 0x00,0xFF,0x00,0xFF);
+        Uint32 blue = SDL_MapRGBA(mappingFormat, 0x00,0x00,0xFF,0xFF);
 
 };
 

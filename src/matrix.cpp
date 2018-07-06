@@ -197,6 +197,7 @@ Matrix4 Matrix4::lookAt(Vector3& position, Vector3& target, Vector3& temp){
     Vector3 forward = (position - target).normalized();
     Vector3 side    = forward.crossProduct(temp.normalized());
     Vector3 up      = forward.crossProduct(side);
+    //Vector3 up      = side.crossProduct(forward);
 
     //We will now build the inverse transform from the world position to the camera
     //The idea is that we don't care where the camera is, we only care about what

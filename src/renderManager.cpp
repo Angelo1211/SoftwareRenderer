@@ -25,9 +25,18 @@ bool RenderManager::startUp(WindowManager WindowManager){
             }
             //Create rasterizer to begin drawing
             raster = new Rasterizer(mainCanvas);
+            createProjectionMatrix();
             return true;
         }
     }
+}
+
+void RenderManager::createProjectionMatrix(){
+    float fov = 75;
+    float aspectRatio = mainCanvas->mWidth / (float)mainCanvas->mHeight;
+    float near = 0.1;
+    float far  = 100;
+    projectionMatrix = Matrix4::makeProjectionMatrix(fov, aspectRatio, near,far);
 }
 
 bool RenderManager::createScreenTexture(){
@@ -67,13 +76,33 @@ void RenderManager::shutDown(){
     mainRenderer = nullptr;
 }
 
-void RenderManager::render(Model *models){
+void RenderManager::render(Model *models, Matrix4 &viewMatrix){
 
     //Clear Screen back to black
     clearScreen();
+
+    //Combination of both matrices
+    Matrix4 viewProjectionMatrix = projectionMatrix*viewMatrix;
+
+    //Getting the meshes and faces 
+    Mesh * modelMesh = models->getMesh();
+    std::vector<Vector3> * faces = &modelMesh->faces;
+    std::vector<Vector3> * vertices = &modelMesh->vertices;
+
+    for (Vector3 f : *faces ){
+        Vector3 v1 = viewProjectionMatrix.matMultVec((*vertices)[f.x-1]); //-1 because .obj file starts face count
+        Vector3 v2 = viewProjectionMatrix.matMultVec((*vertices)[f.y-1]); // from 1. Should probably fix this 
+        Vector3 v3 = viewProjectionMatrix.matMultVec((*vertices)[f.z-1]); // At some point
+        if(v1.x < -1 || v1.x > 1 || v1.y < -1 || v1.y > 1 || v1.z > 1 || v1.z < -1) continue;
+        if(v2.x < -1 || v2.x > 1 || v2.y < -1 || v2.y > 1 || v2.z > 1 || v2.z < -1) continue;
+        if(v3.x < -1 || v3.x > 1 || v3.y < -1 || v3.y > 1 || v3.z > 1 || v3.z < -1) continue;
+
+        raster->drawModels(v1,v2,v3);
+    }
+
+
+    //Rasterizing
     
-    //Perform any modifications we want on the pixels
-    raster->drawModels(models);
 
     //Apply the pixel changes and redraw
     updateScreen();
