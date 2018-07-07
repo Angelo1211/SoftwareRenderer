@@ -32,7 +32,7 @@ bool RenderManager::startUp(WindowManager WindowManager){
 }
 
 void RenderManager::createProjectionMatrix(){
-    float fov = 75;
+    float fov = 60;
     float aspectRatio = mainCanvas->mWidth / (float)mainCanvas->mHeight;
     float near = 0.1;
     float far  = 100;
@@ -83,6 +83,7 @@ void RenderManager::render(Model *models, Matrix4 &viewMatrix){
 
     //Combination of both matrices
     Matrix4 viewProjectionMatrix = projectionMatrix*viewMatrix;
+    Vector3 forward(viewMatrix(2,0),viewMatrix(2,1),viewMatrix(2,2));
 
     //Getting the meshes and faces 
     Mesh * modelMesh = models->getMesh();
@@ -98,8 +99,16 @@ void RenderManager::render(Model *models, Matrix4 &viewMatrix){
         if(v2.x < -1 || v2.x > 1 || v2.y < -1 || v2.y > 1 || v2.z > 1 || v2.z < -1) continue;
         if(v3.x < -1 || v3.x > 1 || v3.y < -1 || v3.y > 1 || v3.z > 1 || v3.z < -1) continue;
        
-        //Rasterizing
-        raster->drawTriangles(v1,v2,v3);
+        //Back face culling
+        Vector3 N1 = (*vertices)[f.y-1] - (*vertices)[f.x-1];
+        Vector3 N2 = (*vertices)[f.z-1] - (*vertices)[f.x-1];
+        Vector3 N  = N1.crossProduct(N2);
+        N = N.normalized();
+        float intensity = N.dotProduct(forward);
+        if(intensity > 0){
+            //rasterizing
+            raster->drawTriangles(v1,v2,v3,intensity);
+        }
     }
     //Apply the pixel changes and redraw
     updateScreen();

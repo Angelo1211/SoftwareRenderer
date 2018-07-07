@@ -32,42 +32,46 @@ void Rasterizer::testPattern(){
 }
 
 //Should probably do something fancier in the future
-void Rasterizer::drawTriangles(Vector3 &v0, Vector3 &v1, Vector3 &v2 ){
-    std::array<int, 3> xVerts;
-    std::array<int, 3> yVerts;
-    xVerts[0] = (v0.x + 1 ) * mCanvas->mWidth * 0.5;
-    yVerts[0] = (-v0.y + 1 ) * mCanvas->mHeight * 0.5;
+void Rasterizer::drawTriangles(Vector3 &v0, Vector3 &v1, Vector3 &v2, float intensity ){
+        Uint32 color = SDL_MapRGBA(mappingFormat,
+                    256*intensity,256*intensity,256*intensity,0xFF);
 
-    xVerts[1] = (v1.x +1 ) * mCanvas->mWidth  * 0.5;
-    yVerts[1] = (-v1.y +1 ) * mCanvas->mHeight * 0.5;
+        std::array<int, 3> xVerts;
+        std::array<int, 3> yVerts;
+        xVerts[0] = (v0.x + 1 ) * mCanvas->mWidth * 0.5;
+        yVerts[0] = (-v0.y + 1 ) * mCanvas->mHeight * 0.5;
 
-    xVerts[2] = (v2.x +1 ) * mCanvas->mWidth  * 0.5;
-    yVerts[2] = (-v2.y +1 ) * mCanvas->mHeight * 0.5;
+        xVerts[1] = (v1.x +1 ) * mCanvas->mWidth  * 0.5;
+        yVerts[1] = (-v1.y +1 ) * mCanvas->mHeight * 0.5;
 
-    int xMax = *std::max_element(xVerts.begin(),xVerts.end());
-    int yMax = *std::max_element(yVerts.begin(),yVerts.end());
+        xVerts[2] = (v2.x +1 ) * mCanvas->mWidth  * 0.5;
+        yVerts[2] = (-v2.y +1 ) * mCanvas->mHeight * 0.5;
 
-    int xMin = *std::min_element(xVerts.begin(),xVerts.end());
-    int yMin = *std::min_element(yVerts.begin(),yVerts.end());
+        int xMax = *std::max_element(xVerts.begin(),xVerts.end());
+        int yMax = *std::max_element(yVerts.begin(),yVerts.end());
+
+        int xMin = *std::min_element(xVerts.begin(),xVerts.end());
+        int yMin = *std::min_element(yVerts.begin(),yVerts.end());
 
 
-    for(int y = yMin; y < yMax; ++y){
-        for(int x = xMin; x < xMax; ++x){
-            float edge1 = (x-xVerts[0])*(yVerts[1]-yVerts[0]) 
-                            - (xVerts[1]-xVerts[0])*(y-yVerts[0]);
-            float edge2 = (x-xVerts[1])*(yVerts[2]-yVerts[1]) 
-                            - (xVerts[2]-xVerts[1])*(y-yVerts[1]);
-            float edge3 = (x-xVerts[2])*(yVerts[0]-yVerts[2]) 
-                            - (xVerts[0]-xVerts[2])*(y-yVerts[2]);
+        for(int y = yMin; y <= yMax; ++y){
+            for(int x = xMin; x <= xMax; ++x){
+                float edge1 = (x-xVerts[0])*(yVerts[1]-yVerts[0]) 
+                                - (xVerts[1]-xVerts[0])*(y-yVerts[0]);
 
-            if(edge1 >= 0 && edge2 >= 0 && edge3 >= 0){
-                setPixelColor(white, x, y);
-            } 
-        
+                float edge2 = (x-xVerts[1])*(yVerts[2]-yVerts[1]) 
+                                - (xVerts[2]-xVerts[1])*(y-yVerts[1]);
+
+                float edge3 = (x-xVerts[2])*(yVerts[0]-yVerts[2]) 
+                                - (xVerts[0]-xVerts[2])*(y-yVerts[2]);
+
+                //If any of the edge functions are smaller than zero, discard the point
+                if(edge1 < 0 || edge2 < 0 || edge3 < 0) continue;
+                setPixelColor(color, x, y);
+            }
         }
-    }
-    
-}   
+
+}  
 
 void Rasterizer::drawWireFrame(Vector3 &v1, Vector3 &v2, Vector3 &v3 ){
     drawLine(v1, v2, red);

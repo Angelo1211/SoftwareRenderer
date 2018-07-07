@@ -171,7 +171,6 @@ Matrix4 Matrix4::makeProjectionMatrix(float fov, float AR, float near, float far
     float right =  top * AR;
     float left  =  bot * AR;
     Matrix4 projectionMat;
-    float scale   = 1 / tan( (fov/2) * (M_PI / 180) );
 
 
     //First Row
@@ -195,7 +194,7 @@ Matrix4 Matrix4::makeProjectionMatrix(float fov, float AR, float near, float far
 Matrix4 Matrix4::lookAt(Vector3& position, Vector3& target, Vector3& temp){
 
     Vector3 forward = (position - target).normalized();
-    Vector3 side    = forward.crossProduct(temp.normalized());
+    Vector3 side    = temp.crossProduct(forward);
     Vector3 up      = forward.crossProduct(side);
     //Vector3 up      = side.crossProduct(forward);
 

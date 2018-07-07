@@ -26,7 +26,7 @@ Vector3& Vector3::normalized(){
 Vector3 Vector3::crossProduct(Vector3 &rhs){
     Vector3 temp;
     temp.x = (this->y)*rhs.z - (this->z)*rhs.y;
-    temp.y = (this->x)*rhs.z - (this->z)*rhs.x;
+    temp.y = (this->z)*rhs.x - (this->x)*rhs.z;
     temp.z = (this->x)*rhs.y - (this->y)*rhs.x;
     return temp;
 }

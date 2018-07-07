@@ -86,16 +86,15 @@ void Engine::loadModels(){
     //sceneModels->describeMesh();
 }
 
-
 //This should be its own class in the future
 void Engine::updateCamera(){
     float t = static_cast<float>(SDL_GetTicks());
-    float radius = 7;
+    float radius = 6;
     float camX   = std::sin(t/4000) * radius;
     float camZ   = std::cos(t/4000) * radius;
     Vector3 pos(camX, 0, camZ);
     Vector3 tar;
     Vector3 v(0,1,0);
     viewMatrix = Matrix4::lookAt(pos,tar,v);
-    viewMatrix = (Matrix4::makeTranslateMat(0,camX*0.25,0)*viewMatrix);
+    //viewMatrix = (Matrix4::makeTranslateMat(0,camX*0.25,0)*viewMatrix);
 }
