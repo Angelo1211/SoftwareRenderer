@@ -10,7 +10,9 @@ class Rasterizer{
     public:
         Rasterizer(Canvas *canvas) :mCanvas(canvas){}
 
-        void drawModels(Vector3 &v1, Vector3 &v2, Vector3 &v3);
+        void drawTriangles(Vector3 &v1, Vector3 &v2, Vector3 &v3);
+
+        void drawWireFrame(Vector3 &v1, Vector3 &v2, Vector3 &v3);
 
         void testPattern();
 
@@ -23,7 +25,7 @@ class Rasterizer{
 
         Uint32 getPixelColor(int x, int y);
 
-        void drawLine(Vector3 vertex1, Vector3 vertex2, Uint32 color);
+        void drawLine(Vector3 &vertex1, Vector3 &vertex2, Uint32 &color);
 
         void setPixelColor(Uint32 color, int x, int y);
 

@@ -26,13 +26,22 @@ bool Texture::createBlank(SDL_Renderer  *renderer, int width, int height ){
     mHeight = height;
     mPitch  = width * sizeof(Uint32);
     mTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-        SDL_TEXTUREACCESS_STATIC, mWidth, mHeight);
+        SDL_TEXTUREACCESS_STREAMING, mWidth, mHeight);
 
     return mTexture != NULL;
 }
 
 void Texture::updateTexture(Uint32 * pixels){
-    SDL_UpdateTexture(mTexture, NULL, pixels, mPitch);
+
+    //Lock texture for manipulation
+    SDL_LockTexture(mTexture, NULL, &mPixels, &mPitch );
+    //Copy pixels to texture
+    memcpy(mPixels, pixels, mHeight*mPitch);
+
+    //Update texture
+    SDL_UnlockTexture(mTexture);
+    mPixels = nullptr;
+    //SDL_UpdateTexture(mTexture, NULL, pixels, mPitch);
 }
 
 void Texture::renderToScreen(SDL_Renderer * renderer){
