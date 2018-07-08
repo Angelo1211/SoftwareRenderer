@@ -31,45 +31,61 @@ void Rasterizer::testPattern(){
 
 }
 
-//Should probably do something fancier in the future
-void Rasterizer::drawTriangles(Vector3 &v0, Vector3 &v1, Vector3 &v2, float intensity ){
-        Uint32 color = SDL_MapRGBA(mappingFormat,
-                    256*intensity,256*intensity,256*intensity,0xFF);
+//Draws triangles using edge detection and baricentric coordinates,
+//Also shades based on a light coming directly from the camera
+void Rasterizer::drawTriangles(Vector3 &a, Vector3 &b, Vector3 &c, float intensity ){
+    Uint32 color = SDL_MapRGBA(mappingFormat,
+                256*intensity,256*intensity,256*intensity,0xFF);
 
-        std::array<int, 3> xVerts;
-        std::array<int, 3> yVerts;
-        xVerts[0] = (v0.x + 1 ) * mCanvas->mWidth * 0.5;
-        yVerts[0] = (-v0.y + 1 ) * mCanvas->mHeight * 0.5;
+    //Converting to screen space
+    std::array<int, 3> xVerts;
+    std::array<int, 3> yVerts;
+    std::array<float, 3> zVerts;
+    xVerts[0] = (a.x + 1 ) * mCanvas->mWidth * 0.5;
+    yVerts[0] = (-a.y + 1 ) * mCanvas->mHeight * 0.5;
+    zVerts[0] = (a.z+1)/2;
 
-        xVerts[1] = (v1.x +1 ) * mCanvas->mWidth  * 0.5;
-        yVerts[1] = (-v1.y +1 ) * mCanvas->mHeight * 0.5;
+    xVerts[1] = (b.x +1 ) * mCanvas->mWidth  * 0.5;
+    yVerts[1] = (-b.y +1 ) * mCanvas->mHeight * 0.5;
+    zVerts[1] = (b.z+1)/2;
 
-        xVerts[2] = (v2.x +1 ) * mCanvas->mWidth  * 0.5;
-        yVerts[2] = (-v2.y +1 ) * mCanvas->mHeight * 0.5;
+    xVerts[2] = (c.x +1 ) * mCanvas->mWidth  * 0.5;
+    yVerts[2] = (-c.y +1 ) * mCanvas->mHeight * 0.5;
+    zVerts[2] = (c.z+1)/2;
 
-        int xMax = *std::max_element(xVerts.begin(),xVerts.end());
-        int yMax = *std::max_element(yVerts.begin(),yVerts.end());
+    //Finding triangle bounding box
+    int xMax = *std::max_element(xVerts.begin(),xVerts.end());
+    int yMax = *std::max_element(yVerts.begin(),yVerts.end());
+    int xMin = *std::min_element(xVerts.begin(),xVerts.end());
+    int yMin = *std::min_element(yVerts.begin(),yVerts.end());
 
-        int xMin = *std::min_element(xVerts.begin(),xVerts.end());
-        int yMin = *std::min_element(yVerts.begin(),yVerts.end());
+    //Find triangle area
+    float area = std::abs((xVerts[2]-xVerts[0])*(yVerts[1]-yVerts[0]) 
+                            - (xVerts[1]-xVerts[0])*(yVerts[2]-yVerts[0]));
 
+    //Iterating the triangle bounding box
+    for(int y = yMin; y <= yMax; ++y){
+        for(int x = xMin; x <= xMax; ++x){
 
-        for(int y = yMin; y <= yMax; ++y){
-            for(int x = xMin; x <= xMax; ++x){
-                float edge1 = (x-xVerts[0])*(yVerts[1]-yVerts[0]) 
-                                - (xVerts[1]-xVerts[0])*(y-yVerts[0]);
+            float lambda0 = ((x-xVerts[0])*(yVerts[1]-yVerts[0]) 
+                            - (xVerts[1]-xVerts[0])*(y-yVerts[0])) / area;
 
-                float edge2 = (x-xVerts[1])*(yVerts[2]-yVerts[1]) 
-                                - (xVerts[2]-xVerts[1])*(y-yVerts[1]);
+            float lambda1 = ((x-xVerts[1])*(yVerts[2]-yVerts[1]) 
+                            - (xVerts[2]-xVerts[1])*(y-yVerts[1])) / area;
 
-                float edge3 = (x-xVerts[2])*(yVerts[0]-yVerts[2]) 
-                                - (xVerts[0]-xVerts[2])*(y-yVerts[2]);
-
-                //If any of the edge functions are smaller than zero, discard the point
-                if(edge1 < 0 || edge2 < 0 || edge3 < 0) continue;
+            float lambda2 = ((x-xVerts[2])*(yVerts[0]-yVerts[2]) 
+                            - (xVerts[0]-xVerts[2])*(y-yVerts[2])) / area;
+            float depth = lambda0*zVerts[0] + lambda1*zVerts[1] + lambda2*zVerts[2];
+            
+            //If any of the edge functions are smaller than zero, discard the point
+            if(lambda0 < 0 || lambda1 < 0 || lambda2 < 0) continue;
+            if(getDepthBufferAtLocation(x,y) > depth){
+                setDepthBufferAtLocation(x,y,depth);
                 setPixelColor(color, x, y);
-            }
+            } 
+
         }
+    }
 
 }  
 
@@ -80,45 +96,44 @@ void Rasterizer::drawWireFrame(Vector3 &v1, Vector3 &v2, Vector3 &v3 ){
 }   
 
 void Rasterizer::drawLine(Vector3 &vertex1, Vector3 &vertex2, Uint32 &color){
+    int x1 = (vertex1.x + 1 ) * mCanvas->mWidth * 0.5;
+    int y1 = (-vertex1.y + 1 ) * mCanvas->mHeight * 0.5;
+    int x2 = (vertex2.x +1 ) * mCanvas->mWidth  * 0.5;
+    int y2 = (-vertex2.y +1 ) * mCanvas->mHeight * 0.5;
 
-        int x1 = (vertex1.x + 1 ) * mCanvas->mWidth * 0.5;
-        int y1 = (-vertex1.y + 1 ) * mCanvas->mHeight * 0.5;
-        int x2 = (vertex2.x +1 ) * mCanvas->mWidth  * 0.5;
-        int y2 = (-vertex2.y +1 ) * mCanvas->mHeight * 0.5;
+    //transpose line if it is too steep
+    bool steep = false;
+    if (std::abs(x1-x2) < std::abs(y1-y2) ){
+        std::swap(x1,y1);
+        std::swap(x2,y2);
+        steep = true;
+    }
 
-        //transpose line if it is too steep
-        bool steep = false;
-        if (std::abs(x1-x2) < std::abs(y1-y2) ){
-            std::swap(x1,y1);
-            std::swap(x2,y2);
-            steep = true;
-        }
+    //Redefine line so that it is left to right
+    if ( x1  > x2 ){
+        std::swap(x1,x2);
+        std::swap(y1,y2);
+    }
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    int derror2 = std::abs(dy)*2;
+    int error2 = 0;
+    int y = y1;
 
-        //Redefine line so that it is left to right
-        if ( x1  > x2 ){
-            std::swap(x1,x2);
-            std::swap(y1,y2);
-        }
-        int dx = x2 - x1;
-        int dy = y2 - y1;
-        int derror2 = std::abs(dy)*2;
-        int error2 = 0;
-        int y = y1;
-
-        for(int x=x1; x <= x2 ; x++){
-            if(steep){
-                    setPixelColor(color, y, x);
-                }
-                else{
-                    setPixelColor(color, x, y);
-                }
-            error2 += derror2;
-            if (error2 > dx){
-                y += (y2 > y1  ? 1 : -1);
-                error2 -= dx*2;
+    for(int x=x1; x <= x2 ; x++){
+        if(steep){
+                setPixelColor(color, y, x);
             }
-
+            else{
+                setPixelColor(color, x, y);
+            }
+        error2 += derror2;
+        if (error2 > dx){
+            y += (y2 > y1  ? 1 : -1);
+            error2 -= dx*2;
         }
+
+    }
         
 }
 
@@ -132,3 +147,14 @@ void Rasterizer::setPixelColor(Uint32 color, int x, int y){
 int Rasterizer::convertCoordinates(int x, int y){
     return ((y * mCanvas->mWidth) + x);
 }
+
+float Rasterizer::getDepthBufferAtLocation(int x, int y){
+    int arrayCoordinates = convertCoordinates(x,y);
+    return mCanvas->mDBuffer[arrayCoordinates];
+}
+
+void Rasterizer::setDepthBufferAtLocation(int x, int y, float depth){
+    int arrayCoordinates = convertCoordinates(x,y);
+    mCanvas->mDBuffer[arrayCoordinates] = depth;
+}
+

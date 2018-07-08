@@ -89,7 +89,7 @@ void Engine::loadModels(){
 //This should be its own class in the future
 void Engine::updateCamera(){
     float t = static_cast<float>(SDL_GetTicks());
-    float radius = 6;
+    float radius = 7;
     float camX   = std::sin(t/4000) * radius;
     float camZ   = std::cos(t/4000) * radius;
     Vector3 pos(camX, 0, camZ);
