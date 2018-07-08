@@ -72,13 +72,13 @@ void Engine::loadModels(){
     //In the future I want to read all o the models in the model folder
     //And build them here.  For now I force it to be only one.
     //Probably should be its own class in the future
-    std::string path = "../models/teapot.obj";
+    std::string path = "../models/cow.obj";
     sceneModels = new Model(path);
 
     //We also initialize the model position here position here
     TransformParameters initParameters;
     //initParameters.scaling = Vector3(1, 60, 60);
-    initParameters.rotation = Vector3(0,0,0);
+    initParameters.rotation = Vector3(0,-45* M_PI/180,0);
     initParameters.translation = Vector3(0, -1, 0);
 
     sceneModels->initPosition(initParameters);

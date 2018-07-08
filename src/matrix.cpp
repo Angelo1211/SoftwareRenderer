@@ -182,8 +182,8 @@ Matrix4 Matrix4::makeProjectionMatrix(float fov, float AR, float near, float far
     projectionMat(1,2) = (top+bot) / (top - bot);
 
     //Third row
-    projectionMat(2,2) = - (far + near) / (far - near);
-    projectionMat(2,3) = -2 * (far * near) / (far - near);
+    projectionMat(2,2) =  (near) / (far - near);
+    projectionMat(2,3) =  (far * near) / (far - near);
     
     //Fourth row
     projectionMat(3,2) = -1;

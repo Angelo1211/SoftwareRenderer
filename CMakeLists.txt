@@ -10,9 +10,9 @@ include_directories(${SDL2_INCLUDE_DIR} include)
 file(GLOB source_files "*.h" "*.cpp" "src/*.cpp" "include/*.h")
 
 add_executable(softwareRenderer ${source_files})
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
-#set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g")
 target_link_libraries(softwareRenderer ${SDL2_LIBRARY})
 
 if(WIN32)

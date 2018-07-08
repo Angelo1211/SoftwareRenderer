@@ -32,9 +32,9 @@ bool RenderManager::startUp(WindowManager WindowManager){
 }
 
 void RenderManager::createProjectionMatrix(){
-    float fov = 60;
+    float fov = 75;
     float aspectRatio = mainCanvas->mWidth / (float)mainCanvas->mHeight;
-    float near = 0.1;
+    float near = 1;
     float far  = 100;
     projectionMatrix = Matrix4::makeProjectionMatrix(fov, aspectRatio, near,far);
 }
@@ -56,8 +56,10 @@ bool RenderManager::createCanvas(){
                             new Uint32[pixelCount], new float[pixelCount]);
     SDL_memset(mainCanvas->mBuffer, 0, mainCanvas->mPixelCount * sizeof(Uint32) );
     for(int i = 0; i < mainCanvas->mPixelCount;++i){
-        mainCanvas->mDBuffer[i]  = 2.0f;
+        mainCanvas->mDBuffer[i]  = 0.0f;
     }
+    //printf("I:%p, %p | P:%p, %p\n",mainCanvas->mBuffer,mainCanvas->mBuffer + mainCanvas->mPixelCount -1, mainCanvas->mDBuffer,mainCanvas->mDBuffer + mainCanvas->mPixelCount -1);
+    //SDL_Delay(3000);
     return mainCanvas != NULL;
 }
 
@@ -94,13 +96,14 @@ void RenderManager::render(Model *models, Matrix4 &viewMatrix){
     std::vector<Vector3> * vertices = &modelMesh->vertices;
 
     //Kind of a vertex shader I guess?
+    //printf("Starting per face operations..\n");
     for (Vector3 f : *faces ){
         Vector3 v1 = viewProjectionMatrix.matMultVec((*vertices)[f.x-1]); //-1 because .obj file starts face count
         Vector3 v2 = viewProjectionMatrix.matMultVec((*vertices)[f.y-1]); // from 1. Should probably fix this 
         Vector3 v3 = viewProjectionMatrix.matMultVec((*vertices)[f.z-1]); // At some point
-        if(v1.x < -1 || v1.x > 1 || v1.y < -1 || v1.y > 1 || v1.z > 1 || v1.z < -1) continue;
-        if(v2.x < -1 || v2.x > 1 || v2.y < -1 || v2.y > 1 || v2.z > 1 || v2.z < -1) continue;
-        if(v3.x < -1 || v3.x > 1 || v3.y < -1 || v3.y > 1 || v3.z > 1 || v3.z < -1) continue;
+        //if(v1.x < -1 || v1.x > 1 || v1.y < -1 || v1.y > 1 || v1.z > 1 || v1.z < -1) continue;
+        //if(v2.x < -1 || v2.x > 1 || v2.y < -1 || v2.y > 1 || v2.z > 1 || v2.z < -1) continue;
+        //if(v3.x < -1 || v3.x > 1 || v3.y < -1 || v3.y > 1 || v3.z > 1 || v3.z < -1) continue;
        
         //Back face culling in world space
         Vector3 N1 = (*vertices)[f.y-1] - (*vertices)[f.x-1];
@@ -108,10 +111,8 @@ void RenderManager::render(Model *models, Matrix4 &viewMatrix){
         Vector3 N  = N1.crossProduct(N2);
         N = N.normalized();
         float intensity = N.dotProduct(forward);
-
         if(intensity > 0.0){
-            //rasterizing
-            raster->drawTriangles(v1,v2,v3,intensity);
+            raster->drawTriangles(v1,v2,v3,intensity);   
         }
     }
     //Apply the pixel changes and redraw
@@ -134,7 +135,7 @@ void RenderManager::clearScreen(){
     SDL_RenderClear(mainRenderer);
     memset(mainCanvas->mBuffer,0, mainCanvas->mPitch*mainCanvas->mHeight);
     for(int i = 0; i < mainCanvas->mPixelCount;++i){
-        mainCanvas->mDBuffer[i]  = 2.0f;
+        mainCanvas->mDBuffer[i]  = 0.0f;
     }
 }
 

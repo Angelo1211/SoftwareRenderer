@@ -27,7 +27,7 @@ class Rasterizer{
 
         void drawLine(Vector3 &vertex1, Vector3 &vertex2, Uint32 &color);
 
-        void setPixelColor(Uint32 color, int x, int y);
+        void setPixelColor( int x, int y, Uint32 color);
 
         int convertCoordinates(int x, int y);
 
