@@ -58,8 +58,6 @@ bool RenderManager::createCanvas(){
     for(int i = 0; i < mainCanvas->mPixelCount;++i){
         mainCanvas->mDBuffer[i]  = 0.0f;
     }
-    //printf("I:%p, %p | P:%p, %p\n",mainCanvas->mBuffer,mainCanvas->mBuffer + mainCanvas->mPixelCount -1, mainCanvas->mDBuffer,mainCanvas->mDBuffer + mainCanvas->mPixelCount -1);
-    //SDL_Delay(3000);
     return mainCanvas != NULL;
 }
 
@@ -96,23 +94,29 @@ void RenderManager::render(Model *models, Matrix4 &viewMatrix){
     std::vector<Vector3> * vertices = &modelMesh->vertices;
 
     //Kind of a vertex shader I guess?
-    //printf("Starting per face operations..\n");
     for (Vector3 f : *faces ){
-        Vector3 v1 = viewProjectionMatrix.matMultVec((*vertices)[f.x-1]); //-1 because .obj file starts face count
-        Vector3 v2 = viewProjectionMatrix.matMultVec((*vertices)[f.y-1]); // from 1. Should probably fix this 
-        Vector3 v3 = viewProjectionMatrix.matMultVec((*vertices)[f.z-1]); // At some point
+        Vector3 v0 = viewMatrix.matMultVec((*vertices)[f.x-1]); //-1 because .obj file starts face count
+        Vector3 v1 = viewMatrix.matMultVec((*vertices)[f.y-1]); // from 1. Should probably fix this 
+        Vector3 v2 = viewMatrix.matMultVec((*vertices)[f.z-1]); // At some point
+
+        //Clipping
         //if(v1.x < -1 || v1.x > 1 || v1.y < -1 || v1.y > 1 || v1.z > 1 || v1.z < -1) continue;
         //if(v2.x < -1 || v2.x > 1 || v2.y < -1 || v2.y > 1 || v2.z > 1 || v2.z < -1) continue;
         //if(v3.x < -1 || v3.x > 1 || v3.y < -1 || v3.y > 1 || v3.z > 1 || v3.z < -1) continue;
        
         //Back face culling in world space
-        Vector3 N1 = (*vertices)[f.y-1] - (*vertices)[f.x-1];
-        Vector3 N2 = (*vertices)[f.z-1] - (*vertices)[f.x-1];
-        Vector3 N  = N1.crossProduct(N2);
-        N = N.normalized();
-        float intensity = N.dotProduct(forward);
+        Vector3 N1 = v1 - v0;
+        Vector3 N2 = v2 - v0;
+        Vector3 N  = (N1.crossProduct(N2)).normalized();
+        Vector3 neg = (v0.neg()).normalized();
+        float intensity = N.dotProduct(neg);
         if(intensity > 0.0){
-            raster->drawTriangles(v1,v2,v3,intensity);   
+            v0 = projectionMatrix.matMultVec(v0);
+            v1 = projectionMatrix.matMultVec(v1);
+            v2 = projectionMatrix.matMultVec(v2);
+            
+            //Rasterizing and shading in one
+            raster->drawTriangles(v0,v1,v2,intensity);   
         }
     }
     //Apply the pixel changes and redraw

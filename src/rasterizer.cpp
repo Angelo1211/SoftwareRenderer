@@ -35,7 +35,7 @@ void Rasterizer::testPattern(){
 //Also shades based on a light coming directly from the camera
 void Rasterizer::drawTriangles(Vector3 &a, Vector3 &b, Vector3 &c, float intensity ){
     Uint32 color = SDL_MapRGBA(mappingFormat,
-                256*intensity,256*intensity,256*intensity,0xFF);
+                255*intensity,255*intensity,255*intensity,0xFF);
 
     //Converting to screen space
     std::array<int, 3> xVerts;
@@ -69,6 +69,8 @@ void Rasterizer::drawTriangles(Vector3 &a, Vector3 &b, Vector3 &c, float intensi
     //printf("ymin: %d, ymax: %d, xmin: %d, xmax: %d\n",yMin, yMax, xMin, xMax);
     for(int y = yMin; y <= yMax; ++y){
         for(int x = xMin; x <= xMax; ++x){
+            //Throw pixel away if not in screen
+            if( x < 0 || x > mCanvas->mWidth || y < 0 || y > mCanvas->mHeight ) continue;
 
             float lambda0 = ((x-xVerts[0])*(yVerts[1]-yVerts[0]) 
                             - (xVerts[1]-xVerts[0])*(y-yVerts[0])) / area;
@@ -78,14 +80,34 @@ void Rasterizer::drawTriangles(Vector3 &a, Vector3 &b, Vector3 &c, float intensi
 
             float lambda2 = ((x-xVerts[2])*(yVerts[0]-yVerts[2]) 
                             - (xVerts[0]-xVerts[2])*(y-yVerts[2])) / area;
-            float depth = lambda0*zVerts[0] + lambda1*zVerts[1] + lambda2*zVerts[2];
+
+            //Throw pixel away if not in triangle
+            if(lambda0 < 0 || lambda1 < 0 || lambda2 < 0) continue;
+
+            float depth = lambda1*zVerts[0] + lambda2*zVerts[1] + lambda0*zVerts[2];
 
             //If any of the edge functions are smaller than zero, discard the point
-            if(lambda0 < 0 || lambda1 < 0 || lambda2 < 0) continue;
+            
             if(getDepthBufferAtLocation(x,y) < depth){
-                if( x < 0 || x > mCanvas->mWidth || y < 0 || y > mCanvas->mHeight ) continue;
+                float depthDiff = std::abs(depth - getDepthBufferAtLocation(x,y));
+                if(depth <= 1.0){
+                    if(depthDiff < 0.1){
+                    //printf("Bari: %f, %f, %f\n",lambda0,lambda1,lambda2);
+                    //printf("Depth Buffer: %f\n",getDepthBufferAtLocation(x,y));
+                    //printf("Pixel Depth: %f \n",depth);
                     setDepthBufferAtLocation(x,y,depth);
                     setPixelColor(x, y, color);
+
+                    }
+                    else{
+
+                        setDepthBufferAtLocation(x,y,depth);
+                        setPixelColor(x, y, color);
+                    }
+                }
+                
+                
+                    
             } 
 
         }

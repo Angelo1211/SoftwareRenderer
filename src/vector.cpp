@@ -44,3 +44,8 @@ float Vector3::length(){
 void Vector3::print(){
     printf("Vec: %f\t%f\t%f\n",x,y,z);
 }
+
+Vector3 Vector3::neg(){
+        Vector3 negval(-this->x,-this->y,-this->z);
+    return negval;
+}

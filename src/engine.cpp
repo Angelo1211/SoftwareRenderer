@@ -78,7 +78,7 @@ void Engine::loadModels(){
     //We also initialize the model position here position here
     TransformParameters initParameters;
     //initParameters.scaling = Vector3(1, 60, 60);
-    initParameters.rotation = Vector3(0,-45* M_PI/180,0);
+    initParameters.rotation = Vector3(0,0,0);
     initParameters.translation = Vector3(0, -1, 0);
 
     sceneModels->initPosition(initParameters);
@@ -89,7 +89,7 @@ void Engine::loadModels(){
 //This should be its own class in the future
 void Engine::updateCamera(){
     float t = static_cast<float>(SDL_GetTicks());
-    float radius = 7;
+    float radius = 8;
     float camX   = std::sin(t/4000) * radius;
     float camZ   = std::cos(t/4000) * radius;
     Vector3 pos(camX, 0, camZ);

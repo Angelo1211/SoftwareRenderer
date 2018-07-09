@@ -25,6 +25,8 @@ struct Vector3{
 
     Vector3 crossProduct(Vector3 &rhs);
 
+    Vector3 neg();
+
     float   dotProduct(Vector3 &rhs);
 
     void print();
