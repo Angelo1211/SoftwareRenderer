@@ -1,5 +1,5 @@
 #include "texture.h"
-#include "windowManager.h"
+
 
 Texture::Texture(){
     mTexture = NULL;
@@ -18,6 +18,7 @@ void Texture::free(){
         mWidth  = 0;
         mHeight = 0;
         mPitch  = 0; 
+        mTrash = nullptr;
     }
 }
 
@@ -31,17 +32,16 @@ bool Texture::createBlank(SDL_Renderer  *renderer, int width, int height ){
     return mTexture != NULL;
 }
 
-void Texture::updateTexture(Uint32 * pixels){
+void Texture::update(Uint32 * pixels){
 
     //Lock texture for manipulation
-    SDL_LockTexture(mTexture, NULL, &mPixels, &mPitch );
+    SDL_LockTexture(mTexture, NULL, &mTrash, &mPitch );
     //Copy pixels to texture
-    memcpy(mPixels, pixels, mHeight*mPitch);
+    memcpy(mTrash, pixels, mHeight*mPitch);
 
     //Update texture
     SDL_UnlockTexture(mTexture);
-    mPixels = nullptr;
-    //SDL_UpdateTexture(mTexture, NULL, pixels, mPitch);
+    mTrash = nullptr;
 }
 
 void Texture::renderToScreen(SDL_Renderer * renderer){

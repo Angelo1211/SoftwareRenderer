@@ -19,7 +19,6 @@ class InputManager{
 
     private:
         bool handleEvent(SDL_Event * event);
-
 };
 
 

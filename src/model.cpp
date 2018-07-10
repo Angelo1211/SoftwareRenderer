@@ -61,8 +61,6 @@ void Model::loadFaces(std::ifstream &file){
 }
 
 void Model::loadVertices(std::ifstream &file){
-    
-
     std::string line, v, x ,y ,z;
     while(!file.eof()){
         std::getline(file,line);
@@ -144,4 +142,8 @@ void Model::buildBoundaryBox(){
     mBounds.mMinY = minY;
     mBounds.mMinZ = minZ;
 
+}
+
+void Model::update(){
+    
 }

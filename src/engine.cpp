@@ -1,8 +1,4 @@
 #include "engine.h"
-#include <string>
-#include <vector3.h>
-#include <matrix.h>
-#include <math.h>
 
 Engine::Engine(){
 }
@@ -10,91 +6,86 @@ Engine::Engine(){
 Engine::~Engine(){
 }
 
+//Starts up subsystems in an order that satifies their dependencies
 bool Engine::startUp(){
     bool success = true;
-    //Startup window manager and create window
-    if( !FEWindowManager.startUp() ){
+    //Start up of all SDL related content
+    if( !gDisplayManager.startUp() ){
         success = false;
         printf("Failed to initialize window manager.\n");
     }
     else{
-        if( !FERenderManager.startUp(FEWindowManager) ){
+        //Gets window and creates all buffers according to window size
+        if( !gRenderer.startUp(gDisplayManager) ){
             success = false;
             printf("Failed to initialize render manager.\n");
         }
         else{
-            if( !FEInputManager.startUp() ){
+            //Loads default scene
+            if( !gSceneManager.startUp() ){
             success = false;
-            printf("Failed to initialize input manager.\n");
+            printf("Failed to initialize scene manager.\n");
+            }
+            else{
+                if ( !gInputManager.startUp() ){
+                    success = false;
+                    printf("Failed to initialize input manager.\n");
+                }
             }
         }
     }
     return success;
 }
 
+//Closing in opposite order to avoid dangling pointers
 void Engine::shutDown(){
-    delete sceneModels;
-    sceneModels = nullptr;
-    FEInputManager.shutDown();
-    FERenderManager.shutDown();
-    FEWindowManager.shutDown();
-
+    printf("Closing input manager.\n");
+    gInputManager.shutDown();
+    printf("Closing Scene manager.\n");
+    gSceneManager.shutDown();
+    printf("Closing renderer manager.\n");
+    gRenderer.shutDown();
+    printf("Closing display manager.\n");
+    gDisplayManager.shutDown();
 }
 
-void Engine::mainLoop(){
+//Runs main application loop and allows for scene changes
+void Engine::run(){
+
+    //Main flags
     bool done = false;
+    bool switchScene = false;
+
+    //Counters
     int count = 0;
     unsigned int end = 0;
     unsigned int start = 0;
+
     printf("Entered Main Loop!\n");
-    
     while(!done){
         start = SDL_GetTicks();
         ++count;
+        
+        //If scene switching has been called you break out of the current loop 
+        if( switchScene ){
+            if( !gSceneManager.switchScene() ){
+                printf("Failed to switch scene! Quitting.\n");
+                continue;
+            }
+            else switchScene = false;
+        }
 
         //Handle all user input
-        done = FEInputManager.processInput();
+        done = gInputManager.processInput();
 
-        //Update entities here in the future
-        //Right now only does simple demo stuff
-        //Maybe physics based in the future??
-        updateCamera();
+        //Update all models and camera in the current scene
+        gSceneManager.update();
 
-        //Perform all render calculations and update screen
-        FERenderManager.render(sceneModels, viewMatrix);
+        //Enter rendering loop and render current scene
+        gRenderer.render();
+
         end = SDL_GetTicks();
-        //SDL_Delay(100);
         printf("%2.1d: Loop elapsed time (ms):%d\n",count,end - start);
     }
-}
-
-void Engine::loadModels(){
-    //In the future I want to read all o the models in the model folder
-    //And build them here.  For now I force it to be only one.
-    //Probably should be its own class in the future
-    std::string path = "../models/cow.obj";
-    sceneModels = new Model(path);
-
-    //We also initialize the model position here position here
-    TransformParameters initParameters;
-    //initParameters.scaling = Vector3(1, 60, 60);
-    initParameters.rotation = Vector3(0,0,0);
-    initParameters.translation = Vector3(0, -1, 0);
-
-    sceneModels->initPosition(initParameters);
-
-    //sceneModels->describeMesh();
-}
-
-//This should be its own class in the future
-void Engine::updateCamera(){
-    float t = static_cast<float>(SDL_GetTicks());
-    float radius = 8;
-    float camX   = std::sin(t/4000) * radius;
-    float camZ   = std::cos(t/4000) * radius;
-    Vector3 pos(camX, 0, camZ);
-    Vector3 tar;
-    Vector3 v(0,1,0);
-    viewMatrix = Matrix4::lookAt(pos,tar,v);
-    //viewMatrix = (Matrix4::makeTranslateMat(0,camX*0.25,0)*viewMatrix);
+    printf("Closing engine\n");
 }

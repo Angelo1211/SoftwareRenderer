@@ -40,7 +40,6 @@ class Matrix4{
         Matrix4(){};
 
     private:
-        
         std::array<float, 16> mMatrix{};
 };
 
