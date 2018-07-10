@@ -34,6 +34,8 @@ class RenderManager {
 
         //Per vertex stuff
         
+        //Culling
+        bool frustrumCulling(Model *model, Matrix4 &viewMatrix);
 
         SDL_Renderer *mainRenderer;
         Texture screenTexture;

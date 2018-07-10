@@ -3,7 +3,8 @@
 
 #include "mesh.h"
 #include "string"
-#include <matrix.h>
+#include "bound3.h"
+#include "matrix.h"
 
 class Model{
 
@@ -14,10 +15,12 @@ class Model{
         void initPosition(TransformParameters initPos);
 
     private:
+        void buildBoundaryBox();
         void buildMesh(std::string path);
         void loadVertices(std::ifstream &fileHandle);
         void loadFaces(std::ifstream &fileHandle);
         Mesh mMesh;
+        Bound3 mBounds;
 };
 
 #endif

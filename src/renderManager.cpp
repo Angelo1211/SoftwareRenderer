@@ -73,6 +73,7 @@ bool RenderManager::createRenderer(SDL_Window *window){
 void RenderManager::shutDown(){
     delete raster;
     delete mainCanvas->mBuffer;
+    delete mainCanvas->mDBuffer;
     delete mainCanvas;
     screenTexture.free();
     SDL_DestroyRenderer(mainRenderer);
@@ -84,40 +85,48 @@ void RenderManager::render(Model *models, Matrix4 &viewMatrix){
     //Clear Screen back to black
     clearScreen();
 
-    //Combination of both matrices
-    Matrix4 viewProjectionMatrix = projectionMatrix*viewMatrix;
-    Vector3 forward(viewMatrix(2,0),viewMatrix(2,1),viewMatrix(2,2));
-
     //Getting the meshes and faces 
     Mesh * modelMesh = models->getMesh();
     std::vector<Vector3> * faces = &modelMesh->faces;
     std::vector<Vector3> * vertices = &modelMesh->vertices;
 
+    //If the frustrum culling returns true it means the model has been culled
+    //Because no other models are in the scene we return
+    if (frustrumCulling(models, viewMatrix)){
+        printf("Model culled!\n");
+        return;
+    } 
+
     //Kind of a vertex shader I guess?
     for (Vector3 f : *faces ){
+
+        //View matrix transform
         Vector3 v0 = viewMatrix.matMultVec((*vertices)[f.x-1]); //-1 because .obj file starts face count
         Vector3 v1 = viewMatrix.matMultVec((*vertices)[f.y-1]); // from 1. Should probably fix this 
         Vector3 v2 = viewMatrix.matMultVec((*vertices)[f.z-1]); // At some point
 
-        //Clipping
-        //if(v1.x < -1 || v1.x > 1 || v1.y < -1 || v1.y > 1 || v1.z > 1 || v1.z < -1) continue;
-        //if(v2.x < -1 || v2.x > 1 || v2.y < -1 || v2.y > 1 || v2.z > 1 || v2.z < -1) continue;
-        //if(v3.x < -1 || v3.x > 1 || v3.y < -1 || v3.y > 1 || v3.z > 1 || v3.z < -1) continue;
-       
-        //Back face culling in world space
+        //Back face culling in view space
         Vector3 N1 = v1 - v0;
         Vector3 N2 = v2 - v0;
         Vector3 N  = (N1.crossProduct(N2)).normalized();
         Vector3 neg = (v0.neg()).normalized();
         float intensity = N.dotProduct(neg);
-        if(intensity > 0.0){
-            v0 = projectionMatrix.matMultVec(v0);
-            v1 = projectionMatrix.matMultVec(v1);
-            v2 = projectionMatrix.matMultVec(v2);
-            
-            //Rasterizing and shading in one
-            raster->drawTriangles(v0,v1,v2,intensity);   
-        }
+        if(intensity < 0.0) continue; //Exit if you can't even see it
+
+
+        //stupid frustrum culling
+        //if(v1.x < -1 || v1.x > 1 || v1.y < -1 || v1.y > 1 || v1.z > 1 || v1.z < -1) continue;
+        //if(v2.x < -1 || v2.x > 1 || v2.y < -1 || v2.y > 1 || v2.z > 1 || v2.z < -1) continue;
+        //if(v3.x < -1 || v3.x > 1 || v3.y < -1 || v3.y > 1 || v3.z > 1 || v3.z < -1) continue;
+
+        // Projection matrix transformation
+        v0 = projectionMatrix.matMultVec(v0);
+        v1 = projectionMatrix.matMultVec(v1);
+        v2 = projectionMatrix.matMultVec(v2);
+
+        //Rasterizing and shading in one
+        raster->drawTriangles(v0,v1,v2,intensity);
+               
     }
     //Apply the pixel changes and redraw
     updateScreen();
@@ -141,5 +150,14 @@ void RenderManager::clearScreen(){
     for(int i = 0; i < mainCanvas->mPixelCount;++i){
         mainCanvas->mDBuffer[i]  = 0.0f;
     }
+}
+
+bool RenderManager::frustrumCulling(Model *model, Matrix4 &viewMatrix){
+    bool cull = false;
+    Matrix4 viewProjectionMat = projectionMatrix*viewMatrix;
+
+    
+
+    return cull;
 }
 

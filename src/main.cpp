@@ -2,15 +2,15 @@
 
 int main(int argc, char *argv[]){
 
-    Engine mainEngine;
-    if(mainEngine.startUp()){
-        mainEngine.loadModels();
-        mainEngine.mainLoop();
+    Engine SSGE; //Simple Software Graphics Engine
+    if(SSGE.startUp()){
+        SSGE.loadModels();
+        SSGE.mainLoop();
     }
     else{
-        printf("Engine could not initialize successfully. Shutting down.\n");
+        printf("SSGE could not initialize successfully. Shutting down.\n");
     }
-    mainEngine.shutDown();
+    SSGE.shutDown();
 
     return 0;
 }
