@@ -5,13 +5,11 @@
 #include "vector3.h"
 
 
-class Camera{
+struct Camera{
     public:
         Camera();
 
         void update();
-
-    private:
 
         //Position and direction of camera
         Vector3 position{0,0,8};
@@ -21,10 +19,10 @@ class Camera{
         //Matrices and frustrum stuff
         Matrix4 viewMatrix;
         Matrix4 projectionMatrix;
-        float fov{75};
-        float near{1};
-        float far{100};
-        float aspectRatio{1};
+        int fov{75};
+        int near{1};
+        int far{100};
+        float aspectRatio{1.0};
 };
 
 #endif

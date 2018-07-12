@@ -3,45 +3,34 @@
 
 #include "SDL.h"
 #include "buffer.h"
-#include "model.h"
+#include "vector3.h"
+#include "shader.h"
 
 class Rasterizer{
 
     public:
-        Rasterizer(Buffer<Uint32> *buffer) :mPixelBuffer(buffer){}
+        static void drawTriangles(Vector3 *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer, float intensity);
 
-        void drawTriangles(Vector3 &v1, Vector3 &v2, Vector3 &v3, float intensity);
+        static void drawWireFrame(Vector3 *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer);
 
-        void drawWireFrame(Vector3 &v1, Vector3 &v2, Vector3 &v3);
+        static void testPattern(Buffer<Uint32> *pixelBuffer);
 
-        void testPattern();
+        static void makeCoolPattern(Buffer<Uint32> *pixelBuffer);
 
-        void makeCoolPattern();
+        static void drawLine(Vector3 &vertex1, Vector3 &vertex2, const Uint32 &color, Buffer<Uint32> *pixelBuffer);
 
     private:
+        Rasterizer(){};
+
+        //Setting this equal to the same pixel format our textures are in
         static const Uint32 PIXEL_FORMAT = SDL_PIXELFORMAT_RGBA8888;
-        
         static const SDL_PixelFormat* mappingFormat;
 
-        Uint32 getPixelColor(int x, int y);
-
-        void drawLine(Vector3 &vertex1, Vector3 &vertex2, Uint32 &color);
-
-        void setPixelColor( int x, int y, Uint32 color);
-
-        int convertCoordinates(int x, int y);
-
-        float getDepthBufferAtLocation(int x, int y);
-
-        void setDepthBufferAtLocation(int x, int y, float depth);
-
-        Buffer<Uint32> * mPixelBuffer;
-
-        Uint32 white = SDL_MapRGBA(mappingFormat, 0xFF,0xFF,0xFF,0xFF);
-        Uint32 red = SDL_MapRGBA(mappingFormat, 0xFF,0x00,0x00,0xFF);
-        Uint32 green = SDL_MapRGBA(mappingFormat, 0x00,0xFF,0x00,0xFF);
-        Uint32 blue = SDL_MapRGBA(mappingFormat, 0x00,0x00,0xFF,0xFF);
-
+        //Some basic colors
+        static const Uint32 white;
+        static const Uint32 red;
+        static const Uint32 green;
+        static const Uint32 blue; 
 };
 
 #endif

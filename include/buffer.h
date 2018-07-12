@@ -12,6 +12,10 @@ struct Buffer{
         int mPitch;
         T *buffer;
 
+        T& operator()(size_t x, size_t y){
+            return buffer[y*mWidth + x];
+        }
+
         Buffer(int w, int h, T * array) 
         : mWidth(w), mHeight(h), mPixelCount(w*h),
                 mPitch(w*sizeof(T)), buffer(array) 

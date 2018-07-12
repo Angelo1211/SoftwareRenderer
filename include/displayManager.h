@@ -3,13 +3,19 @@
 
 #include "SDL.h"
 #include "buffer.h"
-#include "texture.h"
 
+
+//Manages all low level display and window SDL stuff
+//Currently set up to work using SDL2 hardware rendering
+//I tested software rendering and although it was faster for simple color passes
+//It was slower when I tried to implement alpha blending, so I decided to revert
+//Back to the hardware accelerated backend.
 class DisplayManager{
 
     public:
         const static int SCREEN_WIDTH  = 640; //640
         const static int SCREEN_HEIGHT = 480; //480
+        const static int SCREEN_PITCH  = SCREEN_HEIGHT*sizeof(Uint32);
 
         //Dummy Constructor / Destructor
         DisplayManager();
@@ -23,7 +29,7 @@ class DisplayManager{
         void clear();
 
         //Swaps the pixel buffer with the texture buffer and draws to screen
-        void draw(Buffer<Uint32> *pixelBuffer);
+        void swapBuffers(Buffer<Uint32> *pixelBuffer);
 
     private:
         bool startSDL();
@@ -31,10 +37,13 @@ class DisplayManager{
         bool createSDLRenderer();
         bool createScreenTexture();
 
-        Texture      screenTexture;
-        SDL_Surface  *surface;
-        SDL_Renderer *SDLRenderer;
-        SDL_Window   *mainWindow;
+        SDL_Texture  *mTexture;
+        SDL_Renderer *mSDLRenderer;
+        SDL_Window   *mWindow;
+
+        //These are only really needed for the texture copying operation
+        int           mTexturePitch;
+        void         *mTexturePixels;
 };
 
 #endif

@@ -28,7 +28,7 @@ class Matrix4{
         Matrix4 static makeScaleMat(float scaleX, float scaleY, float scaleZ);
         Matrix4 static makeTranslateMat(float dx, float dy, float dz);
 
-        //Builds a matrix that rotates, scakes abd translates all in one
+        //Builds a matrix that rotates, scales and translates all in one
         Matrix4 static transformMatrix(TransformParameters transform);
 
         //Camera transformation matrix (the world from the camera's eyes)

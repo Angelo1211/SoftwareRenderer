@@ -28,10 +28,14 @@ bool SceneManager::switchScene(){
 //for now just loads the teapot.obj
 bool SceneManager::loadScene(){
     bool success = true;
-    currentScene = new Scene("teapot.obj");
+    currentScene = new Scene("cow.obj");
     return success;
 }
 
 void SceneManager::update(){
     currentScene->update();
+}
+
+Scene* SceneManager::getCurrentScene(){
+    return currentScene;
 }

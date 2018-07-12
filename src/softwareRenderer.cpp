@@ -1,4 +1,5 @@
 #include "softwareRenderer.h"
+#include "shader.h"
 
 SoftwareRenderer::SoftwareRenderer(){
 
@@ -8,21 +9,17 @@ SoftwareRenderer::~SoftwareRenderer(){
 
 }
 
-bool SoftwareRenderer::startUp(DisplayManager &displayManager){
-    screen = &displayManager;
-    if( !createBuffers() ){
+bool SoftwareRenderer::startUp(int w, int h){
+    if( !createBuffers(w, h) ){
         return false;
     }
-    //Create rasterizer to begin drawing
-    raster = new Rasterizer(pixelBuffer);
-    //createProjectionMatrix();
     return true;
 }
 
 void SoftwareRenderer::shutDown(){
+    mCamera = nullptr;
     delete zBuffer;
     delete pixelBuffer;
-    delete raster;
 }
 
 void SoftwareRenderer::clearBuffers(){
@@ -30,9 +27,7 @@ void SoftwareRenderer::clearBuffers(){
     pixelBuffer->clear();
 }
 
-bool SoftwareRenderer::createBuffers(){
-    int w = DisplayManager::SCREEN_WIDTH;
-    int h = DisplayManager::SCREEN_HEIGHT;
+bool SoftwareRenderer::createBuffers(int w, int h){
     int pixelCount = w*h;
     bool success = true;
 
@@ -51,74 +46,61 @@ bool SoftwareRenderer::createBuffers(){
     return success;
 }
 
-void SoftwareRenderer::render(){
+void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
 
-    //Clear screen and reset current buffers
-    screen->clear();
-    clearBuffers();
+    //Getting the vertices, faces 
+    std::vector<Vector3> * faces = &triMesh->faces;
+    std::vector<Vector3> * vertices = &triMesh->vertices;
 
-    //Getting the meshes and faces 
-    // Mesh * modelMesh = models->getMesh();
-    // std::vector<Vector3> * faces = &modelMesh->faces;
-    // std::vector<Vector3> * vertices = &modelMesh->vertices;
+    //Array grouping vertices together into triangle
+    Vector3 trianglePrimitive[3];
 
-    // //If the frustrum culling returns true it means the model has been culled
-    // //Because no other models are in the scene we return
-    // // if (frustrumCulling(models, viewMatrix)){
-    // //     printf("Model culled!\n");
-    // //     return;
-    // // } 
-    // //Kind of a vertex shader I guess?
-    // for (Vector3 f : *faces ){
+    //Initializing shader
+    FlatShader shader;
 
-    //     //View matrix transform
-    //     Vector3 v0 = viewMatrix.matMultVec((*vertices)[f.x-1]); //-1 because .obj file starts face count
-    //     Vector3 v1 = viewMatrix.matMultVec((*vertices)[f.y-1]); // from 1. Should probably fix this 
-    //     Vector3 v2 = viewMatrix.matMultVec((*vertices)[f.z-1]); // At some point
+    //Building ModelViewProjection matrix
 
-    //     //Back face culling in view space
-    //     Vector3 N1 = v1 - v0;
-    //     Vector3 N2 = v2 - v0;
-    //     Vector3 N  = (N1.crossProduct(N2)).normalized();
-    //     Vector3 neg = (v0.neg()).normalized();
-    //     float intensity = N.dotProduct(neg);
-    //     if(intensity < 0.0) continue; //Exit if you can't even see it
+    Matrix4 MVP = (mCamera->projectionMatrix)*(mCamera->viewMatrix);
 
-
-    //     //stupid frustrum culling
-    //     //if(v1.x < -1 || v1.x > 1 || v1.y < -1 || v1.y > 1 || v1.z > 1 || v1.z < -1) continue;
-    //     //if(v2.x < -1 || v2.x > 1 || v2.y < -1 || v2.y > 1 || v2.z > 1 || v2.z < -1) continue;
-    //     //if(v3.x < -1 || v3.x > 1 || v3.y < -1 || v3.y > 1 || v3.z > 1 || v3.z < -1) continue;
-
-    //     // Projection matrix transformation
-    //     v0 = projectionMatrix.matMultVec(v0);
-    //     v1 = projectionMatrix.matMultVec(v1);
-    //     v2 = projectionMatrix.matMultVec(v2);
-
-    //     //Rasterizing and shading in one
-    raster->makeCoolPattern();
-               
-    // }
-    //Apply the pixel changes and redraw
-    screen->draw(pixelBuffer);
+    float intensity = 0;
+    int count = 0;
+    for (Vector3 &f : *faces ){
+        buildTri(f,trianglePrimitive, *vertices);
+        if (backFaceCulling(trianglePrimitive, intensity)) continue;
+        ++count;
+        for(int i = 0; i < 3; ++i){
+            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP);
+        }
+        Rasterizer::drawTriangles(trianglePrimitive, shader, pixelBuffer, zBuffer, intensity);
+    }
+    printf("I rendered this: %d many faces.\n",count);
 }
 
-// bool SoftwareRenderer::frustrumCulling(Model *model, Matrix4 &viewMatrix){
-//     bool cull = false;
-//     Matrix4 viewProjectionMat = projectionMatrix*viewMatrix;
-//     return cull;
-// }
+Buffer<Uint32>* SoftwareRenderer::getRenderTarget(){
+    return pixelBuffer;
+}
 
-// bool SoftwareRenderer::createCanvas(){
-//     int pixelCount = WindowManager::SCREEN_WIDTH * WindowManager::SCREEN_HEIGHT;
-//     int pitch      = WindowManager::SCREEN_WIDTH * sizeof(Uint32);
-//     mainCanvas = new Canvas(WindowManager::SCREEN_WIDTH,
-//                             WindowManager::SCREEN_HEIGHT,
-//                             pixelCount, pitch,
-//                             new Uint32[pixelCount], new float[pixelCount]);
-//     SDL_memset(mainCanvas->mBuffer, 0, mainCanvas->mPixelCount * sizeof(Uint32) );
-//     for(int i = 0; i < mainCanvas->mPixelCount;++i){
-//         mainCanvas->mDBuffer[i]  = 0.0f;
-//     }
-//     return mainCanvas != NULL;
-// }
+void SoftwareRenderer::buildTri(Vector3 &f, Vector3 *trianglePrim, std::vector<Vector3> &verts){
+    for(int i = 0; i < 3; ++i){
+        trianglePrim[i] = verts[f[i]];
+    }
+}
+
+void SoftwareRenderer::setCameraToRenderFrom(Camera * camera){
+    mCamera = camera;
+}
+
+bool SoftwareRenderer::backFaceCulling(Vector3 *trianglePrim, float &intensity){
+        //Triangle surface normal 
+        //Should probably be calculated on load next time
+        Vector3 N1 = trianglePrim[1] - trianglePrim[0];
+        Vector3 N2 = trianglePrim[2] - trianglePrim[0];
+        Vector3 N  = (N1.crossProduct(N2)).normalized();
+
+        //View direction
+        Vector3 view_dir = trianglePrim[0] - mCamera->position ;
+        view_dir = view_dir.normalized();
+
+        intensity = N.dotProduct(view_dir);
+        return intensity >= 0.0;
+}

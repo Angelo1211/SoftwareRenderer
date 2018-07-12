@@ -4,28 +4,31 @@
 #include <string>
 
 struct Vector3{
-    float x = 0;
-    float y = 0;
-    float z = 0;
+    float x;
+    float y;
+    float z;
 
+    
     Vector3(float x1, float y1, float z1) : x(x1), y(y1), z(z1)
     {}
 
-    Vector3(){};
+    Vector3(): x(0.0f), y(0.0f), z(0.0f)
+    {};
 
-    Vector3(std::string x1, std::string y1, std::string z1):
-        x(std::stof(x1)), y(std::stof(y1)), z(std::stof(z1))
-    {}
+
+    //Negate components of vector
+    Vector3 &operator-();
 
     Vector3 operator-(Vector3 &rhs);
 
-    Vector3&  normalized();
+    //Accessing components using array notation for looping
+    float &operator[](int i);
+
+    Vector3 &normalized();
 
     float length();
 
     Vector3 crossProduct(Vector3 &rhs);
-
-    Vector3 neg();
 
     float   dotProduct(Vector3 &rhs);
 

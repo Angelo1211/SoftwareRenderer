@@ -15,16 +15,18 @@ bool Engine::startUp(){
         printf("Failed to initialize window manager.\n");
     }
     else{
-        //Gets window and creates all buffers according to window size
-        if( !gRenderer.startUp(gDisplayManager) ){
-            success = false;
-            printf("Failed to initialize render manager.\n");
-        }
-        else{
-            //Loads default scene
-            if( !gSceneManager.startUp() ){
+        //Loads default scene
+        if( !gSceneManager.startUp() ){
             success = false;
             printf("Failed to initialize scene manager.\n");
+        }
+        else{
+            //Initializes renderer and connects it to the window manager
+            //Also gets pointer to current scene
+            if( !gRenderManager.startUp(gDisplayManager,gSceneManager) ){
+            success = false;
+            printf("Failed to initialize render manager.\n");
+            
             }
             else{
                 if ( !gInputManager.startUp() ){
@@ -41,10 +43,13 @@ bool Engine::startUp(){
 void Engine::shutDown(){
     printf("Closing input manager.\n");
     gInputManager.shutDown();
+
+    printf("Closing renderer manager.\n");
+    gRenderManager.shutDown();
+    
     printf("Closing Scene manager.\n");
     gSceneManager.shutDown();
-    printf("Closing renderer manager.\n");
-    gRenderer.shutDown();
+    
     printf("Closing display manager.\n");
     gDisplayManager.shutDown();
 }
@@ -70,7 +75,7 @@ void Engine::run(){
         if( switchScene ){
             if( !gSceneManager.switchScene() ){
                 printf("Failed to switch scene! Quitting.\n");
-                continue;
+                break;
             }
             else switchScene = false;
         }
@@ -81,8 +86,8 @@ void Engine::run(){
         //Update all models and camera in the current scene
         gSceneManager.update();
 
-        //Enter rendering loop and render current scene
-        gRenderer.render();
+        //Update Rendering Queue and draw each item 
+        gRenderManager.render();
 
         end = SDL_GetTicks();
         printf("%2.1d: Loop elapsed time (ms):%d\n",count,end - start);

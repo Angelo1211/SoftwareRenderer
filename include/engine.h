@@ -3,7 +3,7 @@
 
 //Headers
 #include "displayManager.h"
-#include "softwareRenderer.h"
+#include "renderManager.h"
 #include "inputManager.h"
 #include "sceneManager.h"
 
@@ -26,7 +26,7 @@ class Engine{
 
     private:
         DisplayManager   gDisplayManager;
-        SoftwareRenderer gRenderer;
+        RenderManager    gRenderManager;
         InputManager     gInputManager;
         SceneManager     gSceneManager;
 };

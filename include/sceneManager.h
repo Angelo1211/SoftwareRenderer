@@ -21,6 +21,8 @@ class SceneManager{
         // Update current scene
         void update();
 
+        Scene* getCurrentScene();
+
     private:
         bool loadScene();
         bool closeScene();
