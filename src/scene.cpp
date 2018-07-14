@@ -7,7 +7,7 @@ Scene::Scene(std::string path){
 }
 
 Scene::~Scene(){
-
+    //Making sure you don't attempt to delete models that don't exist
     if (!emptyScene){
         for(Model *models : modelsInScene){
             delete models;

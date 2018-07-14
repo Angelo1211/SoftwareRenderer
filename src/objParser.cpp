@@ -18,6 +18,7 @@ bool OBJ::fileExists(std::string &path){
     return file.good();
 }
 
+//Main OBJ parsing function
 void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
     std::string line, key, x ,y ,z;
     Vector3 indices[3];
@@ -36,7 +37,7 @@ void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
             Vector3 normal(std::stof(x),std::stof(y),std::stof(z));
             mesh.normals.push_back(normal);
         }
-        else if(key == "f"){ //
+        else if(key == "f"){ //index data
             iss >> x >> y >> z;
             std::vector<std::string> splitX = split(x,delimeter); 
             std::vector<std::string> splitY = split(y,delimeter);
