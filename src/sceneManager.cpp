@@ -27,7 +27,7 @@ bool SceneManager::switchScene(){
 
 //for now just loads the teapot.obj
 bool SceneManager::loadScene(){
-    currentScene = new Scene("teapot.obj");
+    currentScene = new Scene("elephant.obj");
     return  !currentScene->checkIfEmpty();
 }
 

@@ -77,7 +77,9 @@ void Engine::run(){
                 printf("Failed to switch scene! Quitting.\n");
                 break;
             }
-            else switchScene = false;
+            else{
+                switchScene = false;
+            } 
         }
 
         //Handle all user input

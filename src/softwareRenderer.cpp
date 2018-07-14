@@ -58,28 +58,38 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
     std::vector<Vector3> * nIndices = &triMesh->normalsIndices;
     std::vector<Vector3> * vertices = &triMesh->vertices;
     std::vector<Vector3> * normals = &triMesh->normals;
+    int numFaces = triMesh->numFaces;
 
     //Array grouping vertices together into triangle
     Vector3 trianglePrimitive[3];
+    Vector3 normalPrim[3];
 
     //Initializing shader
     GouraudShader shader;
+
+    //Basic light direction
+
+    Vector3 lightDir{0,0,1};
 
     //Building ModelViewProjection matrix
     Matrix4 MVP = (mCamera->projectionMatrix)*(mCamera->viewMatrix);
 
     float intensity = 0;
-    for (Vector3 &f : *vIndices){
+    for (int j = 0; j < numFaces; ++j){
+        Vector3 f = (*vIndices)[j];
+        Vector3 n = (*nIndices)[j];
 
         //Pack vertices together into an array
         buildTri(f,trianglePrimitive, *vertices);
+        buildTri(n,normalPrim, *normals);
 
         //Skip faces that are pointing away from us
         if (backFaceCulling(trianglePrimitive, intensity)) continue;
 
         //Apply vertex shader
         for(int i = 0; i < 3; ++i){
-            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP, intensity);
+            //Vector3 normal = (mCamera->viewMatrix).matMultVec(normalPrim[i]);
+            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP, intensity, normalPrim[i], lightDir, i);
         }
 
         //Clipping should occur here
@@ -94,9 +104,9 @@ Buffer<Uint32>* SoftwareRenderer::getRenderTarget(){
     return pixelBuffer;
 }
 
-void SoftwareRenderer::buildTri(Vector3 &f, Vector3 *trianglePrim, std::vector<Vector3> &verts){
+void SoftwareRenderer::buildTri(Vector3 &index, Vector3 *primitive, std::vector<Vector3> &vals){
     for(int i = 0; i < 3; ++i){
-        trianglePrim[i] = verts[f.data[i]];
+        primitive[i] = vals[index.data[i]];
     }
 }
 
