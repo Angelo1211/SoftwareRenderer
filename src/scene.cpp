@@ -29,8 +29,8 @@ void Scene::loadSceneModels(std::string path){
     //We also initialize the model position here position here
     TransformParameters initParameters;
     //initParameters.scaling = Vector3(1, 60, 60);
-    initParameters.rotation = Vector3(0,0,0);
-    initParameters.translation = Vector3(0, -1, 0);
+    //initParameters.rotation = Vector3(0,0,0);
+    initParameters.translation = Vector3(0, -3, 0);
 
     modelsInScene[0]->initPosition(initParameters);
 

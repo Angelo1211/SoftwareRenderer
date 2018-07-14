@@ -51,29 +51,37 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
     //Getting the vertices, faces 
     std::vector<Vector3> * faces = &triMesh->faces;
     std::vector<Vector3> * vertices = &triMesh->vertices;
+    std::vector<Vector3> * normals = &triMesh->normals;
 
     //Array grouping vertices together into triangle
     Vector3 trianglePrimitive[3];
 
     //Initializing shader
-    FlatShader shader;
+    GourardShader shader;
 
     //Building ModelViewProjection matrix
-
     Matrix4 MVP = (mCamera->projectionMatrix)*(mCamera->viewMatrix);
 
     float intensity = 0;
-    int count = 0;
     for (Vector3 &f : *faces ){
+
+        //Pack vertices together into an array
         buildTri(f,trianglePrimitive, *vertices);
+
+        //Skip faces that are pointing away from us
         if (backFaceCulling(trianglePrimitive, intensity)) continue;
-        ++count;
+
+        //Apply vertex shader
         for(int i = 0; i < 3; ++i){
-            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP);
+            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP, intensity);
         }
-        Rasterizer::drawTriangles(trianglePrimitive, shader, pixelBuffer, zBuffer, intensity);
+
+        //Clipping should occur here
+
+        //Send to rasterizer which will also call the fragment shader and write to the 
+        //zbuffer and pixel buffer
+        Rasterizer::drawTriangles(trianglePrimitive, shader, pixelBuffer, zBuffer);
     }
-    printf("I rendered this: %d many faces.\n",count);
 }
 
 Buffer<Uint32>* SoftwareRenderer::getRenderTarget(){
@@ -82,7 +90,7 @@ Buffer<Uint32>* SoftwareRenderer::getRenderTarget(){
 
 void SoftwareRenderer::buildTri(Vector3 &f, Vector3 *trianglePrim, std::vector<Vector3> &verts){
     for(int i = 0; i < 3; ++i){
-        trianglePrim[i] = verts[f[i]];
+        trianglePrim[i] = verts[f.data[i]];
     }
 }
 
@@ -95,12 +103,12 @@ bool SoftwareRenderer::backFaceCulling(Vector3 *trianglePrim, float &intensity){
         //Should probably be calculated on load next time
         Vector3 N1 = trianglePrim[1] - trianglePrim[0];
         Vector3 N2 = trianglePrim[2] - trianglePrim[0];
-        Vector3 N  = (N1.crossProduct(N2)).normalized();
+        Vector3 N  = (N2.crossProduct(N1)).normalized();
 
         //View direction
-        Vector3 view_dir = trianglePrim[0] - mCamera->position ;
+        Vector3 view_dir =  trianglePrim[0] - mCamera->position;
         view_dir = view_dir.normalized();
 
-        intensity = N.dotProduct(view_dir);
-        return intensity >= 0.0;
+        intensity =  N.dotProduct(view_dir);
+        return intensity <= 0.0;
 }

@@ -34,7 +34,6 @@ void RenderManager::render(){
 
     //Build a render Queue for drawing multiple models and assign camera
     buildRenderQueue();
-
     //Draw all meshes in the render queue so far we assume they are
     //normal triangular meshes.
     while( !renderQueue.empty() ){

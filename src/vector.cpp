@@ -15,22 +15,25 @@ Vector3 Vector3::operator-(Vector3 &rhs){
     );
 }
 
-float &Vector3::operator[](int i){
-    if( i == 0 ){
-        return x;
-    }
-    else if ( i == 1 ){
-        return y;
-    }
-    else if ( i == 2 ){
-        return z;
-    }
+Vector3 Vector3::operator+(Vector3 &rhs){
+    return Vector3(this->x + rhs.x,
+                   this->y + rhs.y,
+                   this->z + rhs.z
+    );
 }
+
+Vector3 Vector3::operator*(float rhs){
+    return Vector3(this->x * rhs,
+                   this->y * rhs,
+                   this->z * rhs);
+}
+
+
 
 Vector3& Vector3::normalized(){
     float len = this->length();
     if(len > 0){
-        float factor = 1 / len;
+        float factor = 1 / (float)len;
         this->x*= factor;
         this->y*= factor;
         this->z*= factor;

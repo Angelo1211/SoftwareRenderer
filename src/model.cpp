@@ -38,6 +38,9 @@ void Model::buildMesh(std::string path){
     //Get faces
     loadFaces(file);
 
+    //Get normals
+    loadNormals(file);
+
     //Close file after reading
     file.close();
 }
@@ -73,6 +76,22 @@ void Model::loadVertices(std::ifstream &file){
         }
     }
     mMesh.numVertices = mMesh.vertices.size();
+    file.clear();
+    file.seekg(0, file.beg);
+}
+
+void Model::loadNormals(std::ifstream &file){
+    std::string line, v, x ,y ,z;
+    while(!file.eof()){
+        std::getline(file,line);
+        std::istringstream iss(line);
+        iss >> v;
+        if(v == "vn"){
+            iss >> x >> y >> z;
+            Vector3 normal(std::stof(x),std::stof(y),std::stof(z));
+            mMesh.normals.push_back(normal);
+        }
+    }
     file.clear();
     file.seekg(0, file.beg);
 }

@@ -10,12 +10,11 @@ Camera::Camera(){
 
 void Camera::update(){
     float t = static_cast<float>(SDL_GetTicks());
-    float radius = 8;
+    float radius = 12;
     float camX   = std::sin(t/4000) * radius;
     float camZ   = std::cos(t/4000) * radius;
     position.x = camX;
     position.y = 0;
     position.z = camZ;
     viewMatrix = Matrix4::lookAt(position,target,up);
-    viewMatrix = (Matrix4::makeTranslateMat(0,camX*0.25,0)*viewMatrix);
 }

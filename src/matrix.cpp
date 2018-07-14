@@ -106,6 +106,15 @@ Matrix4 Matrix4::makeTestMat(){
     return testMat;
 }
 
+Matrix4 Matrix4::unitMatrix(){
+    Matrix4 testMat;
+    testMat(0,0) = 1;
+    testMat(1,1) = 1;
+    testMat(2,2) = 1;
+    testMat(3,3) = 1;
+    return testMat;
+}
+
 void Matrix4::printMat(){
     int n = 4;
     for(int rows = 0; rows < n; ++rows){
@@ -166,22 +175,20 @@ Matrix4 Matrix4::transformMatrix(TransformParameters transform){
 }
 
 Matrix4 Matrix4::makeProjectionMatrix(float fov, float AR, float near, float far){
-    float top   =  tan( (fov/2) * (M_PI / 180) ) * near;
-    float bot   =  -top;
-    float right =  top * AR;
-    float left  =  bot * AR;
+    float tanHalfFOVYInverse   =  1/tan( (fov/2) * (M_PI / 180) );
+    //float bot   =  -top;
+    //float right =  top * AR;
+    //float left  =  bot * AR;
     Matrix4 projectionMat;
 
 
     //First Row
-    projectionMat(0,0) = 2 * near / (right - left);
-    projectionMat(0,2) = (right + left) / (right - left);
+    projectionMat(0,0) = 1.0f* tanHalfFOVYInverse;
 
     //Second row
-    projectionMat(1,1) = 2 * near / (top - bot);
-    projectionMat(1,2) = (top+bot) / (top - bot);
+    projectionMat(1,1) = AR * tanHalfFOVYInverse;
 
-    //Third row
+    //Third row (Mine calculated for 1- 0)
     projectionMat(2,2) =  (near) / (far - near);
     projectionMat(2,3) =  (far * near) / (far - near);
     
@@ -194,9 +201,8 @@ Matrix4 Matrix4::makeProjectionMatrix(float fov, float AR, float near, float far
 Matrix4 Matrix4::lookAt(Vector3& position, Vector3& target, Vector3& temp){
 
     Vector3 forward = (position - target).normalized();
-    Vector3 side    = temp.crossProduct(forward);
+    Vector3 side    = (temp.crossProduct(forward)).normalized();
     Vector3 up      = forward.crossProduct(side);
-    //Vector3 up      = side.crossProduct(forward);
 
     //We will now build the inverse transform from the world position to the camera
     //The idea is that we don't care where the camera is, we only care about what

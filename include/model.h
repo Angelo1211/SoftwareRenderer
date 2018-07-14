@@ -22,6 +22,7 @@ class Model{
         void buildBoundaryBox();
         void buildMesh(std::string path);
         void loadVertices(std::ifstream &fileHandle);
+        void loadNormals(std::ifstream &fileHandle);
         void loadFaces(std::ifstream &fileHandle);
         Mesh mMesh;
         Bound3 mBounds;

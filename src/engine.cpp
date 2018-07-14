@@ -91,6 +91,7 @@ void Engine::run(){
 
         end = SDL_GetTicks();
         printf("%2.1d: Loop elapsed time (ms):%d\n",count,end - start);
+        //break;
     }
     printf("Closing engine\n");
 }
