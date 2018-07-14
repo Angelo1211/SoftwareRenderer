@@ -11,7 +11,11 @@ struct Mesh{
     std::vector<Vector3> normals;
 
     int numFaces = 0;
-    std::vector<Vector3> faces;
+    std::vector<Vector3> vertexIndices;
+    std::vector<Vector3> textureIndices;
+    std::vector<Vector3> normalsIndices;
+
+    void describeMesh();
 };
 
 #endif

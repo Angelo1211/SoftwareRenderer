@@ -40,7 +40,7 @@ Vector3& Vector3::normalized(){
     }
     else{
         //Deal with this at some point!
-        printf("Your vector is all zeros!!\n");
+        //printf("Your vector is all zeros!!\n");
     }
     return *this;
 }     

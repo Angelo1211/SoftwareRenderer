@@ -41,17 +41,17 @@ bool Engine::startUp(){
 
 //Closing in opposite order to avoid dangling pointers
 void Engine::shutDown(){
-    printf("Closing input manager.\n");
     gInputManager.shutDown();
+    printf("Closed input manager.\n");
 
-    printf("Closing renderer manager.\n");
     gRenderManager.shutDown();
+    printf("Closed renderer manager.\n");
     
-    printf("Closing Scene manager.\n");
     gSceneManager.shutDown();
+    printf("Closed Scene manager.\n");
     
-    printf("Closing display manager.\n");
     gDisplayManager.shutDown();
+    printf("Closed display manager.\n");
 }
 
 //Runs main application loop and allows for scene changes

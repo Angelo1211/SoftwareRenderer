@@ -40,6 +40,7 @@ class SoftwareRenderer {
         
         //Pointer to the scene's target camera
         Camera * mCamera;
+        bool startUpComplete = false;
 
         Buffer<float> * zBuffer;
         Buffer<Uint32> * pixelBuffer;

@@ -13,13 +13,18 @@ bool SoftwareRenderer::startUp(int w, int h){
     if( !createBuffers(w, h) ){
         return false;
     }
+    startUpComplete = true;
     return true;
 }
 
 void SoftwareRenderer::shutDown(){
+
     mCamera = nullptr;
-    delete zBuffer;
-    delete pixelBuffer;
+    if (startUpComplete){
+        delete zBuffer;
+        delete pixelBuffer;
+    }
+
 }
 
 void SoftwareRenderer::clearBuffers(){
@@ -49,7 +54,7 @@ bool SoftwareRenderer::createBuffers(int w, int h){
 void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
 
     //Getting the vertices, faces 
-    std::vector<Vector3> * faces = &triMesh->faces;
+    std::vector<Vector3> * vIndices = &triMesh->vertexIndices;
     std::vector<Vector3> * vertices = &triMesh->vertices;
     std::vector<Vector3> * normals = &triMesh->normals;
 
@@ -63,7 +68,7 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
     Matrix4 MVP = (mCamera->projectionMatrix)*(mCamera->viewMatrix);
 
     float intensity = 0;
-    for (Vector3 &f : *faces ){
+    for (Vector3 &f : *vIndices){
 
         //Pack vertices together into an array
         buildTri(f,trianglePrimitive, *vertices);

@@ -5,9 +5,9 @@
 #include "string"
 #include "bound3.h"
 #include "matrix.h"
+#include "objParser.h"
 
 class Model{
-
     public:
         Model(std::string path); 
         void describeMesh();
@@ -18,12 +18,7 @@ class Model{
         void update();
 
     private:
-        
         void buildBoundaryBox();
-        void buildMesh(std::string path);
-        void loadVertices(std::ifstream &fileHandle);
-        void loadNormals(std::ifstream &fileHandle);
-        void loadFaces(std::ifstream &fileHandle);
         Mesh mMesh;
         Bound3 mBounds;
 };
