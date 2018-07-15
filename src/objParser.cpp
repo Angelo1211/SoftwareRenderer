@@ -43,8 +43,10 @@ void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
             std::vector<std::string> splitY = split(y,delimeter);
             std::vector<std::string> splitZ = split(z,delimeter);
             for(int i = 0; i < splitX.size(); ++i){
+                //printf("%s\n",splitX[i].c_str());
                 indices[i] = Vector3(std::stof(splitX[i])-1,std::stof(splitY[i])-1,std::stof(splitZ[i])-1);
             }
+            printf("\n");
             mesh.vertexIndices.push_back(indices[0]);
             mesh.textureIndices.push_back(indices[1]);
             mesh.normalsIndices.push_back(indices[2]);

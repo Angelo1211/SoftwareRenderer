@@ -59,37 +59,48 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
     std::vector<Vector3> * vertices = &triMesh->vertices;
     std::vector<Vector3> * normals = &triMesh->normals;
     int numFaces = triMesh->numFaces;
-
+    //printf("nFaces: %d nNormals: %lu \n", numFaces, (*normals).size());
+    //(*normals)[numFaces-1].print();
     //Array grouping vertices together into triangle
     Vector3 trianglePrimitive[3];
     Vector3 normalPrim[3];
 
     //Initializing shader
-    GouraudShader shader;
+    FlatShader shader;
 
     //Basic light direction
 
-    Vector3 lightDir{0,0,1};
-
+    Vector3 lightDir{1,0,0};
     //Building ModelViewProjection matrix
     Matrix4 MVP = (mCamera->projectionMatrix)*(mCamera->viewMatrix);
 
     float intensity = 0;
     for (int j = 0; j < numFaces; ++j){
+        //printf("\nCurrent Face: %d\n",j);
         Vector3 f = (*vIndices)[j];
         Vector3 n = (*nIndices)[j];
-
+        //printf("Vertices\n");
+        //f.print();
+        //printf("Normals\n");
+        //n.print();
         //Pack vertices together into an array
         buildTri(f,trianglePrimitive, *vertices);
         buildTri(n,normalPrim, *normals);
 
         //Skip faces that are pointing away from us
-        if (backFaceCulling(trianglePrimitive, intensity)) continue;
+        if (backFaceCulling(trianglePrimitive)) continue;
+
+        Vector3 N1 = trianglePrimitive[1] - trianglePrimitive[0];
+        Vector3 N2 = trianglePrimitive[2] - trianglePrimitive[0];
+        Vector3 N  = (N2.crossProduct(N1)).normalized();
 
         //Apply vertex shader
         for(int i = 0; i < 3; ++i){
-            //Vector3 normal = (mCamera->viewMatrix).matMultVec(normalPrim[i]);
-            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP, intensity, normalPrim[i], lightDir, i);
+            //trianglePrimitive[i].print();
+            //normalPrim[i].print();
+            //printf("\n");
+            Vector3 normal = (mCamera->viewMatrix).matMultVec(N);
+            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP, N, lightDir.normalized(), i);
         }
 
         //Clipping should occur here
@@ -106,15 +117,18 @@ Buffer<Uint32>* SoftwareRenderer::getRenderTarget(){
 
 void SoftwareRenderer::buildTri(Vector3 &index, Vector3 *primitive, std::vector<Vector3> &vals){
     for(int i = 0; i < 3; ++i){
-        primitive[i] = vals[index.data[i]];
+        //printf("%d\t",(int)index.data[i]);
+        primitive[i] = vals[(int)index.data[i]];
+        
     }
+    //printf("\n");
 }
 
 void SoftwareRenderer::setCameraToRenderFrom(Camera * camera){
     mCamera = camera;
 }
 
-bool SoftwareRenderer::backFaceCulling(Vector3 *trianglePrim, float &intensity){
+bool SoftwareRenderer::backFaceCulling(Vector3 *trianglePrim){
         //Triangle surface normal 
         //Should probably be calculated on load next time
         Vector3 N1 = trianglePrim[1] - trianglePrim[0];
@@ -125,6 +139,6 @@ bool SoftwareRenderer::backFaceCulling(Vector3 *trianglePrim, float &intensity){
         Vector3 view_dir =  trianglePrim[0] - mCamera->position;
         view_dir = view_dir.normalized();
 
-        intensity =  N.dotProduct(view_dir);
+        float intensity =  N.dotProduct(view_dir);
         return intensity <= 0.0;
 }

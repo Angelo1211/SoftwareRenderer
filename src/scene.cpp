@@ -36,7 +36,7 @@ bool Scene::loadSceneModels(std::string &path){
     }
     else{
         modelsInScene.push_back(new Model(fullPath));
-
+        
         //We also initialize the model position here position here
         TransformParameters initParameters;
         //initParameters.scaling = Vector3(1, 60, 60);

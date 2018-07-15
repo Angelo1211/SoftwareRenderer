@@ -35,7 +35,7 @@ class SoftwareRenderer {
         void buildTri(Vector3 &f, Vector3 *trianglePrim, std::vector<Vector3> &verts);
 
         //Culling methods
-        bool backFaceCulling(Vector3 *trianglePrim, float &intensity);
+        bool backFaceCulling(Vector3 *trianglePrim);
 
         
         //Pointer to the scene's target camera

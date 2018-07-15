@@ -101,8 +101,7 @@ void Rasterizer::drawTriangles(Vector3 *vertices, IShader &shader, Buffer<Uint32
 
     //Find triangle area
     float invArea = 1/(float)((xVerts[2]-xVerts[0])*(yVerts[1]-yVerts[0]) 
-                            - (xVerts[1]-xVerts[0])*(yVerts[2]-yVerts[0]));
-                            
+                            - (xVerts[1]-xVerts[0])*(yVerts[2]-yVerts[0]));                 
     float depth = 0;
     Vector3 lambdas;
     Vector3 rgbVals;
