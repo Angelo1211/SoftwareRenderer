@@ -42,7 +42,7 @@ struct GouraudShader : public IShader {
 
     bool fragment(Vector3 &bari, Vector3 &color, float &depth, Vector3 &zVerts) override{
         //varying_intensity.print();
-        float intensity = varying_intensity.dotProduct(bari);
+        float intensity = bari.y*varying_intensity.x + bari.z*varying_intensity.y + bari.x*varying_intensity.z;
         color = rgb * intensity;
         depth = bari.dotProduct(zVerts);
         return false;

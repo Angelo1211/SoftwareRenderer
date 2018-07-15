@@ -13,8 +13,8 @@
 class DisplayManager{
 
     public:
-        const static int SCREEN_WIDTH  = 640; //640
-        const static int SCREEN_HEIGHT = 480; //480
+        const static int SCREEN_WIDTH  = 1280; //640
+        const static int SCREEN_HEIGHT = 960; //480
         const static int SCREEN_PITCH  = SCREEN_HEIGHT*sizeof(Uint32);
 
         //Dummy Constructor / Destructor
