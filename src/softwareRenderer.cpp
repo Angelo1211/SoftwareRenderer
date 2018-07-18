@@ -23,21 +23,21 @@ void SoftwareRenderer::shutDown(){
 void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
 
     //Getting the vertices, faces 
-    std::vector<Vector3> * vIndices = &triMesh->vertexIndices;
-    std::vector<Vector3> * nIndices = &triMesh->normalsIndices;
-    std::vector<Vector3> * vertices = &triMesh->vertices;
-    std::vector<Vector3> * normals = &triMesh->normals;
+    std::vector<Vector3i> * vIndices = &triMesh->vertexIndices;
+    std::vector<Vector3i> * nIndices = &triMesh->normalsIndices;
+    std::vector<Vector3f> * vertices = &triMesh->vertices;
+    std::vector<Vector3f> * normals = &triMesh->normals;
     int numFaces = triMesh->numFaces;
 
     //Array grouping vertices together into triangle
-    Vector3 trianglePrimitive[3];
-    Vector3 normalPrim[3];
+    Vector3f trianglePrimitive[3];
+    Vector3f normalPrim[3];
 
     //Initializing shader
     GouraudShader shader;
 
     //Basic light direction
-    Vector3 lightDir{1,0,0};
+    Vector3f lightDir{1,0,0};
 
     //Building ModelViewProjection matrix
     Matrix4 MVP = (mCamera->projectionMatrix)*(mCamera->viewMatrix);
@@ -45,8 +45,9 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
     //Iterate through every triangle
     for (int j = 0; j < numFaces; ++j){
         //Current vertex and normal indices
-        Vector3 f = (*vIndices)[j];
-        Vector3 n = (*nIndices)[j];
+        Vector3i f = (*vIndices)[j];
+        Vector3i n = (*nIndices)[j];
+        f.print();
 
         //Pack vertex and normal data together into an array
         buildTri(f,trianglePrimitive, *vertices);
@@ -101,20 +102,20 @@ bool SoftwareRenderer::createBuffers(int w, int h){
     return success;
 }
 
-void SoftwareRenderer::buildTri(Vector3 &index, Vector3 *primitive, std::vector<Vector3> &vals){
+void SoftwareRenderer::buildTri(Vector3i &index, Vector3f *primitive, std::vector<Vector3f> &vals){
     for(int i = 0; i < 3; ++i){
-        primitive[i] = vals[(int)index.data[i]];
+        primitive[i] = vals[index.data[i]];
     }
 }
 
-bool SoftwareRenderer::backFaceCulling(Vector3 *trianglePrim){
+bool SoftwareRenderer::backFaceCulling(Vector3f *trianglePrim){
         //Triangle surface normal 
         //Should probably be calculated on load next time
-        Vector3 N1 = trianglePrim[1] - trianglePrim[0];
-        Vector3 N2 = trianglePrim[2] - trianglePrim[0];
-        Vector3 N  = (N2.crossProduct(N1)).normalized();
+        Vector3f N1 = trianglePrim[1] - trianglePrim[0];
+        Vector3f N2 = trianglePrim[2] - trianglePrim[0];
+        Vector3f N  = (N2.crossProduct(N1)).normalized();
 
-        Vector3 view_dir =  trianglePrim[0] - mCamera->position;
+        Vector3f view_dir =  trianglePrim[0] - mCamera->position;
         view_dir = view_dir.normalized();
 
         //Returns false if the triangle cannot see the camera

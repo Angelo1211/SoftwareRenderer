@@ -2,14 +2,14 @@
 #define MATRIX_H
 
 #include <array>
-#include <vector3.h>
+#include <vector3D.h>
 
 //Data struct holding all of the data you need to make a transform matrix
 struct TransformParameters{
-    TransformParameters() :scaling(Vector3(1,1,1)) {};
-    Vector3 translation;
-    Vector3 rotation;
-    Vector3 scaling;
+    TransformParameters() :scaling(Vector3f(1,1,1)) {};
+    Vector3f translation;
+    Vector3f rotation;
+    Vector3f scaling;
 };
 
 //Matrices are stored in memory in row major order, but operations are done as if it was
@@ -21,7 +21,7 @@ class Matrix4{
             return mMatrix[y*4 + x];
         }
         Matrix4 operator* (Matrix4 &rhs);
-        Vector3 matMultVec(Vector3 &vec); 
+        Vector3f matMultVec(Vector3f &vec); 
         
         //Named constructor idiom to build the basic matrices we need for 
         //transformation.
@@ -38,7 +38,7 @@ class Matrix4{
         Matrix4 static transformMatrix(TransformParameters transform);
 
         //Inverse Camera transformation matrix (the world from the camera's eyes)
-        Matrix4 static lookAt(Vector3& position, Vector3& target, Vector3& temp);
+        Matrix4 static lookAt(Vector3f& position, Vector3f& target, Vector3f& temp);
 
         //3D projection matrix. When applied results in the camera frustrum area being 
         //defined as X[-1,1] Y[-1,1] Z[1,0] 

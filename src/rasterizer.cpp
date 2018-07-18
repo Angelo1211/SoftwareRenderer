@@ -29,7 +29,7 @@ void Rasterizer::testPattern(Buffer<Uint32> *pixelBuffer){
 
 }
 
-void Rasterizer::drawLine(Vector3 &vertex1, Vector3 &vertex2,const Uint32 &color, Buffer<Uint32> *pixelBuffer ){
+void Rasterizer::drawLine(Vector3f &vertex1, Vector3f &vertex2,const Uint32 &color, Buffer<Uint32> *pixelBuffer ){
     //NDC to viewport transform
     int x1 = (vertex1.x + 1 ) * pixelBuffer->mWidth * 0.5;
     int y1 = (-vertex1.y + 1 ) * pixelBuffer->mHeight * 0.5;
@@ -72,19 +72,19 @@ void Rasterizer::drawLine(Vector3 &vertex1, Vector3 &vertex2,const Uint32 &color
     } 
 }
 
-void Rasterizer::drawWireFrame(Vector3 *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer){
+void Rasterizer::drawWireFrame(Vector3f *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer){
     drawLine(vertices[0], vertices[1], red, pixelBuffer);
     drawLine(vertices[1], vertices[2], green, pixelBuffer);
     drawLine(vertices[0], vertices[2], blue, pixelBuffer);
 }  
 
 //Draws triangles using baricentric coordinates,
-void Rasterizer::drawTriangles(Vector3 *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer){
+void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer){
 
     //Converting to viewport space 
     std::array<int, 3>   xVerts;
     std::array<int, 3>   yVerts;
-    Vector3 zVerts;
+    Vector3f zVerts;
     Rasterizer::viewportTransform(pixelBuffer, vertices, xVerts, yVerts, zVerts);
 
     //Finding triangle bounding box limits clips it to the screen dimension
@@ -106,8 +106,8 @@ void Rasterizer::drawTriangles(Vector3 *vertices, IShader &shader, Buffer<Uint32
                             - (xVerts[1]-xVerts[0])*(yVerts[2]-yVerts[0]));     
     //Per fragment variables            
     float depth = 0;
-    Vector3 lambdas;
-    Vector3 rgbVals;
+    Vector3f lambdas;
+    Vector3f rgbVals;
 
     //Iterating through triangle bounding box
     for(int y = yMin; y <= yMax; ++y){
@@ -133,7 +133,7 @@ void Rasterizer::drawTriangles(Vector3 *vertices, IShader &shader, Buffer<Uint32
     }
 }  
 
-void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3 *vertices,std::array<int, 3>   &xV,std::array<int, 3>   &yV, Vector3   &zV){
+void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertices,std::array<int, 3>   &xV,std::array<int, 3>   &yV, Vector3f   &zV){
     for(int i = 0; i < 3; ++i){
         xV[i] = (int)((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5);
         yV[i] = (int)((-vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5);
@@ -142,7 +142,7 @@ void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3 *vertice
 }
 
 //Calculates baricentric coordinates of triangles using the cross
-void Rasterizer::barycentric(Vector3 &lambdas, float invArea, int x, int y,  
+void Rasterizer::barycentric(Vector3f &lambdas, float invArea, int x, int y,  
                         std::array<int, 3>   &xVerts, std::array<int, 3>   &yVerts){
     for(int i = 0; i < 3; ++i){
         int i2 = (i+1)%3;

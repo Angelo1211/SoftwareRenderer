@@ -2,7 +2,7 @@
 #define CAMERA_H
 
 #include "matrix.h"
-#include "vector3.h"
+#include "vector3D.h"
 
 
 struct Camera{
@@ -15,9 +15,9 @@ struct Camera{
     Matrix4 projectionMatrix;
 
     //Position and direction of camera, used to build view matrix
-    Vector3 position{0,0,8};
-    Vector3 target{0,0,0};
-    Vector3 up{0,1,0};
+    Vector3f position{0,0,8};
+    Vector3f target{0,0,0};
+    Vector3f up{0,1,0};
 
     //Variables that determine frustrum (Future class?)
     //Used to build projection matrix

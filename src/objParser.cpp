@@ -21,7 +21,7 @@ bool OBJ::fileExists(std::string &path){
 //Main OBJ parsing function
 void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
     std::string line, key, x ,y ,z;
-    Vector3 indices[3];
+    Vector3i indices[3];
     char delimeter = '/';
     while(!file.eof()){
         std::getline(file,line);
@@ -29,12 +29,12 @@ void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
         iss >> key;
         if(key == "v"){ //Vertex data
             iss >> x >> y >> z;
-            Vector3 vertex(std::stof(x),std::stof(y),std::stof(z));
+            Vector3f vertex(std::stof(x),std::stof(y),std::stof(z));
             mesh.vertices.push_back(vertex);
         }
         else if(key == "vn"){ //Normal data
             iss >> x >> y >> z;
-            Vector3 normal(std::stof(x),std::stof(y),std::stof(z));
+            Vector3f normal(std::stof(x),std::stof(y),std::stof(z));
             mesh.normals.push_back(normal);
         }
         else if(key == "f"){ //index data
@@ -44,7 +44,7 @@ void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
             std::vector<std::string> splitZ = splitStr(z,delimeter);
             for(int i = 0; i < splitX.size(); ++i){
                 //Subtracted by 1 because OBJ files count indices starting by 1
-                indices[i] = Vector3(std::stof(splitX[i])-1,std::stof(splitY[i])-1,std::stof(splitZ[i])-1);
+                indices[i] = Vector3i(std::stoi(splitX[i])-1,std::stoi(splitY[i])-1,std::stoi(splitZ[i])-1);
             }
             printf("\n");
             mesh.vertexIndices.push_back(indices[0]);

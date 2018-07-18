@@ -1,5 +1,5 @@
 #include "model.h"
-#include "vector3.h"
+#include "vector3D.h"
 #include <limits>
 
 Model::Model(std::string path, TransformParameters &initParameters){
@@ -15,7 +15,7 @@ Mesh * Model::getMesh(){
 void Model::initPosition(TransformParameters initVals){
     Matrix4 modelMatrix = Matrix4::transformMatrix(initVals);
     int size = mMesh.numVertices;
-    std::vector<Vector3> * vertices = &mMesh.vertices;
+    std::vector<Vector3f> * vertices = &mMesh.vertices;
 
     //Applying the multiplication
     for (int i = 0;i < size; ++i){

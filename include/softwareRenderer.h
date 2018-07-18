@@ -33,10 +33,10 @@ class SoftwareRenderer {
         bool createBuffers(int w, int h);
 
         //Primitive building methods
-        void buildTri(Vector3 &f, Vector3 *trianglePrim, std::vector<Vector3> &verts);
+        void buildTri(Vector3i &f, Vector3f *trianglePrim, std::vector<Vector3f> &vals);
 
         //Culling methods
-        bool backFaceCulling(Vector3 *trianglePrim);
+        bool backFaceCulling(Vector3f *trianglePrim);
 
         //Pointer to the scene's target camera
         Camera * mCamera;

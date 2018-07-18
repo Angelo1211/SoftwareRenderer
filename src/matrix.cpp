@@ -1,8 +1,8 @@
 #include "matrix.h"
 #include <math.h>
 
-Vector3 Matrix4::matMultVec(Vector3 &vec){
-    Vector3 newVec(0,0,0);
+Vector3f Matrix4::matMultVec(Vector3f &vec){
+    Vector3f newVec(0,0,0);
     float w2 = 0;
     newVec.x = vec.x*(*this)(0,0)+
                vec.y*(*this)(0,1)+
@@ -150,11 +150,11 @@ Matrix4 Matrix4::transformMatrix(TransformParameters transform){
     return  translationMatrix*(temp);
 }
 
-Matrix4 Matrix4::lookAt(Vector3& position, Vector3& target, Vector3& temp){
-    //Gram–Schmidt_process
-    Vector3 forward = (position - target).normalized();
-    Vector3 side    = (temp.crossProduct(forward)).normalized();
-    Vector3 up      = forward.crossProduct(side);
+Matrix4 Matrix4::lookAt(Vector3f& position, Vector3f& target, Vector3f& temp){
+    //Gram–Schmidt process
+    Vector3f forward = (position - target).normalized();
+    Vector3f side    = (temp.crossProduct(forward)).normalized();
+    Vector3f up      = forward.crossProduct(side);
 
     //We will now build the inverse transform from the world position to the camera
     //The idea is that we don't care where the camera is, we only care about what
