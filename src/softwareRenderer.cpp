@@ -47,7 +47,6 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
         //Current vertex and normal indices
         Vector3i f = (*vIndices)[j];
         Vector3i n = (*nIndices)[j];
-        f.print();
 
         //Pack vertex and normal data together into an array
         buildTri(f,trianglePrimitive, *vertices);
@@ -62,7 +61,11 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
             trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP, normalPrim[i], lightDir.normalized(), i);
         }
 
-        //Clipping should occur here
+        //Skip triangles that are outside viewing frustrum
+        //Does not rebuild triangles that are partially out TO DO
+        if (clipTriangles(trianglePrimitive)) continue;
+
+        perspectiveDivide(trianglePrimitive);
 
         //Send to rasterizer which will also call the fragment shader and write to the 
         //zbuffer and pixel buffer.
@@ -121,4 +124,23 @@ bool SoftwareRenderer::backFaceCulling(Vector3f *trianglePrim){
         //Returns false if the triangle cannot see the camera
         float intensity =  N.dotProduct(view_dir);
         return intensity <= 0.0;
+}
+
+bool SoftwareRenderer::clipTriangles(Vector3f *clipSpaceVertices){
+    int count = 0;
+    for(int i = 0; i < 3; ++i){
+        Vector3f vertex = clipSpaceVertices[i];
+        bool inside = (-vertex.w <= vertex.x <= vertex.w ) 
+                    && (-vertex.w <= vertex.y <= vertex.w)
+                    && (0 <= vertex.z <= vertex.w);
+        if (!inside) ++count;
+    }
+    //If count equals three it means every vertex was out so we skip it
+    return count == 3 ;
+}
+
+void SoftwareRenderer::perspectiveDivide(Vector3f *clippedVertices){
+    for(int i = 0; i < 3; ++i){
+        clippedVertices[i] = clippedVertices[i].perspectiveDivide();
+    }
 }

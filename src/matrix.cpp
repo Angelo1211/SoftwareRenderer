@@ -26,11 +26,12 @@ Vector3f Matrix4::matMultVec(Vector3f &vec){
     
     //Division is expensive, only do it if you need it
     //Also here is where perspective divide happens!
-    if(w2 != 1){
-        newVec.x /= w2;
-        newVec.y /= w2;
-        newVec.z /= w2;
-    }
+    // if(w2 != 1){
+    //     newVec.x /= w2;
+    //     newVec.y /= w2;
+    //     newVec.z /= w2;
+    // }
+    newVec.w = w2;
 
     return newVec;
 }
