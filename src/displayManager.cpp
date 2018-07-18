@@ -1,12 +1,8 @@
 #include "displayManager.h"
 
-DisplayManager::DisplayManager(){
-    
-}
-
-DisplayManager::~DisplayManager(){
-    
-}
+//Dummy constructurs/destructors
+DisplayManager::DisplayManager(){}
+DisplayManager::~DisplayManager(){}
 
 bool DisplayManager::startUp(){
     bool success = true;

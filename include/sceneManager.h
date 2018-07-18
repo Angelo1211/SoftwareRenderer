@@ -21,8 +21,8 @@ class SceneManager{
         // Update current scene
         void update();
 
+        //Called by the rendermanager to prep the render queue 
         Scene* getCurrentScene();
-
     private:
         bool loadScene();
         bool closeScene();

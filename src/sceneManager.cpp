@@ -1,16 +1,12 @@
 #include "sceneManager.h"
 
-SceneManager::SceneManager(){
-    
-}
-
-SceneManager::~SceneManager(){
-    
-}
+//Dummy constructors / destructors
+SceneManager::SceneManager(){}
+SceneManager::~SceneManager(){}
 
 bool SceneManager::startUp(){
     if (!loadScene()){
-        printf("Could not load scene.\n");
+        printf("Could not load scene. No models succesfully loaded!\n");
         return false;
     }
     return true;
@@ -25,10 +21,10 @@ bool SceneManager::switchScene(){
     return true;
 }
 
-//for now just loads the teapot.obj
+//for now just loads a single .obj based on the  given string
 bool SceneManager::loadScene(){
     currentScene = new Scene("elephant.obj");
-    return  !currentScene->checkIfEmpty();
+    return  !currentScene->checkIfEmpty(); //True if empty, so it's negated for startup
 }
 
 void SceneManager::update(){

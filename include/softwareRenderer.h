@@ -17,16 +17,17 @@ class SoftwareRenderer {
         bool startUp(int w, int h);  
         void shutDown();      
 
-        //This could be expanded with more methods
-        // to draw different types of meshes or models
+        //Draws mesh assuming it is made of triangular primites
+        //1.-Gets pointers to render data form mesh
+        //2.-Builds MVP 
         void drawTriangularMesh(Mesh * triMesh);
 
         void clearBuffers();
 
+        //Returns pixel buffer
         Buffer<Uint32>* getRenderTarget();
 
         void setCameraToRenderFrom(Camera * camera);
-        
     private:
         //Buffer methods
         bool createBuffers(int w, int h);
@@ -37,7 +38,6 @@ class SoftwareRenderer {
         //Culling methods
         bool backFaceCulling(Vector3 *trianglePrim);
 
-        
         //Pointer to the scene's target camera
         Camera * mCamera;
         bool startUpComplete = false;

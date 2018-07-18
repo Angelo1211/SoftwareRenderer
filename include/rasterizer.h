@@ -6,29 +6,37 @@
 #include "vector3.h"
 #include "shader.h"
 
+//Takes in vertex data, rasterizes the surface and applies the fragment shader at
+//each fragment. If it passes the depth test the fragment is written to the pixel buffer.
 class Rasterizer{
-
     public:
-        static void drawTriangles(Vector3 *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer);
-
-        static void drawWireFrame(Vector3 *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer);
-
+        //Simple full screen effects that don't need any vertex data
+        static void makeCoolPattern(Buffer<Uint32> *pixelBuffer);
         static void testPattern(Buffer<Uint32> *pixelBuffer);
 
-        static void makeCoolPattern(Buffer<Uint32> *pixelBuffer);
-
+        //Bresenham's line drawing algorithm using only int arithmetic
         static void drawLine(Vector3 &vertex1, Vector3 &vertex2, const Uint32 &color, Buffer<Uint32> *pixelBuffer);
 
-        static void screenSpaceTransform(Buffer<Uint32> *pixelBuffer, Vector3 *vertices,std::array<int, 3>   &xV,std::array<int, 3>   &yV, Vector3  &zV);
+        //Draws wireframe rendering of triangle by calling the line drawer for each
+        //Line in a triangle.(AB, BC, AC)
+        static void drawWireFrame(Vector3 *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer);
 
-        //Don't look at my ugly code!
-        static void baricentric(Vector3 &lambdas, float InvArea, int x, int y,
+        //Proper triangle rasterization with vertex interpolation.
+        static void drawTriangles(Vector3 *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer);
+
+        //Transforms coordinates from NDC to pixel values(Integers)
+        static void viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3 *vertices,std::array<int, 3>   &xV,std::array<int, 3>   &yV, Vector3  &zV);
+
+        //Given a set of vertex values, the triangle area in screen space
+        //and a target point returns the barycentric coordinates calculated using
+        //Edge functions
+        static void barycentric(Vector3 &lambdas, float InvArea, int x, int y,
                          std::array<int, 3>   &xV, std::array<int, 3>   &yV);
 
     private:
-        Rasterizer(){};
+        Rasterizer(){}; //Ensuring an object can never be instanced accidentally
 
-        //Setting this equal to the same pixel format our textures are in
+        //Setting this equal to the same pixel format our screen texture is in
         static const Uint32 PIXEL_FORMAT = SDL_PIXELFORMAT_RGBA8888;
         static const SDL_PixelFormat* mappingFormat;
 

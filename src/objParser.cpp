@@ -39,11 +39,11 @@ void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
         }
         else if(key == "f"){ //index data
             iss >> x >> y >> z;
-            std::vector<std::string> splitX = split(x,delimeter); 
-            std::vector<std::string> splitY = split(y,delimeter);
-            std::vector<std::string> splitZ = split(z,delimeter);
+            std::vector<std::string> splitX = splitStr(x,delimeter); 
+            std::vector<std::string> splitY = splitStr(y,delimeter);
+            std::vector<std::string> splitZ = splitStr(z,delimeter);
             for(int i = 0; i < splitX.size(); ++i){
-                //printf("%s\n",splitX[i].c_str());
+                //Subtracted by 1 because OBJ files count indices starting by 1
                 indices[i] = Vector3(std::stof(splitX[i])-1,std::stof(splitY[i])-1,std::stof(splitZ[i])-1);
             }
             printf("\n");
@@ -54,19 +54,22 @@ void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
     }
     mesh.numVertices = mesh.vertices.size();
     mesh.numFaces = mesh.vertexIndices.size();
+    //Reset file in case you want to re-read it
     file.clear();
     file.seekg(0, file.beg);
 }
 
-std::vector<std::string> OBJ::split(std::string &str, char delim){
+//Creates stringstream of string and subdivides it by the delimeter and returns
+//a vector of the individual components of the string
+std::vector<std::string> OBJ::splitStr(std::string &str, char delim){
     std::stringstream ss(str);
     std::string token;
     std::vector<std::string> splitString;
     while(std::getline(ss,token,delim)){
         if(token == ""){
-            //If token is empty just write -1
-            //Since you cannot have an idnex of that size anyway
-            splitString.push_back("-1"); 
+            //If token is empty just write 0 it will result in a -1 index
+            //Since that index number is nonsensical you can catch it pretty easily later
+            splitString.push_back("0"); 
         }
         else{
             splitString.push_back(token);

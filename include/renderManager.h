@@ -16,12 +16,12 @@ class RenderManager{
         RenderManager();
         ~RenderManager();
 
-        //Gets scene and display info to 
+        //Gets scene and display info. Will be used to build render Queue
         bool startUp(DisplayManager &displayManager,SceneManager &sceneManager );
         void shutDown();
 
         //Performs all high level prep operations that the graphics library
-        //Needs to do before acting
+        //Needs to do before drawin each model in the scene.
         void render();
 
     private:
@@ -31,6 +31,7 @@ class RenderManager{
         //This is a pointer to a pointer to allow for scene switching 
         SceneManager   * sceneLocator;
         DisplayManager * screen;
+
         SoftwareRenderer renderInstance;
         std::queue<Mesh*> renderQueue;        
 };

@@ -13,9 +13,10 @@
 class DisplayManager{
 
     public:
-        const static int SCREEN_WIDTH  = 1280; //640
-        const static int SCREEN_HEIGHT = 960; //480
+        const static int SCREEN_WIDTH  = 640; //640 1280
+        const static int SCREEN_HEIGHT = 480; //480 720
         const static int SCREEN_PITCH  = SCREEN_HEIGHT*sizeof(Uint32);
+        constexpr static float SCREEN_ASPECT_RATIO = SCREEN_WIDTH /(float)SCREEN_HEIGHT;
 
         //Dummy Constructor / Destructor
         DisplayManager();
@@ -25,13 +26,14 @@ class DisplayManager{
         bool startUp();
         void shutDown();
 
-        //Clear screens to black
+        //Clear screens to draw color (Normally black)
         void clear();
 
         //Swaps the pixel buffer with the texture buffer and draws to screen
         void swapBuffers(Buffer<Uint32> *pixelBuffer);
 
     private:
+        //Wrappers for SDL init functions
         bool startSDL();
         bool createWindow();
         bool createSDLRenderer();

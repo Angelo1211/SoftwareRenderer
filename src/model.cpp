@@ -2,10 +2,10 @@
 #include "vector3.h"
 #include <limits>
 
-Model::Model(std::string path){
+Model::Model(std::string path, TransformParameters &initParameters){
     OBJ::buildMeshFromFile(mMesh, path);
+    initPosition(initParameters);
     buildBoundaryBox();
-    
 }
 
 Mesh * Model::getMesh(){
@@ -79,6 +79,7 @@ void Model::buildBoundaryBox(){
 
 }
 
+//TO DO 
 void Model::update(){
     
 }

@@ -7,16 +7,18 @@
 class InputManager{
 
     public:
+        //Dummy constructors / Destructors
+        //Not necessary here, but follow the same format for consistency
         InputManager();
-
         ~InputManager();
 
         bool startUp();
-
-        bool processInput();
-
         void shutDown();
 
+        //Processes all the SDL events that have ocurred in the given frame
+        //For now only listens to the SDL_QUIT event that signifies the window was 
+        //closed.
+        bool processInput();
     private:
         bool handleEvent(SDL_Event * event);
 };

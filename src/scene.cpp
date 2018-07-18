@@ -3,7 +3,6 @@
 
 Scene::Scene(std::string path){
     emptyScene = loadSceneModels(path);
-
 }
 
 Scene::~Scene(){
@@ -26,7 +25,7 @@ void Scene::update(){
 
 bool Scene::loadSceneModels(std::string &path){
     //In the future I want to read all o the models in the model folder
-    //And build them here.  For now only one
+    //And build them here. For now only one is loaded.
     std::string fullPath = "../models/";
     fullPath = fullPath + path;
 
@@ -35,19 +34,11 @@ bool Scene::loadSceneModels(std::string &path){
         return true;
     }
     else{
-        modelsInScene.push_back(new Model(fullPath));
-        
-        //We also initialize the model position here position here
         TransformParameters initParameters;
-        //initParameters.scaling = Vector3(1, 60, 60);
-        //initParameters.rotation = Vector3(0,0,0);
         initParameters.translation = Vector3(0, -1.5, 0);
-        modelsInScene[0]->initPosition(initParameters);
-
-        //sceneModel->describeMesh();
+        modelsInScene.push_back(new Model(fullPath, initParameters));
         return false;
     }
-    
 }
 
 void Scene::frustrumCulling(){
