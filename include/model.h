@@ -3,6 +3,7 @@
 
 #include <string>
 #include "mesh.h"
+#include "geometry.h"
 #include "matrix.h"
 #include "objParser.h"
 
@@ -11,6 +12,8 @@ class Model{
         Model(std::string path, TransformParameters &initParameters); 
 
         Mesh *getMesh();
+
+        AABox *getBounds();
 
         void update();
 
@@ -23,7 +26,7 @@ class Model{
         //Calculates the boundary box of the mesh in object space
         void buildBoundaryBox();
         Mesh mMesh;
-        Bound3 mBounds;
+        AABox mBounds;
 };
 
 #endif

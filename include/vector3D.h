@@ -38,12 +38,8 @@ struct Vector3{
     }
 
     //Scalar-vector operations
-    Vector3 &operator-(){//Negate components of vector
-        x = -x;
-        y = -y;
-        z = -z;
-        return *this;
-    }; 
+    Vector3 operator-()
+    {return Vector3(-x, -y, -z);} 
     Vector3 operator*(const T &rhs) const //Scalar-vector multiplication
     {return Vector3(x*rhs, y*rhs, z*rhs);}
 

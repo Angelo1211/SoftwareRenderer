@@ -141,7 +141,7 @@ void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertic
     }
 }
 
-//Calculates baricentric coordinates of triangles using the cross
+//Calculates baricentric coordinates of triangles using the cross product
 void Rasterizer::barycentric(Vector3f &lambdas, float invArea, int x, int y,  
                         std::array<int, 3>   &xVerts, std::array<int, 3>   &yVerts){
     for(int i = 0; i < 3; ++i){

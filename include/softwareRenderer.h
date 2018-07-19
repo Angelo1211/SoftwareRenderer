@@ -17,15 +17,23 @@ class SoftwareRenderer {
         bool startUp(int w, int h);  
         void shutDown();      
 
-        //Draws mesh assuming it is made of triangular primites
-        //1.-Gets pointers to render data form mesh
-        //2.-Builds MVP 
-        //3.-Iterates through all triangle faces
-        //4.-Runs backface culling algo
-        //5.-Applies vertex shader per vertex
-        //6.-Performs clipping of triangles outside frustrum
-        //7.-Runs perspective divide
-        //8.-
+        //Overview:
+        //01.-Gets pointers to render data form mesh
+        //02.-Builds MVP 
+        //03.-Iterates through all triangle faces
+        //04.-Runs backface culling algo
+        //05.-Applies vertex shader per vertex
+        //06.-Performs clipping of triangles outside frustrum
+        //07.-Applies perspective divide
+        //08.-Sends to triangle rasterizer
+        //09.-NDC -> viewport transform
+        //10.-Iterates through triangle bounding box 
+        //11.-Calculates barycentric coordinates
+        //12.-Culls pixels outside of triangle or screen
+        //13.-Runs fragment shader
+        //14.-zBuffer update
+        //15.-Writes to frame buffer
+        //16.-Swap buffer
         void drawTriangularMesh(Mesh * triMesh);
 
         void clearBuffers();

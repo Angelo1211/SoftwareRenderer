@@ -20,16 +20,4 @@ struct Mesh{
     void describeMesh();
 };
 
-//Struct containing vertex data for a tight bounding box around a model.
-//Primarily for use in frustum culling
-struct Bound3{
-    float mMinX = 0.0;
-    float mMinY = 0.0;
-    float mMinZ = 0.0;
-
-    float mMaxX = 0.0;
-    float mMaxY = 0.0;
-    float mMaxZ = 0.0;
-};
-
 #endif

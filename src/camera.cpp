@@ -1,20 +1,27 @@
 #include "camera.h"
 #include "SDL.h"
-#include "displayManager.h"
+
 
 Camera::Camera(){
     viewMatrix = Matrix4::lookAt(position,target,up);
-    aspectRatio =  DisplayManager::SCREEN_ASPECT_RATIO;
-    projectionMatrix = Matrix4::projectionMatrix(fov, aspectRatio, near,far);
+    projectionMatrix = Matrix4::projectionMatrix(cameraFrustrum.fov, cameraFrustrum.AR, cameraFrustrum.near, cameraFrustrum.far);
+    cameraFrustrum.setCamInternals();
+    cameraFrustrum.updatePlanes(viewMatrix, position);
 }
 
 void Camera::update(){
     float t = static_cast<float>(SDL_GetTicks());
-    float radius = 5;
+    float radius = 15;
     float camX   = std::sin(t/4000) * radius;
     float camZ   = std::cos(t/4000) * radius;
-    position.x   = 0;
-    position.y   = 0;
-    position.z   = camZ;
+    position.x   = camX;
+    position.y   = camX;
+    position.z   = 5;
+    target.z     = -1000;
     viewMatrix   = Matrix4::lookAt(position,target,up);
+    cameraFrustrum.updatePlanes(viewMatrix, position);
+}
+
+bool Camera::checkVisibility(AABox *bounds){
+    return cameraFrustrum.checkIfInside(bounds);
 }

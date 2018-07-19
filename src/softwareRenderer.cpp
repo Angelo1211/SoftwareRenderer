@@ -33,7 +33,7 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
     Vector3f trianglePrimitive[3];
     Vector3f normalPrim[3];
 
-    //Initializing shader
+    //Initializing shader 
     GouraudShader shader;
 
     //Basic light direction

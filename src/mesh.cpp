@@ -6,3 +6,4 @@ void Mesh::describeMesh(){
     }
     printf("Meshsize is: %d \n", numVertices);
 }
+    

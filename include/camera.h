@@ -3,10 +3,13 @@
 
 #include "matrix.h"
 #include "vector3D.h"
-
+#include "geometry.h"
+#include "displayManager.h"
 
 struct Camera{
     Camera();
+    
+    bool checkVisibility(AABox *bounds);
 
     //In the future user input should control this. For now just simple movement
     void update();
@@ -19,12 +22,7 @@ struct Camera{
     Vector3f target{0,0,0};
     Vector3f up{0,1,0};
 
-    //Variables that determine frustrum (Future class?)
-    //Used to build projection matrix
-    float fov{90};
-    float near{0.1};
-    float far{100};
-    float aspectRatio{1.0};
+    Frustrum cameraFrustrum{DisplayManager::SCREEN_ASPECT_RATIO};
 };
 
 #endif
