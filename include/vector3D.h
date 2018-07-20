@@ -56,6 +56,9 @@ struct Vector3{
     T   dotProduct(const Vector3 &rhs) const
     {return x*rhs.x + y*rhs.y + z*rhs.z;}
 
+    T   dot2D(const Vector3 &rhs) const
+    {return x*rhs.x + y*rhs.y;}
+
     T length() const
     {return std::sqrt(x*x + y*y + z*z);}
 
@@ -79,11 +82,11 @@ struct Vector3{
     void print(){
         std::string str;
         if(std::is_same<T,float>::value){
-            str = "Vec: (%2.1f, %2.1f,%2.1f)\n";
+            str = "Vecf:(%f, %f, %f)\n";
             
         }
         else if(std::is_same<T,int>::value) {
-            str = "Vec: (%d, %d,%d)\n";    
+            str = "Veci:(%d, %d, %d)\n";    
         }
         printf(str.c_str(),x,y,z);
     }

@@ -13,8 +13,8 @@
 class DisplayManager{
 
     public:
-        const static int SCREEN_WIDTH  = 640; //640 1280
-        const static int SCREEN_HEIGHT = 480; //480 720
+        const static int SCREEN_WIDTH  = 1280; //640 1280
+        const static int SCREEN_HEIGHT = 720; //480 720
         const static int SCREEN_PITCH  = SCREEN_HEIGHT*sizeof(Uint32);
         constexpr static float SCREEN_ASPECT_RATIO = SCREEN_WIDTH /(float)SCREEN_HEIGHT;
 

@@ -116,10 +116,10 @@ bool SoftwareRenderer::backFaceCulling(Vector3f *trianglePrim){
         //Should probably be calculated on load next time
         Vector3f N1 = trianglePrim[1] - trianglePrim[0];
         Vector3f N2 = trianglePrim[2] - trianglePrim[0];
-        Vector3f N  = (N2.crossProduct(N1)).normalized();
+        Vector3f N  = (N1.crossProduct(N2)).normalized();
 
-        Vector3f view_dir =  trianglePrim[0] - mCamera->position;
-        view_dir = view_dir.normalized();
+        Vector3f view_dir =  mCamera->position -  trianglePrim[0];
+        view_dir.normalized();
 
         //Returns false if the triangle cannot see the camera
         float intensity =  N.dotProduct(view_dir);
@@ -141,6 +141,6 @@ bool SoftwareRenderer::clipTriangles(Vector3f *clipSpaceVertices){
 
 void SoftwareRenderer::perspectiveDivide(Vector3f *clippedVertices){
     for(int i = 0; i < 3; ++i){
-        clippedVertices[i] = clippedVertices[i].perspectiveDivide();
+        clippedVertices[i].perspectiveDivide();
     }
 }

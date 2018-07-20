@@ -82,41 +82,45 @@ void Rasterizer::drawWireFrame(Vector3f *vertices, IShader &shader, Buffer<Uint3
 void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer){
 
     //Converting to viewport space 
-    std::array<int, 3>   xVerts;
-    std::array<int, 3>   yVerts;
+    arr3i  xV, yV;
     Vector3f zVerts;
-    Rasterizer::viewportTransform(pixelBuffer, vertices, xVerts, yVerts, zVerts);
+    Rasterizer::viewportTransform(pixelBuffer, vertices, xV, yV, zVerts);
 
-    //Finding triangle bounding box limits clips it to the screen dimension
-    //Whenever I get to clipping this will probably prove to be unnecessary 
-    int xMax = *std::max_element(xVerts.begin(),xVerts.end());
-    xMax = (xMax > pixelBuffer->mWidth) ? pixelBuffer->mWidth : xMax;
+    //Finding triangle bounding box limits & clips it to the screen width and height
+    int xMax, xMin, yMax, yMin;
+    Rasterizer::triBoundBox(xMax, xMin, yMax, yMin, xV, yV, pixelBuffer);
 
-    int xMin = *std::min_element(xVerts.begin(),xVerts.end());
-    xMin = (xMin < 0) ? 0 : xMin;
+    //Per triangle variables
+    Vector3i v0(xV[1]-xV[0], yV[1]-yV[0], 0);
+    Vector3i v1(xV[2]-xV[0], yV[2]-yV[0], 0);
+    int d00 = v0.dot2D(v0);
+    int d01 = v0.dot2D(v1);
+    int d11 = v1.dot2D(v1);
+    float denom = 1 / (float)((d00 * d11) - (d01 *d01));
 
-    int yMax = *std::max_element(yVerts.begin(),yVerts.end());
-    yMax = (yMax > pixelBuffer->mHeight) ? pixelBuffer->mHeight : yMax;
-
-    int yMin = *std::min_element(yVerts.begin(),yVerts.end());
-    yMin = (yMin < 0) ? 0 : yMin;
-
-    //Find triangle area
-    float invArea = 1/(float)((xVerts[2]-xVerts[0])*(yVerts[1]-yVerts[0]) 
-                            - (xVerts[1]-xVerts[0])*(yVerts[2]-yVerts[0]));     
     //Per fragment variables            
     float depth = 0;
+    int d20   = 0;
+    int d21   = 0;
     Vector3f lambdas;
     Vector3f rgbVals;
+    Vector3i v2;
 
-    //Iterating through triangle bounding box
+    //Iterating through each pixel in triangle bounding box
     for(int y = yMin; y <= yMax; ++y){
         for(int x = xMin; x <= xMax; ++x){
-            
-            Rasterizer::barycentric(lambdas, invArea, x, y, xVerts, yVerts);
+            v2.x = x-xV[0];
+            v2.y = y-yV[0];
+            d20 = v2.dot2D(v0);
+            d21 = v2.dot2D(v1);
+            Rasterizer::barycentric(lambdas, denom, d00, d01, d11, d20, d21);
+
+            // if (lambdas.data[0] < 0 && lambdas.data[0] > -0.1 ){
+            //     lambdas.print();
+            // }
 
             //Throw pixel away if not in triangle
-            if(lambdas.data[0] < 0 || lambdas.data[1] < 0 || lambdas.data[2] < 0) continue;
+            if(lambdas.data[0] <  0|| lambdas.data[1] < 0 || lambdas.data[2] < 0) continue;
 
             //Run fragment shader
             shader.fragment(lambdas, rgbVals, depth, zVerts);
@@ -126,31 +130,43 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
                 if(depth <= 1.0){
                     (*zBuffer)(x,y) = depth;
                     (*pixelBuffer)(x,y) = SDL_MapRGBA(mappingFormat,
-                rgbVals.data[0],rgbVals.data[1],rgbVals.data[2],0xFF);
+                    rgbVals.data[0],rgbVals.data[1],rgbVals.data[2],0xFF);
                 }   
             } 
         }
     }
 }  
 
-void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertices,std::array<int, 3>   &xV,std::array<int, 3>   &yV, Vector3f   &zV){
+void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertices,arr3i   &xV,arr3i  &yV, Vector3f   &zV){
     for(int i = 0; i < 3; ++i){
-        xV[i] = (int)((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5);
-        yV[i] = (int)((-vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5);
+        xV[i] = ((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5);
+        yV[i] = ((-vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5);
         zV.data[i] = vertices[i].z;
+
+        //printf("%f , %d \n", vertices[i].x, xV[i]);
     }
 }
 
 //Calculates baricentric coordinates of triangles using the cross product
-void Rasterizer::barycentric(Vector3f &lambdas, float invArea, int x, int y,  
-                        std::array<int, 3>   &xVerts, std::array<int, 3>   &yVerts){
-    for(int i = 0; i < 3; ++i){
-        int i2 = (i+1)%3;
-        lambdas.data[i] = invArea * ((x-xVerts[i])*(yVerts[i2]-yVerts[i]) 
-                            - (xVerts[i2]-xVerts[i])*(y-yVerts[i]));
-    }
+void Rasterizer::barycentric(Vector3f &lambdas, float denom, float d00, float d01, float d11, float d20, float d21){
+    lambdas.data[1] = denom  * ((d11*d20) - (d01*d21)); 
+    lambdas.data[2] = denom  * ((d00*d21) - (d01*d20));
+    lambdas.data[0] = 1.0f - lambdas.data[1] - lambdas.data[2];
+    //printf("u: %f\n",lambdas.data[0]);
 }
 
+void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin, arr3i &xV, arr3i &yV, Buffer<Uint32> *pixelBuffer){
+    xMax = *std::max_element(xV.begin(),xV.end());
+    xMax = (xMax > pixelBuffer->mWidth) ? pixelBuffer->mWidth : xMax;
 
+    xMin = *std::min_element(xV.begin(),xV.end());
+    xMin = (xMin < 0) ? 0 : xMin;
+
+    yMax = *std::max_element(yV.begin(),yV.end());
+    yMax = (yMax > pixelBuffer->mHeight) ? pixelBuffer->mHeight : yMax;
+
+    yMin = *std::min_element(yV.begin(),yV.end());
+    yMin = (yMin < 0) ? 0 : yMin;
+}
 
 
