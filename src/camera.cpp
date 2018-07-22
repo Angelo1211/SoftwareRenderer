@@ -11,14 +11,13 @@ Camera::Camera(){
 
 void Camera::update(){
     float t = static_cast<float>(SDL_GetTicks());
-    float radius = 15;
-    float camX   = std::sin(t/20000) * radius;
-    float camZ   = std::cos(t/20000) * radius;
-    position.x   = camX;
+    float radius = 12;
+    float camX   = std::sin(t/2000) * radius;
+    float camZ   = std::cos(t/2000) * radius;
+    position.x   = 0;
     position.y   = 0;
     position.z   = camZ;
-    printf("X: %f, Z: %f\n", camX, camZ);
-   // target.z     = -1000;
+    target.z     = 0;
     viewMatrix   = Matrix4::lookAt(position,target,up);
     cameraFrustrum.updatePlanes(viewMatrix, position);
 }

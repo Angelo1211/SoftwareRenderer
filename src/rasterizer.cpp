@@ -81,77 +81,53 @@ void Rasterizer::drawWireFrame(Vector3f *vertices, IShader &shader, Buffer<Uint3
 //Draws triangles using baricentric coordinates,
 void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer){
 
-    //Converting to viewport space 
-    arr3i  xV, yV;
-    Vector3f zVerts;
-    Rasterizer::viewportTransform(pixelBuffer, vertices, xV, yV, zVerts);
-
+    Rasterizer::viewportTransform(pixelBuffer, vertices);
     //Finding triangle bounding box limits & clips it to the screen width and height
     int xMax, xMin, yMax, yMin;
-    Rasterizer::triBoundBox(xMax, xMin, yMax, yMin, xV, yV, pixelBuffer);
+    Rasterizer::triBoundBox(xMax, xMin, yMax, yMin, vertices, pixelBuffer);
 
-    //Per triangle variables
-    Vector3i v0(xV[1]-xV[0], yV[1]-yV[0], 0);
-    Vector3i v1(xV[2]-xV[0], yV[2]-yV[0], 0);
-    int d00 = v0.dot2D(v0);
-    int d01 = v0.dot2D(v1);
-    int d11 = v1.dot2D(v1);
-    //printf("%d, %d, %d\n",d00, d01, d11);
-    float denom = 1.0 / (float)((d00 * d11) - (d01 *d01));
-    if (denom == INFINITY) return;
-    //printf("%lf\n", denom);
     //Per fragment variables            
-    float depth = 0;
-    int d20   = 0;
-    int d21   = 0;
-    Vector3f lambdas;
+    float depth, w0, w1, w2, area;
+    Vector3f bari;
     Vector3f rgbVals;
-    Vector3i v2;
+    Vector3f point;
+    Vector3f zVals{vertices[0].z,vertices[1].z,vertices[2].z};
+    area = 1/edge(vertices[0],vertices[1],vertices[2]);
 
     //Iterating through each pixel in triangle bounding box
-    for(int y = yMin; y <= yMax; ++y){
-        for(int x = xMin; x <= xMax; ++x){
-            v2.x = x-xV[0];
-            v2.y = y-yV[0];
-            d20 = v2.dot2D(v0);
-            d21 = v2.dot2D(v1);
-            Rasterizer::barycentric(lambdas, denom, d00, d01, d11, d20, d21);
+    for(point.y = yMin; point.y <= yMax; ++point.y){
+        for(point.x = xMin; point.x <= xMax; ++point.x){
 
-            // if (lambdas.data[0] < 0 && lambdas.data[0] > -0.1 ){
-            //     lambdas.print();
-            // }
+            bari.x = edge(vertices[1], vertices[2], point);
+            bari.y = edge(vertices[2], vertices[0], point);
+            bari.z = edge(vertices[0], vertices[1], point);
 
-            //Throw pixel away if not in triangle
-            //if( lambdas.y < 0 || lambdas.z < 0  || lambdas.x < 0 ) continue;
-            if( lambdas.y > 1 || lambdas.y < 0 || lambdas.z > 1 || lambdas.z < 0  || ((lambdas.y + lambdas.z) > 1) ) continue;
-            //if( (lambdas.x >= 0) && (lambdas.y >= 0) && (lambdas.z >= 0)){
-
+            //Only draw if inside pixel
+            if(bari.x >= 0 && bari.y >= 0 && bari.z >= 0 ){
                 //Run fragment shader
-                shader.fragment(lambdas, rgbVals, depth, zVerts);
-
+                bari = bari* area;
+                shader.fragment(bari, rgbVals, depth, zVals);
+                
                 //Zbuffer check
-                if((*zBuffer)(x,y) < depth){
+                if((*zBuffer)(point.x,point.y) < depth){
                     if(depth <= 1.0){
-                        (*zBuffer)(x,y) = depth;
-                        (*pixelBuffer)(x,y) = SDL_MapRGBA(mappingFormat,
+                        (*zBuffer)(point.x,point.y) = depth;
+                        (*pixelBuffer)(point.x,point.y) = SDL_MapRGBA(mappingFormat,
                         rgbVals.data[0],rgbVals.data[1],rgbVals.data[2],0xFF);
                     }   
                 }
-            
-
-             
+            }
         }
     }
 }  
 
-void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertices,arr3i   &xV,arr3i  &yV, Vector3f   &zV){
+void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertices){
     for(int i = 0; i < 3; ++i){
-        xV[i] = ((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5);
-        yV[i] = ((-vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5);
-        zV.data[i] = vertices[i].z;
-
-        printf("%f , %f \n", vertices[i].x, ((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5));
+        vertices[i].x = ((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5);
+        vertices[i].y = ((vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5);
     }
+    //Swap because inverting y changes winding order
+
 }
 
 //Calculates baricentric coordinates of triangles using the cross product
@@ -161,18 +137,28 @@ void Rasterizer::barycentric(Vector3f &lambdas, float denom, float d00, float d0
     lambdas.data[0] = 1.0f - lambdas.data[1] - lambdas.data[2];
 }
 
-void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin, arr3i &xV, arr3i &yV, Buffer<Uint32> *pixelBuffer){
-    xMax = *std::max_element(xV.begin(),xV.end());
-    xMax = (xMax > pixelBuffer->mWidth) ? pixelBuffer->mWidth -1 : xMax;
+void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin,Vector3f *vertices, Buffer<Uint32> *pixelBuffer){
+    // xMax = std::ceil(std::max({vertices[0].x, vertices[1].x, vertices[2].x,}));
+    // xMin = std::ceil(std::min({vertices[0].x, vertices[1].x, vertices[2].x,}));
+    xMax = std::max({vertices[0].x, vertices[1].x, vertices[2].x});
+    xMin = std::min({vertices[0].x, vertices[1].x, vertices[2].x});
 
-    xMin = *std::min_element(xV.begin(),xV.end());
-    xMin = (xMin < 0) ? 0 : xMin;
+    // yMax = std::ceil(std::max({vertices[0].y, vertices[1].y, vertices[2].y,}));
+    // yMin = std::ceil(std::min({vertices[0].y, vertices[1].y, vertices[2].y,}));
+    yMax = std::max({vertices[0].y, vertices[1].y, vertices[2].y});
+    yMin = std::min({vertices[0].y, vertices[1].y, vertices[2].y});
 
-    yMax = *std::max_element(yV.begin(),yV.end());
-    yMax = (yMax > pixelBuffer->mHeight) ? pixelBuffer->mHeight -1 : yMax;
+    //Clip against screen
+    xMax = std::min(xMax, pixelBuffer->mWidth -1);
+    xMin = std::max(xMin, 0);
 
-    yMin = *std::min_element(yV.begin(),yV.end());
-    yMin = (yMin < 0) ? 0 : yMin;
+    yMax = std::min(yMax, pixelBuffer->mHeight -1);
+    yMin = std::max(yMin, 0);
+}
+
+
+float Rasterizer::edge(Vector3f &a, Vector3f &b, Vector3f &c){
+    return (b.x - a.x)*(c.y-a.y) - (b.y - a.y)*(c.x - a.x);
 }
 
 

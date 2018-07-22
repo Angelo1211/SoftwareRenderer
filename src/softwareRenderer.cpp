@@ -53,7 +53,7 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
         buildTri(n,normalPrim, *normals);
 
         //Skip faces that are pointing away from us
-        if (backFaceCulling(trianglePrimitive)) continue;
+       if (backFaceCulling(trianglePrimitive)) continue;
 
         //Apply vertex shader
         for(int i = 0; i < 3; ++i){

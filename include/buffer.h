@@ -13,15 +13,16 @@ struct Buffer{
         int mHeight;
         int mPixelCount;
         int mPitch;
+        int mOrigin;
         T *buffer;
 
         T& operator()(size_t x, size_t y){
-            return buffer[y*mWidth + x];
+            return buffer[mOrigin + -y*mWidth + x];
         }
 
         Buffer(int w, int h, T * array) 
         : mWidth(w), mHeight(h), mPixelCount(w*h),
-                mPitch(w*sizeof(T)), buffer(array) 
+                mPitch(w*sizeof(T)),mOrigin(mHeight*mWidth - mWidth), buffer(array) 
         {}
 
         ~Buffer(){
