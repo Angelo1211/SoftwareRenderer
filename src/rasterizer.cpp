@@ -96,8 +96,10 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
     int d00 = v0.dot2D(v0);
     int d01 = v0.dot2D(v1);
     int d11 = v1.dot2D(v1);
-    float denom = 1 / (float)((d00 * d11) - (d01 *d01));
-
+    //printf("%d, %d, %d\n",d00, d01, d11);
+    float denom = 1.0 / (float)((d00 * d11) - (d01 *d01));
+    if (denom == INFINITY) return;
+    //printf("%lf\n", denom);
     //Per fragment variables            
     float depth = 0;
     int d20   = 0;
@@ -120,19 +122,24 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
             // }
 
             //Throw pixel away if not in triangle
-            if(lambdas.data[0] <  0|| lambdas.data[1] < 0 || lambdas.data[2] < 0) continue;
+            //if( lambdas.y < 0 || lambdas.z < 0  || lambdas.x < 0 ) continue;
+            if( lambdas.y > 1 || lambdas.y < 0 || lambdas.z > 1 || lambdas.z < 0  || ((lambdas.y + lambdas.z) > 1) ) continue;
+            //if( (lambdas.x >= 0) && (lambdas.y >= 0) && (lambdas.z >= 0)){
 
-            //Run fragment shader
-            shader.fragment(lambdas, rgbVals, depth, zVerts);
+                //Run fragment shader
+                shader.fragment(lambdas, rgbVals, depth, zVerts);
 
-            //Zbuffer check
-            if((*zBuffer)(x,y) < depth){
-                if(depth <= 1.0){
-                    (*zBuffer)(x,y) = depth;
-                    (*pixelBuffer)(x,y) = SDL_MapRGBA(mappingFormat,
-                    rgbVals.data[0],rgbVals.data[1],rgbVals.data[2],0xFF);
-                }   
-            } 
+                //Zbuffer check
+                if((*zBuffer)(x,y) < depth){
+                    if(depth <= 1.0){
+                        (*zBuffer)(x,y) = depth;
+                        (*pixelBuffer)(x,y) = SDL_MapRGBA(mappingFormat,
+                        rgbVals.data[0],rgbVals.data[1],rgbVals.data[2],0xFF);
+                    }   
+                }
+            
+
+             
         }
     }
 }  
@@ -143,7 +150,7 @@ void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertic
         yV[i] = ((-vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5);
         zV.data[i] = vertices[i].z;
 
-        //printf("%f , %d \n", vertices[i].x, xV[i]);
+        printf("%f , %f \n", vertices[i].x, ((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5));
     }
 }
 
@@ -152,18 +159,17 @@ void Rasterizer::barycentric(Vector3f &lambdas, float denom, float d00, float d0
     lambdas.data[1] = denom  * ((d11*d20) - (d01*d21)); 
     lambdas.data[2] = denom  * ((d00*d21) - (d01*d20));
     lambdas.data[0] = 1.0f - lambdas.data[1] - lambdas.data[2];
-    //printf("u: %f\n",lambdas.data[0]);
 }
 
 void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin, arr3i &xV, arr3i &yV, Buffer<Uint32> *pixelBuffer){
     xMax = *std::max_element(xV.begin(),xV.end());
-    xMax = (xMax > pixelBuffer->mWidth) ? pixelBuffer->mWidth : xMax;
+    xMax = (xMax > pixelBuffer->mWidth) ? pixelBuffer->mWidth -1 : xMax;
 
     xMin = *std::min_element(xV.begin(),xV.end());
     xMin = (xMin < 0) ? 0 : xMin;
 
     yMax = *std::max_element(yV.begin(),yV.end());
-    yMax = (yMax > pixelBuffer->mHeight) ? pixelBuffer->mHeight : yMax;
+    yMax = (yMax > pixelBuffer->mHeight) ? pixelBuffer->mHeight -1 : yMax;
 
     yMin = *std::min_element(yV.begin(),yV.end());
     yMin = (yMin < 0) ? 0 : yMin;
