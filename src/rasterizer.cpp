@@ -87,10 +87,8 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
     Rasterizer::triBoundBox(xMax, xMin, yMax, yMin, vertices, pixelBuffer);
 
     //Per fragment variables            
-    float depth, w0, w1, w2, area;
-    Vector3f bari;
-    Vector3f rgbVals;
-    Vector3f point;
+    float depth, area;
+    Vector3f bari, rgbVals, point;
     Vector3f zVals{vertices[0].z,vertices[1].z,vertices[2].z};
     area = 1/edge(vertices[0],vertices[1],vertices[2]);
 
@@ -107,7 +105,7 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
                 //Run fragment shader
                 bari = bari* area;
                 shader.fragment(bari, rgbVals, depth, zVals);
-                
+
                 //Zbuffer check
                 if((*zBuffer)(point.x,point.y) < depth){
                     if(depth <= 1.0){

@@ -37,7 +37,11 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
     GouraudShader shader;
 
     //Basic light direction
-    Vector3f lightDir{1,0,0};
+    float t = static_cast<float>(SDL_GetTicks());
+    float radius = 12;
+    float lightX   = std::sin(t/2000) * radius;
+    float lightZ   = std::cos(t/2000) * radius;
+    Vector3f lightDir{-lightX, 0, -lightZ};
 
     //Building ModelViewProjection matrix
     Matrix4 MVP = (mCamera->projectionMatrix)*(mCamera->viewMatrix);
