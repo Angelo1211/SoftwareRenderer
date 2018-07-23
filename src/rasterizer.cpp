@@ -81,41 +81,68 @@ void Rasterizer::drawWireFrame(Vector3f *vertices, IShader &shader, Buffer<Uint3
 //Draws triangles using baricentric coordinates,
 void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer){
 
+    //Transform into viewport coordinates 
     Rasterizer::viewportTransform(pixelBuffer, vertices);
+
     //Finding triangle bounding box limits & clips it to the screen width and height
     int xMax, xMin, yMax, yMin;
     Rasterizer::triBoundBox(xMax, xMin, yMax, yMin, vertices, pixelBuffer);
 
     //Per fragment variables            
     float depth, area;
-    Vector3f bari, rgbVals, point;
+    Vector3f e, e_row, rgbVals{255,255,255};
+
+    //Per triangle variables
     Vector3f zVals{vertices[0].z,vertices[1].z,vertices[2].z};
     area = 1/edge(vertices[0],vertices[1],vertices[2]);
+    float A01 = vertices[0].y - vertices[1].y, B01= vertices[1].x - vertices[0].x;
+    float A12 = vertices[1].y - vertices[2].y, B12= vertices[2].x - vertices[1].x;
+    float A20 = vertices[2].y - vertices[0].y, B20= vertices[0].x - vertices[2].x;
+
+    //Bary coordinates at 
+    Vector3f point{(float)xMin, (float)yMin, 0};
+    e_row.x = edge(vertices[1], vertices[2], point);
+    e_row.y = edge(vertices[2], vertices[0], point);
+    e_row.z = edge(vertices[0], vertices[1], point);
+
 
     //Iterating through each pixel in triangle bounding box
     for(point.y = yMin; point.y <= yMax; ++point.y){
+        //Bary coordinates at start of row
+        e.x = e_row.x;
+        e.y = e_row.y;
+        e.z = e_row.z;
+
         for(point.x = xMin; point.x <= xMax; ++point.x){
 
-            bari.x = edge(vertices[1], vertices[2], point);
-            bari.y = edge(vertices[2], vertices[0], point);
-            bari.z = edge(vertices[0], vertices[1], point);
+            //Only draw if inside pixel and following top left rule
+            if(inside(e.x, A01, B01) && inside(e.y, A12, B12) && inside(e.z, A20, B20) ){
 
-            //Only draw if inside pixel
-            if(bari.x >= 0 && bari.y >= 0 && bari.z >= 0 ){
                 //Run fragment shader
-                bari = bari* area;
-                shader.fragment(bari, rgbVals, depth, zVals);
-
+                shader.fragment((e*area), rgbVals, depth, zVals);
                 //Zbuffer check
                 if((*zBuffer)(point.x,point.y) < depth){
                     if(depth <= 1.0){
                         (*zBuffer)(point.x,point.y) = depth;
                         (*pixelBuffer)(point.x,point.y) = SDL_MapRGBA(mappingFormat,
-                        rgbVals.data[0],rgbVals.data[1],rgbVals.data[2],0xFF);
+                        std::min(rgbVals.data[0],255.0f),
+                        std::min(rgbVals.data[1],255.0f),
+                        std::min(rgbVals.data[2],255.0f),
+                        0xFF);
                     }   
                 }
             }
+
+            //One step to the right
+            e.x += A12;
+            e.y += A20;
+            e.z += A01;      
         }
+
+        //One row step
+        e_row.x += B12;
+        e_row.y += B20;
+        e_row.z += B01;
     }
 }  
 
@@ -124,27 +151,20 @@ void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertic
         vertices[i].x = ((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5);
         vertices[i].y = ((vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5);
     }
-    //Swap because inverting y changes winding order
-
 }
 
-//Calculates baricentric coordinates of triangles using the cross product
-void Rasterizer::barycentric(Vector3f &lambdas, float denom, float d00, float d01, float d11, float d20, float d21){
-    lambdas.data[1] = denom  * ((d11*d20) - (d01*d21)); 
-    lambdas.data[2] = denom  * ((d00*d21) - (d01*d20));
-    lambdas.data[0] = 1.0f - lambdas.data[1] - lambdas.data[2];
-}
+
 
 void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin,Vector3f *vertices, Buffer<Uint32> *pixelBuffer){
-    // xMax = std::ceil(std::max({vertices[0].x, vertices[1].x, vertices[2].x,}));
-    // xMin = std::ceil(std::min({vertices[0].x, vertices[1].x, vertices[2].x,}));
-    xMax = std::max({vertices[0].x, vertices[1].x, vertices[2].x});
-    xMin = std::min({vertices[0].x, vertices[1].x, vertices[2].x});
+    xMax = std::ceil(std::max({vertices[0].x, vertices[1].x, vertices[2].x,}));
+    xMin = std::ceil(std::min({vertices[0].x, vertices[1].x, vertices[2].x,}));
+    //xMax = std::max({vertices[0].x, vertices[1].x, vertices[2].x});
+    //xMin = std::min({vertices[0].x, vertices[1].x, vertices[2].x});
 
-    // yMax = std::ceil(std::max({vertices[0].y, vertices[1].y, vertices[2].y,}));
-    // yMin = std::ceil(std::min({vertices[0].y, vertices[1].y, vertices[2].y,}));
-    yMax = std::max({vertices[0].y, vertices[1].y, vertices[2].y});
-    yMin = std::min({vertices[0].y, vertices[1].y, vertices[2].y});
+    yMax = std::ceil(std::max({vertices[0].y, vertices[1].y, vertices[2].y,}));
+    yMin = std::ceil(std::min({vertices[0].y, vertices[1].y, vertices[2].y,}));
+    //yMax = std::max({vertices[0].y, vertices[1].y, vertices[2].y});
+    //yMin = std::min({vertices[0].y, vertices[1].y, vertices[2].y});
 
     //Clip against screen
     xMax = std::min(xMax, pixelBuffer->mWidth -1);
@@ -159,4 +179,12 @@ float Rasterizer::edge(Vector3f &a, Vector3f &b, Vector3f &c){
     return (b.x - a.x)*(c.y-a.y) - (b.y - a.y)*(c.x - a.x);
 }
 
+bool Rasterizer::inside(float edge, float a, float b){
+    if (edge > 0) return true;
+    if (edge < 0) return false;
+    if ( a > 0 )  return true;
+    if ( a < 0 )  return false;
+    if ( b > 0 )  return true;
+    return false;
+}
 

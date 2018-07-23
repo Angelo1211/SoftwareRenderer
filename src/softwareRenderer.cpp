@@ -37,11 +37,8 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
     GouraudShader shader;
 
     //Basic light direction
-    float t = static_cast<float>(SDL_GetTicks());
-    float radius = 12;
-    float lightX   = std::sin(t/2000) * radius;
-    float lightZ   = std::cos(t/2000) * radius;
-    Vector3f lightDir{-lightX, 0, -lightZ};
+    Vector3f lightDir{1, 0, 1};
+    Vector3f viewDir;
 
     //Building ModelViewProjection matrix
     Matrix4 MVP = (mCamera->projectionMatrix)*(mCamera->viewMatrix);
@@ -57,12 +54,12 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
         buildTri(n,normalPrim, *normals);
 
         //Skip faces that are pointing away from us
-       if (backFaceCulling(trianglePrimitive)) continue;
+       if (backFaceCulling(trianglePrimitive, viewDir)) continue;
 
         //Apply vertex shader
         for(int i = 0; i < 3; ++i){
             //Vector3 normal = (mCamera->viewMatrix).matMultVec(normalPrim[i]);
-            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP, normalPrim[i], lightDir.normalized(), i);
+            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP, normalPrim[i], lightDir.normalized(), i, viewDir);
         }
 
         //Skip triangles that are outside viewing frustrum
@@ -115,18 +112,18 @@ void SoftwareRenderer::buildTri(Vector3i &index, Vector3f *primitive, std::vecto
     }
 }
 
-bool SoftwareRenderer::backFaceCulling(Vector3f *trianglePrim){
+bool SoftwareRenderer::backFaceCulling(Vector3f *trianglePrim, Vector3f &viewDir){
         //Triangle surface normal 
         //Should probably be calculated on load next time
         Vector3f N1 = trianglePrim[1] - trianglePrim[0];
         Vector3f N2 = trianglePrim[2] - trianglePrim[0];
         Vector3f N  = (N1.crossProduct(N2)).normalized();
 
-        Vector3f view_dir =  mCamera->position -  trianglePrim[0];
-        view_dir.normalized();
+        viewDir =  mCamera->position -  trianglePrim[0];
+        viewDir.normalized();
 
         //Returns false if the triangle cannot see the camera
-        float intensity =  N.dotProduct(view_dir);
+        float intensity =  N.dotProduct(viewDir);
         return intensity <= 0.0;
 }
 

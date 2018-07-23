@@ -42,6 +42,8 @@ struct Vector3{
     {return Vector3(-x, -y, -z);} 
     Vector3 operator*(const T &rhs) const //Scalar-vector multiplication
     {return Vector3(x*rhs, y*rhs, z*rhs);}
+    Vector3 operator+(const T &rhs) const //Scalar-vector multiplication
+    {return Vector3(x+rhs, y+rhs, z+rhs);}
 
     //Vector-vector operations
     Vector3 operator-(const Vector3 &rhs) const
@@ -49,6 +51,9 @@ struct Vector3{
 
     Vector3 operator+(const Vector3 &rhs) const
     {return Vector3(x + rhs.x, y + rhs.y, z + rhs.z);}
+
+    Vector3 operator*(const Vector3 &rhs) const
+    {return Vector3(x * rhs.x, y * rhs.y, z * rhs.z);}
 
     Vector3 crossProduct(const Vector3 &r) const
     {return Vector3( (y*r.z - z*r.y), (z*r.x - x*r.z), (x*r.y - y*r.x) );}
@@ -76,6 +81,10 @@ struct Vector3{
         }
 
         return *this;
+    }
+
+    static Vector3 reflect(const Vector3 &I, const Vector3 &N){
+        return I - ((N * I.dotProduct(N)) * 2.0f);
     }
     
     //Print for debugging purposes
