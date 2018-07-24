@@ -30,7 +30,6 @@ class Rasterizer{
         //Transforms coordinates from NDC to pixel values
         static void viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertices);
 
-
         static void triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin, Vector3f *vertices, Buffer<Uint32> *pixelBuffer);
 
         static float edge(Vector3f &a, Vector3f &b, Vector3f &c);

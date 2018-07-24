@@ -1,6 +1,5 @@
 #include "renderManager.h"
-#include <vector>
-#include "model.h"
+
 
 //Dummy constructors / Destructors
 RenderManager::RenderManager(){}
@@ -33,9 +32,9 @@ void RenderManager::render(){
 
     //Draw all meshes in the render queue so far we assume they are
     //normal triangular meshes.
-    while( !renderQueue.empty() ){
-        renderInstance.drawTriangularMesh(renderQueue.front());
-        renderQueue.pop();
+    while( !renderObjectQueue->empty() ){
+        renderInstance.drawTriangularMesh(renderObjectQueue->front());
+        renderObjectQueue->pop();
     }
 
     //Swapping pixel buffer with final rendered image with the
@@ -46,8 +45,7 @@ void RenderManager::render(){
     renderInstance.setCameraToRenderFrom(nullptr);
 }
 
-//Gets the list of visible models from the current scene and 
-//extracts a list of pointers to their meshes. 
+//Gets the list of visible models from the current scene
 //Done every frame in case scene changes
 void RenderManager::buildRenderQueue(){
     
@@ -55,13 +53,8 @@ void RenderManager::buildRenderQueue(){
     Scene* currentScene = sceneLocator->getCurrentScene();
     renderInstance.setCameraToRenderFrom(currentScene->getCurrentCamera());
 
-    //Get pointers to the visible models
-    std::vector<Model*>* visibleModels = currentScene->getVisiblemodels();
-    
-    //Builds render queue from visibleModels list
-    for (Model* model : *visibleModels ){
-        renderQueue.push(model->getMesh());
-    }
+    //Get pointers to the visible model queu
+    renderObjectQueue = currentScene->getVisiblemodels();
 }
 
 bool RenderManager::initSoftwareRenderer(){
@@ -69,6 +62,8 @@ bool RenderManager::initSoftwareRenderer(){
     int h = DisplayManager::SCREEN_HEIGHT;
     return renderInstance.startUp(w,h);
 }
+
+
 
 
 

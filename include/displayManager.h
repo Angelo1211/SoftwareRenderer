@@ -1,7 +1,6 @@
 #ifndef DISPLAYMANAGER_H
 #define DISPLAYMANAGER_H
 
-#include "SDL.h"
 #include "buffer.h"
 
 

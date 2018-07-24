@@ -2,7 +2,7 @@
 #define MATRIX_H
 
 #include <array>
-#include <vector3D.h>
+#include "vector3D.h"
 
 //Data struct holding all of the data you need to make a transform matrix
 struct TransformParameters{
@@ -21,8 +21,11 @@ class Matrix4{
             return mMatrix[y*4 + x];
         }
         Matrix4 operator* (Matrix4 &rhs);
-        Vector3f matMultVec(Vector3f &vec); 
-        
+        Vector3f matMultVec(const Vector3f &vec); 
+        Vector3f matMultDir(const Vector3f &vec);
+        Matrix4 transpose();
+        Matrix4 inverse();
+
         //Named constructor idiom to build the basic matrices we need for 
         //transformation.
         Matrix4 static makeTestMat();

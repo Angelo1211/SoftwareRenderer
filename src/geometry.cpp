@@ -26,6 +26,40 @@ void AABox::buildAABB(const Mesh &mesh){
     maxPoints = maxVals;
 }
 
+void AABox::update(const Matrix4 &modelMatrix){
+    Vector3f minVals(std::numeric_limits<float>::max());
+    Vector3f maxVals(std::numeric_limits<float>::min());
+    Vector3f vertices[8];
+
+    vertices[0] = Vector3f(minPoints.x, minPoints.y, minPoints.z);
+    vertices[1] = Vector3f(maxPoints.x, minPoints.y, minPoints.z);
+    vertices[2] = Vector3f(minPoints.x, maxPoints.y, minPoints.z);
+    vertices[3] = Vector3f(maxPoints.x, maxPoints.y, minPoints.z);
+    vertices[4] = Vector3f(minPoints.x, minPoints.y, maxPoints.z);
+    vertices[5] = Vector3f(maxPoints.x, minPoints.y, maxPoints.z);
+    vertices[6] = Vector3f(minPoints.x, maxPoints.y, maxPoints.z);
+    vertices[7] = Vector3f(maxPoints.x, maxPoints.y, maxPoints.z);
+
+    //Iterating through every vertx in the mesh
+    for(int i = 0; i < 8; ++i){
+        //Checking the current vertex for all axes
+        for(int ax = 0; ax < 3; ++ax){
+            //Setting max values
+            if(vertices[i].data[ax] > maxVals.data[ax]){
+                maxVals.data[ax] = vertices[i].data[ax];
+            }
+            //Setting min values
+            if(vertices[i].data[ax] < minVals.data[ax]){
+                minVals.data[ax] = vertices[i].data[ax];
+            }
+        }
+    }
+
+    minPoints = minVals;
+    maxPoints = maxVals;
+}
+
+
 //---------------------------------PLANE------------------------------------//
 
 float Plane::distance(const Vector3f &points){
@@ -48,6 +82,7 @@ void Frustrum::setCamInternals(){
     farW  = farH * AR;
 }
 
+//Calculates frustrum planes in world space
 void Frustrum::updatePlanes(Matrix4 &viewMat, const Vector3f &cameraPos){
     Vector3f X(viewMat(0,0), viewMat(0,1), viewMat(0,2));
     Vector3f Y(viewMat(1,0), viewMat(1,1), viewMat(1,2));

@@ -14,6 +14,7 @@ struct AABox{
 
     //Builds axis aligned bounding box of the given mesh
     void buildAABB(const Mesh &mesh);
+    void update(const Matrix4 &modelMatrix);
 };
 
 struct Plane{

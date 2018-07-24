@@ -3,7 +3,7 @@
 
 #include "rasterizer.h" 
 #include "buffer.h"
-#include "mesh.h"
+#include "model.h"
 #include "camera.h"
 
 class SoftwareRenderer {
@@ -34,7 +34,7 @@ class SoftwareRenderer {
         //14.-zBuffer update
         //15.-Writes to frame buffer
         //16.-Swap buffer
-        void drawTriangularMesh(Mesh * triMesh);
+        void drawTriangularMesh(Model * currentModel);
 
         void clearBuffers();
 

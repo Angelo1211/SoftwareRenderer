@@ -1,4 +1,4 @@
-#include <scene.h>
+#include "scene.h"
 #include "objParser.h"
 
 Scene::Scene(std::string path){
@@ -15,7 +15,6 @@ Scene::~Scene(){
 }
 
 void Scene::update(){
-    visibleModels.clear();
     mainCamera.update();
     for(Model *models : modelsInScene){
         models->update();
@@ -35,7 +34,8 @@ bool Scene::loadSceneModels(std::string &path){
     }
     else{
         TransformParameters initParameters;
-        initParameters.translation = Vector3f(0, -5, 0);
+        //initParameters.rotation = Vector3f(90*M_PI/180.0f, 0 , 0);
+        initParameters.translation = Vector3f(0, 0, 0);
         modelsInScene.push_back(new Model(fullPath, initParameters));
         return false;
     }
@@ -47,13 +47,13 @@ void Scene::frustrumCulling(){
 
         visible = mainCamera.checkVisibility(model->getBounds());
 
-        if (visible){
-            visibleModels.push_back(model);
+        if (visible) {
+            visibleModels.push(model);
         }
     }
 }
 
-std::vector<Model*>* Scene::getVisiblemodels(){
+ std::queue<Model*>* Scene::getVisiblemodels(){
     return &visibleModels;
 }
 

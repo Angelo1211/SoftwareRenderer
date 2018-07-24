@@ -1,5 +1,6 @@
 #include "softwareRenderer.h"
 #include "shader.h"
+#include "mesh.h"
 
 SoftwareRenderer::SoftwareRenderer(){}
 SoftwareRenderer::~SoftwareRenderer(){}
@@ -20,9 +21,9 @@ void SoftwareRenderer::shutDown(){
     }
 }
 
-void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
-
+void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     //Getting the vertices, faces 
+    Mesh *triMesh = currentModel->getMesh();
     std::vector<Vector3i> * vIndices = &triMesh->vertexIndices;
     std::vector<Vector3i> * nIndices = &triMesh->normalsIndices;
     std::vector<Vector3f> * vertices = &triMesh->vertices;
@@ -37,11 +38,14 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
     GouraudShader shader;
 
     //Basic light direction
-    Vector3f lightDir{1, 0, 1};
+    Vector3f lightDir{1, 1, 1};
     Vector3f viewDir;
 
     //Building ModelViewProjection matrix
-    Matrix4 MVP = (mCamera->projectionMatrix)*(mCamera->viewMatrix);
+    shader.MV  = (mCamera->viewMatrix)*(currentModel->getModelMatrix());
+    shader.MVP = (mCamera->projectionMatrix)*shader.MV;
+    shader.V   = (mCamera->viewMatrix);
+    shader.N   = (shader.MV.inverse()).transpose(); 
 
     //Iterate through every triangle
     for (int j = 0; j < numFaces; ++j){
@@ -54,12 +58,11 @@ void SoftwareRenderer::drawTriangularMesh(Mesh* triMesh){
         buildTri(n,normalPrim, *normals);
 
         //Skip faces that are pointing away from us
-       if (backFaceCulling(trianglePrimitive, viewDir)) continue;
+       //if (backFaceCulling(trianglePrimitive, viewDir)) continue;
 
         //Apply vertex shader
         for(int i = 0; i < 3; ++i){
-            //Vector3 normal = (mCamera->viewMatrix).matMultVec(normalPrim[i]);
-            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], MVP, normalPrim[i], lightDir.normalized(), i, viewDir);
+            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], normalPrim[i], lightDir.normalized(), i);
         }
 
         //Skip triangles that are outside viewing frustrum

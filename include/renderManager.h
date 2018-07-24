@@ -4,7 +4,7 @@
 #include "displayManager.h"
 #include "sceneManager.h"
 #include "softwareRenderer.h"
-#include "mesh.h"
+#include "model.h"
 #include <queue>
 
 //High level render operations that shouldn't be done by the
@@ -33,8 +33,10 @@ class RenderManager{
         DisplayManager * screen;
 
         SoftwareRenderer renderInstance;
-        std::queue<Mesh*> renderQueue;        
+        std::queue<Model*> *renderObjectQueue;        
 };
+
+
 
 
 #endif

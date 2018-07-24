@@ -3,8 +3,10 @@
 
 #include <string>
 #include <vector>
+#include <queue>
 #include "model.h"
 #include "camera.h"
+
 
 //Keeps track of all the lights, models and cameras contained in a current
 //scene. Also performs frustrumc ulling to determine what objects to send to
@@ -20,7 +22,7 @@ class Scene{
         void update();
 
         //Returns the list of models not culled by the frustrum
-        std::vector<Model*>* getVisiblemodels();
+        std::queue<Model*>* getVisiblemodels();
 
         Camera * getCurrentCamera();
 
@@ -36,7 +38,7 @@ class Scene{
         std::vector<Model*> modelsInScene;
 
         //Contains the models that remain after frustrum culling
-        std::vector<Model*> visibleModels;
+        std::queue<Model*> visibleModels;
         
         bool loadSceneModels(std::string &path);
 
