@@ -68,31 +68,38 @@ struct GouraudShader : public IShader {
 
 };
 //Even more complex shader that interpolates normals and calculates intensities per fragment instead
-//of per normals. Uses half angle optimization.
+//of per normals. Uses half angle optimization.BlinnPhongShader
 struct BlinnPhongShader : public IShader {
-    Matrix4 MVP, MV;
-    float ambientStrength = 0.05, diffStrength = 0, specularStrength = 0.5, spec = 0;
-    Vector3f ambient, diffuse, specular;
-    Vector3f lightColor1{1,0,0}, lightColor2{0,0,1}, lightColor3{1,1,1};
-    Vector3f varying_diffuse, varying_specular, reflectDir, viewDir;
+    Matrix4 MVP, MV, V, N;
+    float ambientStrength = 0.05, diffStrength = 0, specularStrength = 0.9, spec = 0;
+    Vector3f normals[3], viewDir[3];
+    Vector3f ambient, diffuse, specular, interpNormal, interpViewDir;
+    Vector3f lightColor{0,0.1,1},lightColorSpec{1,1,1};
+    Vector3f varying_diffuse, varying_specular, reflectDir, light2;
     Vector3f rgb{255,255,255};
 
     Vector3f vertex(Vector3f &vertex, Vector3f &normal, Vector3f &light, int index) override{
-        reflectDir = Vector3f::reflect(-light, normal);
-        viewDir = MV.matMultVec(vertex);
-        varying_specular.data[index] = std::pow( std::max(viewDir.dotProduct(reflectDir), 0.0f), 32.0f);
-        varying_diffuse.data[index] = std::max(0.0f, normal.dotProduct(light));
+        normals[index] = N.matMultDir(normal).normalized();
+        viewDir[index] = MV.matMultVec(vertex).normalized();
+        light2 = V.matMultDir(light).normalized();
         return MVP.matMultVec(vertex);
     }
 
     bool fragment(const Vector3f &bari, Vector3f &color, float &depth, Vector3f &zVerts) override{
-        ambient = lightColor1 * ambientStrength;
-        
-        diffStrength = bari.dotProduct(varying_diffuse);
-        diffuse = lightColor2 * diffStrength;
+        //Interpolated stuff
+        interpNormal  = (normals[0] * bari.x) + (normals[1] * bari.y)  + (normals[2] * bari.z);
+        interpViewDir = (viewDir[0] * bari.x) + (viewDir[1] * bari.y)  + (viewDir[2] * bari.z);
+        //Ambient 
+        ambient = lightColor * ambientStrength;
 
-        spec = bari.dotProduct(varying_specular);
-        specular = lightColor3 * (specularStrength * spec);
+        //Diffuse
+        diffStrength = std::max(0.0f, (interpNormal).dotProduct(light2));
+        diffuse = lightColor * diffStrength;
+        
+        //Specular
+        reflectDir = Vector3f::reflect(-light2, interpNormal);
+        spec = std::pow( std::max( (-interpViewDir).dotProduct(reflectDir), 0.0f), 50.0f);
+        specular = lightColorSpec * (specularStrength * spec);
 
         color = (ambient + diffuse + specular) * rgb;
 

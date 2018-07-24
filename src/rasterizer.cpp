@@ -80,21 +80,28 @@ void Rasterizer::drawWireFrame(Vector3f *vertices, IShader &shader, Buffer<Uint3
 
 //Draws triangles using baricentric coordinates,
 void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer){
+    //Per fragment variables            
+    float depth, area;
+    Vector3f e, e_row, rgbVals{255,255,255};
 
     //Transform into viewport coordinates 
     Rasterizer::viewportTransform(pixelBuffer, vertices);
+
+    area = edge(vertices[0],vertices[1],vertices[2]);
+    if(area < 0 ) return;
+    area = 1/area;
 
     //Finding triangle bounding box limits & clips it to the screen width and height
     int xMax, xMin, yMax, yMin;
     Rasterizer::triBoundBox(xMax, xMin, yMax, yMin, vertices, pixelBuffer);
 
-    //Per fragment variables            
-    float depth, area;
-    Vector3f e, e_row, rgbVals{255,255,255};
+    
 
     //Per triangle variables
     Vector3f zVals{vertices[0].z,vertices[1].z,vertices[2].z};
-    area = 1/edge(vertices[0],vertices[1],vertices[2]);
+
+    
+
     float A01 = vertices[0].y - vertices[1].y, B01= vertices[1].x - vertices[0].x;
     float A12 = vertices[1].y - vertices[2].y, B12= vertices[2].x - vertices[1].x;
     float A20 = vertices[2].y - vertices[0].y, B20= vertices[0].x - vertices[2].x;

@@ -35,10 +35,10 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     Vector3f normalPrim[3];
 
     //Initializing shader 
-    GouraudShader shader;
+    BlinnPhongShader shader;
 
     //Basic light direction
-    Vector3f lightDir{1, 1, 1};
+    Vector3f lightDir{1, 0, 0};
     Vector3f viewDir;
 
     //Building ModelViewProjection matrix
@@ -58,7 +58,6 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
         buildTri(n,normalPrim, *normals);
 
         //Skip faces that are pointing away from us
-       //if (backFaceCulling(trianglePrimitive, viewDir)) continue;
 
         //Apply vertex shader
         for(int i = 0; i < 3; ++i){
