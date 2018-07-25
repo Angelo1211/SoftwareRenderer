@@ -23,7 +23,7 @@ bool SceneManager::switchScene(){
 
 //for now just loads a single .obj based on the  given string
 bool SceneManager::loadScene(){
-    currentScene = new Scene("dragon.obj");
+    currentScene = new Scene("teapot.obj");
     return  !currentScene->checkIfEmpty(); //True if empty, so it's negated for startup
 }
 

@@ -69,7 +69,7 @@ struct GouraudShader : public IShader {
 };
 
 //Even more complex shader that interpolates normals and calculates intensities per fragment instead
-//of per normals. 
+//instead of per vertex.
 struct PhongShader : public IShader {
     Matrix4 MVP, MV, V, N;
     float ambientStrength = 0.05, diffStrength = 0, specularStrength = 0.9, spec = 0;
@@ -101,6 +101,48 @@ struct PhongShader : public IShader {
         reflectDir = Vector3f::reflect(-light2, interpNormal);
         spec = std::pow( std::max( (-interpViewDir.normalized()).dotProduct(reflectDir), 0.0f), 50.0f);
         specular = lightColorSpec * (specularStrength * spec);
+
+        color = (ambient + diffuse + specular) * rgb;
+
+        depth = bari.dotProduct(zVerts);
+        return false;
+    }
+
+};
+
+//Optimized version of Phong shader that uses a half angle instead of individual reflection
+//angles
+struct BlinnPhongShader : public IShader {
+    Matrix4 MVP, MV, V, N;
+    float ambientStrength = 0.05, diffStrength, spec,shininess = 128;
+    Vector3f normals[3], viewDir[3];
+    Vector3f ambient, diffuse, specular, interpNormal, interpViewDir;
+    Vector3f lightColor{0,0.1,1},lightColorSpec{1,1,1};
+    Vector3f halfwayDir, lightDir;
+    Vector3f rgb{255,255,255};
+
+    Vector3f vertex(Vector3f &vertex, Vector3f &normal, Vector3f &light, int index) override{
+        normals[index] = N.matMultDir(normal).normalized();
+        viewDir[index] = MV.matMultVec(vertex).normalized();
+        lightDir = V.matMultDir(light).normalized();
+        return MVP.matMultVec(vertex);
+    }
+
+    bool fragment(const Vector3f &bari, Vector3f &color, float &depth, Vector3f &zVerts) override{
+        //Interpolated stuff
+        interpNormal  = ((normals[0] * bari.x) + (normals[1] * bari.y)  + (normals[2] * bari.z)).normalized();
+        interpViewDir = (viewDir[0] * bari.x) + (viewDir[1] * bari.y)  + (viewDir[2] * bari.z);
+        //Ambient 
+        ambient = lightColor * ambientStrength;
+
+        //Diffuse
+        diffStrength = std::max(0.0f, interpNormal.dotProduct(lightDir));
+        diffuse = lightColor * diffStrength;
+        
+        //Specular
+        halfwayDir = (lightDir -interpViewDir).normalized();
+        spec = std::pow(std::max(0.0f, interpNormal.dotProduct(halfwayDir)), shininess);
+        specular = lightColorSpec * spec;
 
         color = (ambient + diffuse + specular) * rgb;
 

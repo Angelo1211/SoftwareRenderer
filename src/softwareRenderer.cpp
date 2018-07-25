@@ -35,10 +35,14 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     Vector3f normalPrim[3];
 
     //Initializing shader 
-    PhongShader shader;
+    BlinnPhongShader shader;
 
     //Basic light direction
-    Vector3f lightDir{1, 0, 0};
+    float t = static_cast<float>(SDL_GetTicks());
+    float radius = 1;
+    float lX   = std::sin(t/2000) * radius;
+    float lY   = std::cos(t/2000) * radius;
+    Vector3f lightDir{lX, lY, 0};
     Vector3f viewDir;
 
     //Building ModelViewProjection matrix
