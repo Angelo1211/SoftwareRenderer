@@ -34,8 +34,8 @@ bool Scene::loadSceneModels(std::string &path){
     }
     else{
         TransformParameters initParameters;
-        initParameters.rotation = Vector3f(90*M_PI/180.0f, 0 , 0);
-        initParameters.translation = Vector3f(0, 0, 0);
+        //initParameters.rotation = Vector3f(90*M_PI/180.0f, 0 , 0);
+        initParameters.translation = Vector3f(0, -5, 0);
         modelsInScene.push_back(new Model(fullPath, initParameters));
         return false;
     }

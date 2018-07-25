@@ -67,9 +67,10 @@ struct GouraudShader : public IShader {
     }
 
 };
+
 //Even more complex shader that interpolates normals and calculates intensities per fragment instead
-//of per normals. Uses half angle optimization.BlinnPhongShader
-struct BlinnPhongShader : public IShader {
+//of per normals. 
+struct PhongShader : public IShader {
     Matrix4 MVP, MV, V, N;
     float ambientStrength = 0.05, diffStrength = 0, specularStrength = 0.9, spec = 0;
     Vector3f normals[3], viewDir[3];
@@ -93,12 +94,12 @@ struct BlinnPhongShader : public IShader {
         ambient = lightColor * ambientStrength;
 
         //Diffuse
-        diffStrength = std::max(0.0f, (interpNormal).dotProduct(light2));
+        diffStrength = std::max(0.0f, (interpNormal.normalized()).dotProduct(light2));
         diffuse = lightColor * diffStrength;
         
         //Specular
         reflectDir = Vector3f::reflect(-light2, interpNormal);
-        spec = std::pow( std::max( (-interpViewDir).dotProduct(reflectDir), 0.0f), 50.0f);
+        spec = std::pow( std::max( (-interpViewDir.normalized()).dotProduct(reflectDir), 0.0f), 50.0f);
         specular = lightColorSpec * (specularStrength * spec);
 
         color = (ambient + diffuse + specular) * rgb;

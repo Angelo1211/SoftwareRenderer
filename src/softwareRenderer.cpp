@@ -35,7 +35,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     Vector3f normalPrim[3];
 
     //Initializing shader 
-    BlinnPhongShader shader;
+    PhongShader shader;
 
     //Basic light direction
     Vector3f lightDir{1, 0, 0};

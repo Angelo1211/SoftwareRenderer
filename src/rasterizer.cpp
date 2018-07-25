@@ -95,13 +95,8 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
     int xMax, xMin, yMax, yMin;
     Rasterizer::triBoundBox(xMax, xMin, yMax, yMin, vertices, pixelBuffer);
 
-    
-
     //Per triangle variables
     Vector3f zVals{vertices[0].z,vertices[1].z,vertices[2].z};
-
-    
-
     float A01 = vertices[0].y - vertices[1].y, B01= vertices[1].x - vertices[0].x;
     float A12 = vertices[1].y - vertices[2].y, B12= vertices[2].x - vertices[1].x;
     float A20 = vertices[2].y - vertices[0].y, B20= vertices[0].x - vertices[2].x;
