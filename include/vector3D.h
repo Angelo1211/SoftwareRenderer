@@ -88,7 +88,7 @@ struct Vector3{
     }
     
     //Print for debugging purposes
-    void print(){
+    void print() const{
         std::string str;
         if(std::is_same<T,float>::value){
             str = "Vecf:(%f, %f, %f)\n";

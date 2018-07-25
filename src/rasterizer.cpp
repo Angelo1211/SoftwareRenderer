@@ -88,7 +88,7 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
     Rasterizer::viewportTransform(pixelBuffer, vertices);
 
     area = edge(vertices[0],vertices[1],vertices[2]);
-    if(area < 0 ) return;
+    if(area <= 0 ) return;
     area = 1/area;
 
     //Finding triangle bounding box limits & clips it to the screen width and height

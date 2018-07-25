@@ -37,6 +37,11 @@ void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
             Vector3f normal(std::stof(x),std::stof(y),std::stof(z));
             mesh.normals.push_back(normal);
         }
+        else if(key == "vt"){ //Normal data
+            iss >> x >> y;
+            Vector3f tex(std::stof(x),std::stof(y),0);
+            mesh.texels.push_back(tex);
+        }
         else if(key == "f"){ //index data
             iss >> x >> y >> z;
             std::vector<std::string> splitX = splitStr(x,delimeter); 
@@ -46,7 +51,6 @@ void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
                 //Subtracted by 1 because OBJ files count indices starting by 1
                 indices[i] = Vector3i(std::stoi(splitX[i])-1,std::stoi(splitY[i])-1,std::stoi(splitZ[i])-1);
             }
-            printf("\n");
             mesh.vertexIndices.push_back(indices[0]);
             mesh.textureIndices.push_back(indices[1]);
             mesh.normalsIndices.push_back(indices[2]);

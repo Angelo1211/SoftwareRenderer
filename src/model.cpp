@@ -21,6 +21,10 @@ AABox *Model::getBounds(){
     return &mBounds;
 }
 
-Matrix4 &Model::getModelMatrix(){
-    return mModelMatrix;
+Matrix4 *Model::getModelMatrix(){
+    return &mModelMatrix;
+}
+
+Texture *Model::getAlbedo(){
+    return &mAlbedo;
 }

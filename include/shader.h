@@ -3,12 +3,13 @@
 
 #include "vector3D.h"
 #include "matrix.h"
+#include "texture.h"
 #include <array>
 
 //Shader Interface for a class that emulates modern GPU fragment and vertex shaders
 struct IShader {
     virtual ~IShader() {};
-    virtual Vector3f vertex(Vector3f &vertex, Vector3f &normals, Vector3f &light, int i) = 0;
+    virtual Vector3f vertex(Vector3f &vertex, Vector3f &normals, Vector3f &textureVals, Vector3f &light, int i) = 0;
     virtual bool fragment(const Vector3f &bari, Vector3f &color, float &depth, Vector3f &zVerts) = 0;
 };
 
@@ -18,7 +19,7 @@ struct FlatShader : public IShader {
     float varIntensity;
     Vector3f rgb{255,255,255};
 
-    Vector3f vertex(Vector3f &vertex, Vector3f &normals, Vector3f &light, int index) override{
+    Vector3f vertex(Vector3f &vertex, Vector3f &normals, Vector3f &textureVals, Vector3f &light, int index) override{
         varIntensity = std::max(0.0f,normals.dotProduct(light));
         return MVP.matMultVec(vertex); //Transforms verts into projected space
     }
@@ -41,7 +42,7 @@ struct GouraudShader : public IShader {
     Vector3f varying_diffuse, varying_specular, reflectDir, viewDir, light2;
     Vector3f rgb{255,255,255};
 
-    Vector3f vertex(Vector3f &vertex, Vector3f &normal, Vector3f &light, int index) override{
+    Vector3f vertex(Vector3f &vertex, Vector3f &normal, Vector3f &textureVals, Vector3f &light, int index) override{
         normal = N.matMultDir(normal).normalized();
         light2 = V.matMultDir(light).normalized();
         reflectDir = Vector3f::reflect(-light2, normal);
@@ -79,7 +80,7 @@ struct PhongShader : public IShader {
     Vector3f varying_diffuse, varying_specular, reflectDir, light2;
     Vector3f rgb{255,255,255};
 
-    Vector3f vertex(Vector3f &vertex, Vector3f &normal, Vector3f &light, int index) override{
+    Vector3f vertex(Vector3f &vertex, Vector3f &normal, Vector3f &textureVals, Vector3f &light, int index) override{
         normals[index] = N.matMultDir(normal).normalized();
         viewDir[index] = MV.matMultVec(vertex).normalized();
         light2 = V.matMultDir(light).normalized();
@@ -113,16 +114,18 @@ struct PhongShader : public IShader {
 //Optimized version of Phong shader that uses a half angle instead of individual reflection
 //angles
 struct BlinnPhongShader : public IShader {
+    Texture *albedo;
     Matrix4 MVP, MV, V, N;
-    float ambientStrength = 0.05, diffStrength, spec,shininess = 128;
-    Vector3f normals[3], viewDir[3];
-    Vector3f ambient, diffuse, specular, interpNormal, interpViewDir;
-    Vector3f lightColor{0,0.1,1},lightColorSpec{1,1,1};
+    float ambientStrength = 0.05, diffStrength, spec,shininess = 200;
+    Vector3f normals[3], viewDir[3], UV[3];
+    Vector3f ambient, diffuse, specular, interpNormal, interpViewDir, interpUV;
+    Vector3f lightColor{1,1,1},lightColorSpec{1,1,1};
     Vector3f halfwayDir, lightDir;
     Vector3f rgb{255,255,255};
 
-    Vector3f vertex(Vector3f &vertex, Vector3f &normal, Vector3f &light, int index) override{
+    Vector3f vertex(Vector3f &vertex, Vector3f &normal, Vector3f &textureVals, Vector3f &light, int index) override{
         normals[index] = N.matMultDir(normal).normalized();
+        UV[index] = textureVals;
         viewDir[index] = MV.matMultVec(vertex).normalized();
         lightDir = V.matMultDir(light).normalized();
         return MVP.matMultVec(vertex);
@@ -132,6 +135,11 @@ struct BlinnPhongShader : public IShader {
         //Interpolated stuff
         interpNormal  = ((normals[0] * bari.x) + (normals[1] * bari.y)  + (normals[2] * bari.z)).normalized();
         interpViewDir = (viewDir[0] * bari.x) + (viewDir[1] * bari.y)  + (viewDir[2] * bari.z);
+        interpUV = (UV[0] * bari.x) + (UV[1] * bari.y)  + (UV[2] * bari.z);
+        //Albedo
+        rgb = albedo->getPixelVal(interpUV.x, interpUV.y);
+        //rgb.print();
+
         //Ambient 
         ambient = lightColor * ambientStrength;
 

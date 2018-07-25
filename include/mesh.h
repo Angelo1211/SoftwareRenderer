@@ -10,6 +10,7 @@ struct Mesh{
     int numVertices = 0;
     std::vector<Vector3f> vertices;
     std::vector<Vector3f> normals;
+    std::vector<Vector3f> texels;
 
     int numFaces = 0;
     std::vector<Vector3i> vertexIndices;

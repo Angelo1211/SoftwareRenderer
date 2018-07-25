@@ -22,31 +22,36 @@ void SoftwareRenderer::shutDown(){
 }
 
 void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
-    //Getting the vertices, faces 
+    //Getting the vertices, faces, texture data 
     Mesh *triMesh = currentModel->getMesh();
     std::vector<Vector3i> * vIndices = &triMesh->vertexIndices;
+    std::vector<Vector3i> * tIndices = &triMesh->textureIndices;
     std::vector<Vector3i> * nIndices = &triMesh->normalsIndices;
+
     std::vector<Vector3f> * vertices = &triMesh->vertices;
     std::vector<Vector3f> * normals = &triMesh->normals;
+    std::vector<Vector3f> * texels = &triMesh->texels;
     int numFaces = triMesh->numFaces;
 
     //Array grouping vertices together into triangle
     Vector3f trianglePrimitive[3];
     Vector3f normalPrim[3];
+    Vector3f uvPrim[3];
 
     //Initializing shader 
     BlinnPhongShader shader;
+    shader.albedo = currentModel->getAlbedo();
 
     //Basic light direction
     float t = static_cast<float>(SDL_GetTicks());
     float radius = 1;
-    float lX   = std::sin(t/2000) * radius;
-    float lY   = std::cos(t/2000) * radius;
-    Vector3f lightDir{lX, lY, 0};
-    Vector3f viewDir;
+    float lX   = std::sin(t/4000) * radius;
+    float lY   = std::cos(t/4000) * radius;
+    Vector3f lightDir{1, 1, 0};
+    lightDir = lightDir.normalized();
 
     //Building ModelViewProjection matrix
-    shader.MV  = (mCamera->viewMatrix)*(currentModel->getModelMatrix());
+    shader.MV  = (mCamera->viewMatrix)*(*(currentModel->getModelMatrix()));
     shader.MVP = (mCamera->projectionMatrix)*shader.MV;
     shader.V   = (mCamera->viewMatrix);
     shader.N   = (shader.MV.inverse()).transpose(); 
@@ -56,16 +61,19 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
         //Current vertex and normal indices
         Vector3i f = (*vIndices)[j];
         Vector3i n = (*nIndices)[j];
+        Vector3i u = (*tIndices)[j];
 
-        //Pack vertex and normal data together into an array
+        //Pack vertex, normal and UV data into arrays
         buildTri(f,trianglePrimitive, *vertices);
         buildTri(n,normalPrim, *normals);
-
-        //Skip faces that are pointing away from us
+        buildTri(u,uvPrim, *texels);
 
         //Apply vertex shader
         for(int i = 0; i < 3; ++i){
-            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], normalPrim[i], lightDir.normalized(), i);
+            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i],
+                                                normalPrim[i],
+                                                uvPrim[i],
+                                                lightDir, i);
         }
 
         //Skip triangles that are outside viewing frustrum
