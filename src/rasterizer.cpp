@@ -78,11 +78,17 @@ void Rasterizer::drawWireFrame(Vector3f *vertices, IShader &shader, Buffer<Uint3
     drawLine(vertices[0], vertices[2], blue, pixelBuffer);
 }  
 
-//Draws triangles using baricentric coordinates,
+//Draws triangles
 void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer){
-    //Per fragment variables            
-    float depth, area;
-    Vector3f e, e_row, rgbVals{255,255,255};
+    //Per triangle variables
+    float area;
+    Vector3f hW{1/vertices[0].w, 1/vertices[1].w, 1/vertices[2].w};
+
+    //Per fragment variables
+    float depth, uPers, vPers, areaPers; //u, v, are perspective corrected
+    Vector3f e, e_row, f;
+    Vector3f rgbVals{255,255,255};
+    
 
     //Transform into viewport coordinates 
     Rasterizer::viewportTransform(pixelBuffer, vertices);
@@ -101,7 +107,7 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
     float A12 = vertices[1].y - vertices[2].y, B12= vertices[2].x - vertices[1].x;
     float A20 = vertices[2].y - vertices[0].y, B20= vertices[0].x - vertices[2].x;
 
-    //Bary coordinates at 
+    //Edge values at the first corner of the bounding box
     Vector3f point{(float)xMin, (float)yMin, 0};
     e_row.x = edge(vertices[1], vertices[2], point);
     e_row.y = edge(vertices[2], vertices[0], point);
@@ -120,19 +126,27 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
             //Only draw if inside pixel and following top left rule
             if(inside(e.x, A01, B01) && inside(e.y, A12, B12) && inside(e.z, A20, B20) ){
 
-                //Run fragment shader
-                shader.fragment((e*area), rgbVals, depth, zVals);
                 //Zbuffer check
-                if((*zBuffer)(point.x,point.y) < depth){
-                    if(depth <= 1.0){
-                        (*zBuffer)(point.x,point.y) = depth;
-                        (*pixelBuffer)(point.x,point.y) = SDL_MapRGBA(mappingFormat,
-                        std::min(rgbVals.data[0],255.0f),
-                        std::min(rgbVals.data[1],255.0f),
-                        std::min(rgbVals.data[2],255.0f),
-                        0xFF);
-                    }   
-                }
+                depth = (e*area).dotProduct(zVals);
+                if((*zBuffer)(point.x,point.y) < depth &&  depth <= 1.0){
+                    (*zBuffer)(point.x,point.y) = depth;
+
+                    //Get perspective correct barycentric coords
+                    f = e * hW;
+                    areaPers = 1 / (f.data[0] + f.data[1] + f.data[2]);
+                    uPers =  f.data[1] * areaPers;
+                    vPers =  f.data[2] * areaPers;
+
+                    //Run fragment shader
+                    rgbVals = shader.fragment(uPers , vPers);
+
+                    //Update pixel buffer with clamped values 
+                    (*pixelBuffer)(point.x,point.y) = SDL_MapRGBA(mappingFormat,
+                    std::min(rgbVals.data[0],255.0f),
+                    std::min(rgbVals.data[1],255.0f),
+                    std::min(rgbVals.data[2],255.0f),
+                    0xFF);
+                }   
             }
 
             //One step to the right
@@ -154,7 +168,6 @@ void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertic
         vertices[i].y = ((vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5);
     }
 }
-
 
 
 void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin,Vector3f *vertices, Buffer<Uint32> *pixelBuffer){

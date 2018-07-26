@@ -47,7 +47,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     float radius = 1;
     float lX   = std::sin(t/4000) * radius;
     float lY   = std::cos(t/4000) * radius;
-    Vector3f lightDir{1, 1, 0};
+    Vector3f lightDir{1, 0, 0};
     lightDir = lightDir.normalized();
 
     //Building ModelViewProjection matrix

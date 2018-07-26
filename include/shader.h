@@ -10,7 +10,7 @@
 struct IShader {
     virtual ~IShader() {};
     virtual Vector3f vertex(Vector3f &vertex, Vector3f &normals, Vector3f &textureVals, Vector3f &light, int i) = 0;
-    virtual bool fragment(const Vector3f &bari, Vector3f &color, float &depth, Vector3f &zVerts) = 0;
+    virtual Vector3f fragment(float u, float v) = 0;
 };
 
 //Simplest shader. Calculates light intensity per triangle.
@@ -24,10 +24,8 @@ struct FlatShader : public IShader {
         return MVP.matMultVec(vertex); //Transforms verts into projected space
     }
 
-    bool fragment(const Vector3f &bari, Vector3f &color, float &depth, Vector3f &zVerts) override{
-        depth = bari.dotProduct(zVerts);
-        color = rgb*varIntensity;
-        return false;
+    Vector3f fragment(float u, float v) override{
+        return rgb*varIntensity;
     }
 
 };
@@ -52,19 +50,16 @@ struct GouraudShader : public IShader {
         return MVP.matMultVec(vertex);
     }
 
-    bool fragment(const Vector3f &bari, Vector3f &color, float &depth, Vector3f &zVerts) override{
+    Vector3f fragment(float u, float v) override{
         ambient = lightColor1 * ambientStrength;
 
-        diffStrength = bari.dotProduct(varying_diffuse);
+        diffStrength = varying_diffuse.x + u*(varying_diffuse.y - varying_diffuse.x) + v*(varying_diffuse.z - varying_diffuse.x);
         diffuse = lightColor2 * diffStrength;
 
-        spec = bari.dotProduct(varying_specular);
+        spec = varying_specular.x + u*(varying_specular.y - varying_specular.x) + v*(varying_specular.z - varying_specular.x);
         specular = lightColor3 * (specularStrength * spec);
 
-        color = (ambient + diffuse + specular) * rgb;
-
-        depth = bari.dotProduct(zVerts);
-        return false;
+        return (ambient + diffuse + specular) * rgb;
     }
 
 };
@@ -87,10 +82,10 @@ struct PhongShader : public IShader {
         return MVP.matMultVec(vertex);
     }
 
-    bool fragment(const Vector3f &bari, Vector3f &color, float &depth, Vector3f &zVerts) override{
+    Vector3f fragment(float u, float v) override{
         //Interpolated stuff
-        interpNormal  = (normals[0] * bari.x) + (normals[1] * bari.y)  + (normals[2] * bari.z);
-        interpViewDir = (viewDir[0] * bari.x) + (viewDir[1] * bari.y)  + (viewDir[2] * bari.z);
+        interpNormal = normals[0] + (normals[1] - normals[0])* u + (normals[2] - normals[0]) * v;
+        interpViewDir = viewDir[0] + (viewDir[1] - viewDir[0])* u + (viewDir[2] - viewDir[0]) * v;
         //Ambient 
         ambient = lightColor * ambientStrength;
 
@@ -103,10 +98,7 @@ struct PhongShader : public IShader {
         spec = std::pow( std::max( (-interpViewDir.normalized()).dotProduct(reflectDir), 0.0f), 50.0f);
         specular = lightColorSpec * (specularStrength * spec);
 
-        color = (ambient + diffuse + specular) * rgb;
-
-        depth = bari.dotProduct(zVerts);
-        return false;
+        return (ambient + diffuse + specular) * rgb;
     }
 
 };
@@ -116,12 +108,13 @@ struct PhongShader : public IShader {
 struct BlinnPhongShader : public IShader {
     Texture *albedo;
     Matrix4 MVP, MV, V, N;
-    float ambientStrength = 0.05, diffStrength, spec,shininess = 200;
+    float ambientStrength = 0.05, diffStrength=1 , specularStrength= 0.5;
+    float diff, spec, shininess = 128;
     Vector3f normals[3], viewDir[3], UV[3];
     Vector3f ambient, diffuse, specular, interpNormal, interpViewDir, interpUV;
-    Vector3f lightColor{1,1,1},lightColorSpec{1,1,1};
+    Vector3f lightColor{1,1,1};
     Vector3f halfwayDir, lightDir;
-    Vector3f rgb{255,255,255};
+    Vector3f interpCol, white{255,255,255};
 
     Vector3f vertex(Vector3f &vertex, Vector3f &normal, Vector3f &textureVals, Vector3f &light, int index) override{
         normals[index] = N.matMultDir(normal).normalized();
@@ -131,31 +124,28 @@ struct BlinnPhongShader : public IShader {
         return MVP.matMultVec(vertex);
     }
 
-    bool fragment(const Vector3f &bari, Vector3f &color, float &depth, Vector3f &zVerts) override{
+    Vector3f fragment(float u, float v) override{
         //Interpolated stuff
-        interpNormal  = ((normals[0] * bari.x) + (normals[1] * bari.y)  + (normals[2] * bari.z)).normalized();
-        interpViewDir = (viewDir[0] * bari.x) + (viewDir[1] * bari.y)  + (viewDir[2] * bari.z);
-        interpUV = (UV[0] * bari.x) + (UV[1] * bari.y)  + (UV[2] * bari.z);
+        interpNormal = (normals[0] + (normals[1] - normals[0])* u + (normals[2] - normals[0]) * v).normalized();
+        interpViewDir = viewDir[0] + (viewDir[1] - viewDir[0])* u + (viewDir[2] - viewDir[0]) * v;
+        interpUV = UV[0] + (UV[1] - UV[0])* u + (UV[2] - UV[0]) * v;
         //Albedo
-        rgb = albedo->getPixelVal(interpUV.x, interpUV.y);
+        interpCol = albedo->getPixelVal(interpUV.x, interpUV.y);
         //rgb.print();
 
         //Ambient 
         ambient = lightColor * ambientStrength;
 
         //Diffuse
-        diffStrength = std::max(0.0f, interpNormal.dotProduct(lightDir));
-        diffuse = lightColor * diffStrength;
+        diff = std::max(0.0f, interpNormal.dotProduct(lightDir));
+        diffuse = lightColor * diff * diffStrength;
         
         //Specular
         halfwayDir = (lightDir -interpViewDir).normalized();
         spec = std::pow(std::max(0.0f, interpNormal.dotProduct(halfwayDir)), shininess);
-        specular = lightColorSpec * spec;
+        specular = lightColor * spec * specularStrength;
 
-        color = (ambient + diffuse + specular) * rgb;
-
-        depth = bari.dotProduct(zVerts);
-        return false;
+        return (ambient + diffuse) * interpCol + specular * white;
     }
 
 };

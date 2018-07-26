@@ -33,7 +33,6 @@ struct Vector3{
         x /= w;
         y /= w;
         z /= w;
-        w  = 1;
         return *this;
     }
 
