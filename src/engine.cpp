@@ -62,7 +62,8 @@ void Engine::run(){
     //Iteration and time keeping counters
     int count = 0;
     unsigned int end = 0;
-    unsigned int start = 0;
+    unsigned int start = 0;;
+    unsigned int total = 0;
 
     printf("Entered Main Loop!\n");
     while(!done){
@@ -93,7 +94,11 @@ void Engine::run(){
         //Stats about frame
         end = SDL_GetTicks();
         printf("%2.1d: Loop elapsed time (ms):%d\n",count,end - start);
-        //break;
+        total += end - start;
+        if (count == 500) break;
     }
+
     printf("Closing down engine:\n");
+    printf("Average frame time over %2.1d frames: %f\n", count,total/(float)count);
+    
 }

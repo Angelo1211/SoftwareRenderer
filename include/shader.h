@@ -46,7 +46,7 @@ struct GouraudShader : public IShader {
         reflectDir = Vector3f::reflect(-light2, normal);
         viewDir = MV.matMultVec(vertex).normalized();
         varying_specular.data[index] = std::pow( std::max( -viewDir.dotProduct(reflectDir), 0.0f), 32.0f);
-        varying_diffuse.data[index] = std::max(0.0f, (normal).dotProduct(light2));
+        varying_diffuse.data[index] = std::max(0.0f, (normal).dotProduct(-light2));
         return MVP.matMultVec(vertex);
     }
 
@@ -141,7 +141,53 @@ struct BlinnPhongShader : public IShader {
         diffuse = lightColor * diff * diffStrength;
         
         //Specular
-        halfwayDir = (lightDir -interpViewDir).normalized();
+        halfwayDir = (lightDir - interpViewDir).normalized();
+        spec = std::pow(std::max(0.0f, interpNormal.dotProduct(halfwayDir)), shininess);
+        specular = lightColor * spec * specularStrength;
+
+        return (ambient + diffuse) * interpCol + specular * white;
+    }
+
+};
+
+
+struct TestShader{
+    Texture *albedo;
+    Matrix4 MVP, MV, V, N;
+    float ambientStrength = 0.05, diffStrength=1 , specularStrength= 0.5;
+    float diff, spec, shininess = 128;
+    Vector3f normals[3], viewDir[3], UV[3];
+    Vector3f ambient, diffuse, specular, interpNormal, interpViewDir, interpUV;
+    Vector3f lightColor{1,1,1};
+    Vector3f halfwayDir, lightDir;
+    Vector3f interpCol, white{255,255,255};
+
+    Vector3f vertex(Vector3f &vertex, Vector3f &normal, Vector3f &textureVals, Vector3f &light, int index) {
+        normals[index] = N.matMultDir(normal).normalized();
+        UV[index] = textureVals;
+        viewDir[index] = MV.matMultVec(vertex).normalized();
+        lightDir = V.matMultDir(light).normalized();
+        return MVP.matMultVec(vertex);
+    }
+
+    Vector3f fragment(float u, float v) {
+        //Interpolated stuff
+        interpNormal = (normals[0] + (normals[1] - normals[0])* u + (normals[2] - normals[0]) * v).normalized();
+        interpViewDir = viewDir[0] + (viewDir[1] - viewDir[0])* u + (viewDir[2] - viewDir[0]) * v;
+        interpUV = UV[0] + (UV[1] - UV[0])* u + (UV[2] - UV[0]) * v;
+        //Albedo
+        interpCol = albedo->getPixelVal(interpUV.x, interpUV.y);
+        //rgb.print();
+
+        //Ambient 
+        ambient = lightColor * ambientStrength;
+
+        //Diffuse
+        diff = std::max(0.0f, interpNormal.dotProduct(lightDir));
+        diffuse = lightColor * diff * diffStrength;
+        
+        //Specular
+        halfwayDir = (lightDir - interpViewDir).normalized();
         spec = std::pow(std::max(0.0f, interpNormal.dotProduct(halfwayDir)), shininess);
         specular = lightColor * spec * specularStrength;
 

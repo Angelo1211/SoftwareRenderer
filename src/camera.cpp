@@ -12,8 +12,8 @@ Camera::Camera(){
 void Camera::update(){
     float t = static_cast<float>(SDL_GetTicks());
     float radius = 1.4;
-    float camX   = std::sin(t/5000) * radius;
-    float camZ   = std::cos(t/5000) * radius;
+    float camX   = std::sin(t/3000) * radius;
+    float camZ   = std::cos(t/3000) * radius;
     position.x   = camX;
     position.y   = 0;
     position.z   = camZ;

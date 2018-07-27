@@ -1,6 +1,7 @@
 #include "rasterizer.h"
 #include "vector"
 #include "array"
+
 #include <algorithm>
 
 //Initializing all the basic colors 
@@ -86,7 +87,7 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
 
     //Per fragment variables
     float depth, uPers, vPers, areaPers; //u, v, are perspective corrected
-    Vector3f e, e_row, f;
+    Vector3f e, e_row, e_init, f;
     Vector3f rgbVals{255,255,255};
     
 
@@ -116,21 +117,21 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
 
 
     //Iterating through each pixel in triangle bounding box
-    for(point.y = yMin; point.y <= yMax; ++point.y){
+    for(int y = yMin; y <= yMax; ++y){
         //Bary coordinates at start of row
         e.x = e_row.x;
         e.y = e_row.y;
         e.z = e_row.z;
 
-        for(point.x = xMin; point.x <= xMax; ++point.x){
+        for(int x = xMin; x <= xMax; ++x){
 
             //Only draw if inside pixel and following top left rule
             if(inside(e.x, A01, B01) && inside(e.y, A12, B12) && inside(e.z, A20, B20) ){
 
                 //Zbuffer check
                 depth = (e*area).dotProduct(zVals);
-                if((*zBuffer)(point.x,point.y) < depth &&  depth <= 1.0){
-                    (*zBuffer)(point.x,point.y) = depth;
+                if((*zBuffer)(x,y) < depth &&  depth <= 1.0){
+                    (*zBuffer)(x,y) = depth;
 
                     //Get perspective correct barycentric coords
                     f = e * hW;
@@ -142,7 +143,7 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
                     rgbVals = shader.fragment(uPers , vPers);
 
                     //Update pixel buffer with clamped values 
-                    (*pixelBuffer)(point.x,point.y) = SDL_MapRGB(mappingFormat,
+                    (*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat,
                     std::min(rgbVals.data[0],255.0f),
                     std::min(rgbVals.data[1],255.0f),
                     std::min(rgbVals.data[2],255.0f));
@@ -194,9 +195,9 @@ float Rasterizer::edge(Vector3f &a, Vector3f &b, Vector3f &c){
     return (b.x - a.x)*(c.y-a.y) - (b.y - a.y)*(c.x - a.x);
 }
 
-bool Rasterizer::inside(float edge, float a, float b){
-    if (edge > 0) return true;
-    if (edge < 0) return false;
+bool Rasterizer::inside(float e, float a, float b){
+    if ( e > 0) return true;
+    if ( e < 0) return false;
     if ( a > 0 )  return true;
     if ( a < 0 )  return false;
     if ( b > 0 )  return true;

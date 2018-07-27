@@ -1,6 +1,7 @@
 #include "softwareRenderer.h"
 #include "shader.h"
 #include "mesh.h"
+#include "omp.h"
 
 SoftwareRenderer::SoftwareRenderer(){}
 SoftwareRenderer::~SoftwareRenderer(){}
@@ -61,7 +62,9 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
 
     //Iterate through every triangle
     int count = 0;
-    for (int j = 0; j < numFaces; ++j){
+
+    #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim) firstprivate(shader)
+    for (int j= 0; j < numFaces; ++j){
         //Current vertex and normal indices
         Vector3i f = (*vIndices)[j];
         Vector3i n = (*nIndices)[j];
