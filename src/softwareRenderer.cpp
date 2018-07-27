@@ -23,14 +23,16 @@ void SoftwareRenderer::shutDown(){
 
 void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     //Getting the vertices, faces, texture data 
+
     Mesh *triMesh = currentModel->getMesh();
     std::vector<Vector3i> * vIndices = &triMesh->vertexIndices;
     std::vector<Vector3i> * tIndices = &triMesh->textureIndices;
     std::vector<Vector3i> * nIndices = &triMesh->normalsIndices;
 
     std::vector<Vector3f> * vertices = &triMesh->vertices;
-    std::vector<Vector3f> * normals = &triMesh->normals;
-    std::vector<Vector3f> * texels = &triMesh->texels;
+    std::vector<Vector3f> * normals  = &triMesh->normals;
+    std::vector<Vector3f> * fNormals = &triMesh->fNormals;
+    std::vector<Vector3f> * texels   = &triMesh->texels;
     int numFaces = triMesh->numFaces;
 
     //Array grouping vertices together into triangle
@@ -51,12 +53,14 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     lightDir = lightDir.normalized();
 
     //Building ModelViewProjection matrix
+    Matrix4 worldToObject = (*(currentModel->getModelMatrix())).inverse();
     shader.MV  = (mCamera->viewMatrix)*(*(currentModel->getModelMatrix()));
     shader.MVP = (mCamera->projectionMatrix)*shader.MV;
     shader.V   = (mCamera->viewMatrix);
     shader.N   = (shader.MV.inverse()).transpose(); 
 
     //Iterate through every triangle
+    int count = 0;
     for (int j = 0; j < numFaces; ++j){
         //Current vertex and normal indices
         Vector3i f = (*vIndices)[j];
@@ -68,6 +72,9 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
         buildTri(n,normalPrim, *normals);
         buildTri(u,uvPrim, *texels);
 
+        //Early quit if 
+        if (backFaceCulling((*fNormals)[j], trianglePrimitive[0], worldToObject)) continue;
+        ++count;
         //Apply vertex shader
         for(int i = 0; i < 3; ++i){
             trianglePrimitive[i] = shader.vertex(trianglePrimitive[i],
@@ -85,7 +92,9 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
         //Send to rasterizer which will also call the fragment shader and write to the 
         //zbuffer and pixel buffer.
         Rasterizer::drawTriangles(trianglePrimitive, shader, pixelBuffer, zBuffer);
+        
     }
+    printf("%d faces drawn.\n", count);
 }
 
 void SoftwareRenderer::clearBuffers(){
@@ -126,18 +135,12 @@ void SoftwareRenderer::buildTri(Vector3i &index, Vector3f *primitive, std::vecto
     }
 }
 
-bool SoftwareRenderer::backFaceCulling(Vector3f *trianglePrim, Vector3f &viewDir){
-        //Triangle surface normal 
-        //Should probably be calculated on load next time
-        Vector3f N1 = trianglePrim[1] - trianglePrim[0];
-        Vector3f N2 = trianglePrim[2] - trianglePrim[0];
-        Vector3f N  = (N1.crossProduct(N2)).normalized();
-
-        viewDir =  mCamera->position -  trianglePrim[0];
+bool SoftwareRenderer::backFaceCulling(Vector3f &facetNormal, Vector3f &vert,  Matrix4 &worldToObject){
+        Vector3f viewDir =  worldToObject.matMultVec(mCamera->position) -  vert;
         viewDir.normalized();
 
         //Returns false if the triangle cannot see the camera
-        float intensity =  N.dotProduct(viewDir);
+        float intensity =  facetNormal.dotProduct(viewDir);
         return intensity <= 0.0;
 }
 

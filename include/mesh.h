@@ -10,6 +10,7 @@ struct Mesh{
     int numVertices = 0;
     std::vector<Vector3f> vertices;
     std::vector<Vector3f> normals;
+    std::vector<Vector3f> fNormals; //Normals for the whole face
     std::vector<Vector3f> texels;
 
     int numFaces = 0;
@@ -19,6 +20,9 @@ struct Mesh{
 
     //Simple mesh description for debugging.
     void describeMesh();
+
+    //Builds facet normals for early back face culling
+    void buildFacetNormals();
 };
 
 #endif

@@ -51,7 +51,7 @@ class SoftwareRenderer {
         void perspectiveDivide(Vector3f *clippedVertices);
 
         //Culling and clipping methods
-        bool backFaceCulling(Vector3f *trianglePrim, Vector3f &viewDir);
+        bool backFaceCulling(Vector3f &facetNormal, Vector3f &vertex, Matrix4 &worldToObject);
         bool clipTriangles(Vector3f *clipSpaceVertices);
 
         //Pointer to the scene's target camera

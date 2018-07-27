@@ -4,6 +4,7 @@
 Model::Model(std::string path, TransformParameters &initParameters){
     OBJ::buildMeshFromFile(mMesh, path);
     mBounds.buildAABB(mMesh);
+    mMesh.buildFacetNormals();
     mModelMatrix = Matrix4::transformMatrix(initParameters);
 }
 

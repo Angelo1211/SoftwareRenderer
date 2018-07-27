@@ -35,16 +35,10 @@ class DisplayManager{
         //Wrappers for SDL init functions
         bool startSDL();
         bool createWindow();
-        bool createSDLRenderer();
-        bool createScreenTexture();
+        bool createScreenSurface();
 
-        SDL_Texture  *mTexture;
-        SDL_Renderer *mSDLRenderer;
+        SDL_Surface  *mSurface;
         SDL_Window   *mWindow;
-
-        //These are only really needed for the texture copying operation
-        int           mTexturePitch;
-        void         *mTexturePixels;
 };
 
 #endif

@@ -82,6 +82,7 @@ void Engine::run(){
 
         //Handle all user input
         done = gInputManager.processInput();
+        
 
         //Update all models, camera and lighting in the current scene
         gSceneManager.update();

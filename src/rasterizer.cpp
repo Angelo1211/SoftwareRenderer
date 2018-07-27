@@ -114,6 +114,7 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
     e_row.z = edge(vertices[0], vertices[1], point);
 
 
+
     //Iterating through each pixel in triangle bounding box
     for(point.y = yMin; point.y <= yMax; ++point.y){
         //Bary coordinates at start of row
@@ -141,11 +142,10 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
                     rgbVals = shader.fragment(uPers , vPers);
 
                     //Update pixel buffer with clamped values 
-                    (*pixelBuffer)(point.x,point.y) = SDL_MapRGBA(mappingFormat,
+                    (*pixelBuffer)(point.x,point.y) = SDL_MapRGB(mappingFormat,
                     std::min(rgbVals.data[0],255.0f),
                     std::min(rgbVals.data[1],255.0f),
-                    std::min(rgbVals.data[2],255.0f),
-                    0xFF);
+                    std::min(rgbVals.data[2],255.0f));
                 }   
             }
 
@@ -171,13 +171,13 @@ void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertic
 
 
 void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin,Vector3f *vertices, Buffer<Uint32> *pixelBuffer){
-    xMax = std::ceil(std::max({vertices[0].x, vertices[1].x, vertices[2].x,}));
-    xMin = std::ceil(std::min({vertices[0].x, vertices[1].x, vertices[2].x,}));
+    xMax = std::ceil(std::max({vertices[0].x, vertices[1].x, vertices[2].x}));
+    xMin = std::ceil(std::min({vertices[0].x, vertices[1].x, vertices[2].x}));
     //xMax = std::max({vertices[0].x, vertices[1].x, vertices[2].x});
     //xMin = std::min({vertices[0].x, vertices[1].x, vertices[2].x});
 
-    yMax = std::ceil(std::max({vertices[0].y, vertices[1].y, vertices[2].y,}));
-    yMin = std::ceil(std::min({vertices[0].y, vertices[1].y, vertices[2].y,}));
+    yMax = std::ceil(std::max({vertices[0].y, vertices[1].y, vertices[2].y}));
+    yMin = std::ceil(std::min({vertices[0].y, vertices[1].y, vertices[2].y}));
     //yMax = std::max({vertices[0].y, vertices[1].y, vertices[2].y});
     //yMin = std::min({vertices[0].y, vertices[1].y, vertices[2].y});
 
