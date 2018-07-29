@@ -47,6 +47,8 @@ class Matrix4{
         //defined as X[-1,1] Y[-1,1] Z[1,0] 
         Matrix4 static projectionMatrix(float fov, float AR, float near, float far);
 
+        Matrix4 static TBNMatrix(const Vector3f &tangent, const Vector3f &biTangent, const Vector3f &normal);
+
         //Debug stuff
         void print();
     private:

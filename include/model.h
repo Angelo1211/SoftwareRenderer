@@ -15,6 +15,7 @@ class Model{
         Matrix4 *getModelMatrix();
         AABox *getBounds();
         Texture *getAlbedo();
+        Texture *getNormal();
 
         void update();
 
@@ -22,6 +23,7 @@ class Model{
         void describeMesh();
     private:
         Texture mAlbedo{"../models/fire_hydrant_Base_Color.png"};
+        Texture mNormal{"../models/fire_hydrant_Normal_OpenGL.png"};
         Mesh mMesh;
         AABox mBounds;
         Matrix4 mModelMatrix;

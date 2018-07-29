@@ -383,6 +383,27 @@ Matrix4 Matrix4::projectionMatrix(float fov, float AR, float near, float far){
     return projectionMat;
 }
 
+Matrix4 Matrix4::TBNMatrix(const Vector3f &tangent, const Vector3f &biTangent, const Vector3f &normal){
+    Matrix4 tangentMat;
+
+    //First 
+    tangentMat(0,0) = tangent.x;
+    tangentMat(0,1) = biTangent.x;
+    tangentMat(0,2) = normal.x;
+
+    //Second row
+    tangentMat(1,0) = tangent.y;
+    tangentMat(1,1) = biTangent.y;
+    tangentMat(1,2) = normal.y;
+
+    //third row
+    tangentMat(2,0) = tangent.z;
+    tangentMat(2,1) = biTangent.z;
+    tangentMat(2,2) = normal.z;
+
+    return tangentMat.transpose();
+}
+
 void Matrix4::print(){
     int n = 4;
     for(int rows = 0; rows < n; ++rows){

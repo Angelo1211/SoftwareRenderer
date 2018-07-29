@@ -114,8 +114,6 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
     e_row.y = edge(vertices[2], vertices[0], point);
     e_row.z = edge(vertices[0], vertices[1], point);
 
-
-
     //Iterating through each pixel in triangle bounding box
     for(int y = yMin; y <= yMax; ++y){
         //Bary coordinates at start of row
@@ -144,9 +142,9 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
 
                     //Update pixel buffer with clamped values 
                     (*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat,
-                    std::min(rgbVals.data[0],255.0f),
-                    std::min(rgbVals.data[1],255.0f),
-                    std::min(rgbVals.data[2],255.0f));
+                    clamp(gammaAdjust(rgbVals.data[0], 2.2), 0, 255.0f),
+                    clamp(gammaAdjust(rgbVals.data[1], 2.2), 0, 255.0f),
+                    clamp(gammaAdjust(rgbVals.data[2], 2.2), 0, 255.0f));
                 }   
             }
 
@@ -192,15 +190,24 @@ void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin,Vector3f
 
 
 float Rasterizer::edge(Vector3f &a, Vector3f &b, Vector3f &c){
-    return (b.x - a.x)*(c.y-a.y) - (b.y - a.y)*(c.x - a.x);
+    return (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x);
 }
 
 bool Rasterizer::inside(float e, float a, float b){
-    if ( e > 0) return true;
-    if ( e < 0) return false;
+    if ( e > 0 )  return true;
+    if ( e < 0 )  return false;
     if ( a > 0 )  return true;
     if ( a < 0 )  return false;
     if ( b > 0 )  return true;
     return false;
 }
 
+
+float Rasterizer::clamp(float n, float lower, float upper) {
+  return std::max(lower, std::min(n, upper));
+}
+
+
+float Rasterizer::gammaAdjust(float n, float gamma) {
+  return std::pow(n, 1.0/(float)gamma)*255.0f;
+}

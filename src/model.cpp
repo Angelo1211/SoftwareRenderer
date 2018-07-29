@@ -5,6 +5,7 @@ Model::Model(std::string path, TransformParameters &initParameters){
     OBJ::buildMeshFromFile(mMesh, path);
     mBounds.buildAABB(mMesh);
     mMesh.buildFacetNormals();
+    mMesh.buildTangentSpace();
     mModelMatrix = Matrix4::transformMatrix(initParameters);
 }
 
@@ -28,4 +29,8 @@ Matrix4 *Model::getModelMatrix(){
 
 Texture *Model::getAlbedo(){
     return &mAlbedo;
+}
+
+Texture *Model::getNormal(){
+    return &mNormal;
 }
