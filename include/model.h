@@ -22,8 +22,8 @@ class Model{
         //Prints the mesh vertices for debugging
         void describeMesh();
     private:
-        Texture mAlbedo{"../models/fire_hydrant_Base_Color.png"};
-        Texture mNormal{"../models/fire_hydrant_Normal_OpenGL.png"};
+        Texture mAlbedo{"../models/fire_hydrant_Base_Color.png", "RGB"};
+        Texture mNormal{"../models/fire_hydrant_Normal_OpenGL.png", "XYZ"};
         Mesh mMesh;
         AABox mBounds;
         Matrix4 mModelMatrix;

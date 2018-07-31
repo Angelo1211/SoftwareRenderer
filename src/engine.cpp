@@ -98,7 +98,7 @@ void Engine::run(){
         //if (count == 500) break;
     }
 
-    printf("Closing down engine:\n");
+    printf("Closing down engine.\n");
     printf("Average frame time over %2.1d frames: %f\n", count,total/(float)count);
     
 }

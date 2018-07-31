@@ -9,7 +9,7 @@
 //Shader Interface for a class that emulates modern GPU fragment and vertex shaders
 struct IShader {
     virtual ~IShader() {};
-    virtual Vector3f vertex(const Vector3f &vertex, const Vector3f &normal, const Vector3f &textureVals, const Vector3f &tangent, const Vector3f &biTangent, const Vector3f &light, int index) = 0;
+    virtual Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) = 0;
     virtual Vector3f fragment(float u, float v) = 0;
 };
 
@@ -19,7 +19,7 @@ struct FlatShader : public IShader {
     float varIntensity;
     Vector3f rgb{255,255,255};
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal, const Vector3f &textureVals,const Vector3f &tangent,const Vector3f &biTangent,const Vector3f &light, int index) override{
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) override{
         varIntensity = std::max(0.0f,normal.dotProduct(light));
         return MVP.matMultVec(vertex); //Transforms verts into projected space
     }
@@ -40,7 +40,7 @@ struct GouraudShader : public IShader {
     Vector3f varying_diffuse, varying_specular, reflectDir, viewDir, light2, normal2;
     Vector3f rgb{255,255,255};
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal, const Vector3f &textureVals,const Vector3f &tangent,const Vector3f &biTangent,const Vector3f &light, int index) override{
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) override{
         normal2 = N.matMultDir(normal).normalized();
         light2 = V.matMultDir(light).normalized();
         reflectDir = Vector3f::reflect(-light2, normal);
@@ -75,7 +75,7 @@ struct PhongShader : public IShader {
     Vector3f varying_diffuse, varying_specular, reflectDir, light2;
     Vector3f rgb{255,255,255};
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal, const Vector3f &textureVals,const Vector3f &tangent,const Vector3f &biTangent,const Vector3f &light, int index) override{
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) override{
         normals[index] = N.matMultDir(normal).normalized();
         viewDir[index] = MV.matMultVec(vertex).normalized();
         light2 = V.matMultDir(light).normalized();
@@ -116,7 +116,7 @@ struct BlinnPhongShader : public IShader {
     Vector3f halfwayDir, lightDir;
     Vector3f interpCol, white{255,255,255};
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal, const Vector3f &textureVals,const Vector3f &tangent,const Vector3f &biTangent,const Vector3f &light, int index) override{
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) override{
         normals[index] = N.matMultDir(normal).normalized();
         UV[index] = textureVals;
         viewDir[index] = MV.matMultVec(vertex).normalized();
@@ -131,13 +131,6 @@ struct BlinnPhongShader : public IShader {
         interpUV = UV[0] + (UV[1] - UV[0])* u + (UV[2] - UV[0]) * v;
         //Albedo
         interpCol = albedoT->getPixelVal(interpUV.x, interpUV.y);
-        //interpNormal = normalT->getPixelVal(interpUV.x, interpUV.y);
-        // interpNormal.x = (interpNormal.x*2/256.0f) -1;
-        // interpNormal.y = (interpNormal.y*2/256.0f) -1;
-        // interpNormal.z = 1 - interpNormal.z*1/256.0f;
-        // interpNormal = interpNormal.normalized();
-
-        //rgb.print();
 
         //Ambient 
         ambient = lightColor * ambientStrength;
@@ -165,73 +158,64 @@ struct NormalMapShader : public IShader {
 
     //Light Variables
     Vector3f lightColor{1,1,1}, white{1,1,1};
-    float ambientStrength = 0.05, diffStrength = 1, specularStrength = 0.5;
+    float ambientStrength = 0.05, diffStrength = 0.9, specularStrength = 0.8;
     float diff, spec, shininess = 128;
+    Vector3f lightDir[3];
 
     //Variables set per vertex
-    Vector3f normals[3], viewDir[3], UV[3], tangentFragPos[3], viewPos[3];
-    Vector3f lightDir, vertexPos[3],vertTangent[3], vertBiTangent[3] ;
+    Vector3f viewDir[3], texCoords[3], tangentFragPos[3];
+    Vector3f normal_WS, tangent_WS, biTangent_WS;
+    Matrix4 TBN;
     
     //Interpolated variables
-    Vector3f interpUV, interpNormal, interpViewPos, interpCol, interpTangentFragPos;
+    Vector3f interpCoords, interpLightDir, interpNormal,
+             interpViewDir, interpCol;
 
     //Per fragment
     Vector3f ambient, diffuse, specular ;
     Vector3f halfwayDir;
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent,const Vector3f &biTangent,const Vector3f &light, int index) override{
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) override{
         //Creating TBN matrix
-        normals[index]           = N.matMultDir(normal).normalized();
-        vertTangent[index]       = N.matMultDir(tangent).normalized();
-        vertBiTangent[index]     = N.matMultDir(biTangent).normalized();
-        vertexPos[index]         = M.matMultVec(vertex);
-        // Matrix4 TBN = Matrix4::TBNMatrix(vertTangent[index], vertBiTangent[index], normals[index]);
-
+        normal_WS     = N.matMultDir(normal).normalized();
+        tangent_WS    = N.matMultDir(tangent).normalized();
+        biTangent_WS  = normal_WS.crossProduct(tangent_WS);
+        TBN = Matrix4::TBNMatrix(tangent_WS, biTangent_WS, normal_WS);
+        
         //Getting UV coordinates for use in both albedo and normal textures
-        UV[index] = textureVals;
+        texCoords[index] = textureVals;
 
         //Passing all lighting related data to tangent space
-        // tangentFragPos[index] = TBN.matMultVec(N.matMultVec(vertex));
-        // viewPos[index]        = TBN.matMultVec(cameraPos); 
-        // lightDir              = TBN.matMultVec(light);
-
+        lightDir[index]       = TBN.matMultVec(light);
+        viewDir[index]        = TBN.matMultVec(cameraPos - M.matMultVec(vertex));
+        
         return MVP.matMultVec(vertex);
     }
 
     Vector3f fragment(float u, float v) override{
         //Interpolated stuff
-        // interpTangentFragPos = tangentFragPos[0] + (tangentFragPos[1] - tangentFragPos[0])* u + (tangentFragPos[2] - tangentFragPos[0]) * v;
-        // interpViewPos = viewPos[0] + (viewPos[1] - viewPos[0])* u + (viewPos[2] - viewPos[0]) * v;
-        //interpUV = UV[0] + (UV[1] - UV[0])* u + (UV[2] - UV[0]) * v;
-        Vector3f interpPos =  vertexPos[0] + (vertexPos[1] - vertexPos[0])* u + (vertexPos[2] - vertexPos[0]) * v;
-        Vector3f interpTan =  vertTangent[0] + (vertTangent[1] - vertTangent[0])* u + (vertTangent[2] - vertTangent[0]) * v;
-        Vector3f interpBiTan =  vertBiTangent[0] + (vertBiTangent[1] - vertBiTangent[0])* u + (vertBiTangent[2] - vertBiTangent[0]) * v;
-        Vector3f interpNorm =  normals[0] + (normals[1] - normals[0])* u + (normals[2] - normals[0]) * v;
+        interpCoords   = texCoords[0] + (texCoords[1] - texCoords[0])* u + (texCoords[2] - texCoords[0]) * v;
+        interpLightDir = lightDir[0] + (lightDir[1] - lightDir[0])* u + (lightDir[2] - lightDir[0]) * v;
+        interpViewDir  = viewDir[0] + (viewDir[1] - viewDir[0])* u + (viewDir[2] - viewDir[0]) * v;
 
-        //Albedo
-        // interpCol    = albedoT->getPixelVal(interpUV.x, interpUV.y);
-        // interpNormal = normalT->getPixelVal(interpUV.x, interpUV.y);
-        // interpNormal.x = (interpNormal.x * 2/256.0f) - 1;
-        // interpNormal.y = (interpNormal.y * 2/256.0f) - 1;
-        // interpNormal.z = (interpNormal.z * 2/256.0f) - 1;
-        // interpNormal = interpNormal.normalized();
-
+        //Reading albedo and normal data from textures
+        interpCol    = albedoT->getPixelVal(interpCoords.x, interpCoords.y);
+        interpNormal = normalT->getPixelVal(interpCoords.x, interpCoords.y);
+        interpNormal = interpNormal.normalized();
 
         //Ambient 
-        // ambient = lightColor * ambientStrength;
+        ambient = lightColor * ambientStrength;
 
         //Diffuse
-        //lightDir = (interpTangentFragPos - lightDir).normalized();
-        // diff = std::max(0.0f, interpNormal.dotProduct(lightDir));
-        // diffuse = lightColor * diff * diffStrength;
+        diff = std::max(0.0f, interpNormal.dotProduct(interpLightDir));
+        diffuse = lightColor * diff * diffStrength;
         
         //Specular
-        // halfwayDir = (lightDir - interpViewDir).normalized();
-        // spec = std::pow(std::max(0.0f, interpNormal.dotProduct(halfwayDir)), shininess);
-        // specular = lightColor * spec * specularStrength;
+        halfwayDir = (interpLightDir + interpViewDir).normalized();
+        spec = std::pow(std::max(0.0f, interpNormal.dotProduct(halfwayDir)), shininess);
+        specular = lightColor * spec * specularStrength;
 
-        //return (ambient + diffuse) * interpCol + specular * white;
-        return  interpPos;
+        return (ambient + diffuse) * interpCol + specular * white;
     }
 
 };

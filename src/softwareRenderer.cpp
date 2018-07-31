@@ -35,12 +35,11 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     std::vector<Vector3f> * texels     = &triMesh->texels;
     std::vector<Vector3f> * normals    = &triMesh->normals;
     std::vector<Vector3f> * tangents   = &triMesh->tangents;
-    std::vector<Vector3f> * biTangents = &triMesh->biTangents;
     int numFaces = triMesh->numFaces;
 
     //Array grouping vertices together into triangle
     Vector3f trianglePrimitive[3], normalPrim[3], uvPrim[3],
-             tangentPrim[3], biTangentPrim[3];
+             tangentPrim[3];
 
     //Initializing shader 
     NormalMapShader shader;
@@ -67,7 +66,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     // Iterate through every triangle
     int count = 0;
 
-    #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim, biTangentPrim) firstprivate(shader)
+   #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim) firstprivate(shader)
     for (int j= 0; j < numFaces; ++j){
         //Current vertex and normal indices
         Vector3i f = (*vIndices)[j];
@@ -79,16 +78,16 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
         buildTri(n, normalPrim, *normals);
         buildTri(u, uvPrim, *texels);
         buildTri(f, tangentPrim, *tangents);
-        buildTri(f, biTangentPrim, *biTangents);
 
         //Early quit if 
         if (backFaceCulling((*fNormals)[j], trianglePrimitive[0], worldToObject)) continue;
         ++count;
         //Apply vertex shader
         for(int i = 0; i < 3; ++i){
-            trianglePrimitive[i] = shader.vertex(trianglePrimitive[i], normalPrim[i],
-                                                uvPrim[i], tangentPrim[i], 
-                                                biTangentPrim[i], lightDir, i);
+            trianglePrimitive[i] = shader.vertex(
+                trianglePrimitive[i], normalPrim[i],
+                uvPrim[i], tangentPrim[i], 
+                lightDir, i);
         }
 
         //Skip triangles that are outside viewing frustrum

@@ -86,7 +86,7 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
     Vector3f hW{1/vertices[0].w, 1/vertices[1].w, 1/vertices[2].w};
 
     //Per fragment variables
-    float depth, uPers, vPers, areaPers; //u, v, are perspective corrected
+    float depth, uPers, vPers, areaPers, count = 0; //u, v, are perspective corrected
     Vector3f e, e_row, e_init, f;
     Vector3f rgbVals{255,255,255};
     
@@ -122,7 +122,11 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
         e.z = e_row.z;
 
         for(int x = xMin; x <= xMax; ++x){
-
+            // if(x == 640){
+            //     (*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat, 0xFF, 0xFF, 0xFF);
+            //     printf("here! %d, %d\n", x,y);
+            //     continue;
+            // }
             //Only draw if inside pixel and following top left rule
             if(inside(e.x, A01, B01) && inside(e.y, A12, B12) && inside(e.z, A20, B20) ){
 
@@ -139,12 +143,12 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
 
                     //Run fragment shader
                     rgbVals = shader.fragment(uPers , vPers);
-
                     //Update pixel buffer with clamped values 
                     (*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat,
-                    clamp(gammaAdjust(rgbVals.data[0], 2.2), 0, 255.0f),
-                    clamp(gammaAdjust(rgbVals.data[1], 2.2), 0, 255.0f),
-                    clamp(gammaAdjust(rgbVals.data[2], 2.2), 0, 255.0f));
+                    clamp(gammaAdjust(rgbVals.data[0], 1), 0, 255.0f), //
+                    clamp(gammaAdjust(rgbVals.data[1], 1), 0, 255.0f),//
+                    clamp(gammaAdjust(rgbVals.data[2], 1), 0, 255.0f));//
+                    //(*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat,0xFF, 0xFF, 0xFF);
                 }   
             }
 
@@ -163,22 +167,22 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
 
 void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertices){
     for(int i = 0; i < 3; ++i){
-        vertices[i].x = ((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5);
-        vertices[i].y = ((vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5);
+        vertices[i].x = ((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5)  + 0.5;
+        vertices[i].y = ((vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5) + 0.5;
     }
 }
 
 
 void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin,Vector3f *vertices, Buffer<Uint32> *pixelBuffer){
-    xMax = std::ceil(std::max({vertices[0].x, vertices[1].x, vertices[2].x}));
-    xMin = std::ceil(std::min({vertices[0].x, vertices[1].x, vertices[2].x}));
-    //xMax = std::max({vertices[0].x, vertices[1].x, vertices[2].x});
-    //xMin = std::min({vertices[0].x, vertices[1].x, vertices[2].x});
+    // xMax = std::ceil(std::max({vertices[0].x, vertices[1].x, vertices[2].x}));
+    //xMin = std::ceil(std::min({vertices[0].x, vertices[1].x, vertices[2].x}));
+    xMax = std::max({vertices[0].x, vertices[1].x, vertices[2].x});
+    xMin = std::min({vertices[0].x, vertices[1].x, vertices[2].x});
 
-    yMax = std::ceil(std::max({vertices[0].y, vertices[1].y, vertices[2].y}));
-    yMin = std::ceil(std::min({vertices[0].y, vertices[1].y, vertices[2].y}));
-    //yMax = std::max({vertices[0].y, vertices[1].y, vertices[2].y});
-    //yMin = std::min({vertices[0].y, vertices[1].y, vertices[2].y});
+    // yMax = std::ceil(std::max({vertices[0].y, vertices[1].y, vertices[2].y}));
+    // yMin = std::ceil(std::min({vertices[0].y, vertices[1].y, vertices[2].y}));
+    yMax = std::max({vertices[0].y, vertices[1].y, vertices[2].y});
+    yMin = std::min({vertices[0].y, vertices[1].y, vertices[2].y});
 
     //Clip against screen
     xMax = std::min(xMax, pixelBuffer->mWidth -1);
@@ -209,5 +213,5 @@ float Rasterizer::clamp(float n, float lower, float upper) {
 
 
 float Rasterizer::gammaAdjust(float n, float gamma) {
-  return std::pow(n, 1.0/(float)gamma)*255.0f;
+  return std::pow(n, 1.0/gamma)*256.0f;
 }

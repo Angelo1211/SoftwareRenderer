@@ -402,6 +402,7 @@ Matrix4 Matrix4::TBNMatrix(const Vector3f &tangent, const Vector3f &biTangent, c
     tangentMat(2,2) = normal.z;
 
     return tangentMat.transpose();
+
 }
 
 void Matrix4::print(){
