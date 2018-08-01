@@ -1,7 +1,7 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <string>
+
 #include <vector>
 #include <queue>
 #include "model.h"
@@ -15,7 +15,7 @@ class Scene{
     public:
         //Builds a scene based on a path to the folder containing the scene's
         //content
-        Scene(std::string path);
+        Scene(const std::string &sceneFolder);
         ~Scene();
 
         //Updates all models, lights and cameras in scene
@@ -40,7 +40,7 @@ class Scene{
         //Contains the models that remain after frustrum culling
         std::queue<Model*> visibleModels;
         
-        bool loadSceneModels(std::string &path);
+        bool loadSceneModels(const std::string &sceneFolder);
 
         //Cull objects that should not be visible and add the visible to the 
         //visibleModels list for rendering TO DO 

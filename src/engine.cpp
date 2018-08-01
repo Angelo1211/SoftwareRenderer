@@ -72,7 +72,7 @@ void Engine::run(){
         
         //If scene switching has been called you break out of the current loop 
         if( switchScene ){
-            if( !gSceneManager.switchScene() ){
+            if( !gSceneManager.switchScene("teapot") ){
                 printf("Failed to switch scene! Quitting.\n");
                 break;
             }
@@ -95,7 +95,9 @@ void Engine::run(){
         end = SDL_GetTicks();
         printf("%2.1d: Loop elapsed time (ms):%d\n",count,end - start);
         total += end - start;
-        //if (count == 500) break;
+        if (count == 1000) break;
+        if (count == 100) switchScene = true;
+
     }
 
     printf("Closing down engine.\n");

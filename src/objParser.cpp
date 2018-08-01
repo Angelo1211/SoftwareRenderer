@@ -1,6 +1,6 @@
 #include "objParser.h"
 
-Mesh& OBJ::buildMeshFromFile(Mesh &mesh, std::string &path){
+Mesh& OBJ::buildMeshFromFile(Mesh &mesh, std::string path){
 
     //Open file containing vertex data
     std::ifstream file;

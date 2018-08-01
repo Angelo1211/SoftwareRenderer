@@ -16,7 +16,7 @@ class SceneManager{
         void shutDown();
 
         // Scene switching
-        bool switchScene();
+        bool switchScene(std::string sceneID);
 
         // Update current scene
         void update();
@@ -24,7 +24,7 @@ class SceneManager{
         //Called by the rendermanager to prep the render queue 
         Scene* getCurrentScene();
     private:
-        bool loadScene();
+        bool loadScene(std::string sceneID);
         bool closeScene();
 
         Scene *currentScene;

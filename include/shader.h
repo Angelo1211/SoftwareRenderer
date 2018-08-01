@@ -106,7 +106,7 @@ struct PhongShader : public IShader {
 //Optimized version of Phong shader that uses a half angle instead of individual reflection
 //angles
 struct BlinnPhongShader : public IShader {
-    Texture *albedoT, *normalT;
+    Texture *albedoT;
     Matrix4 MVP, MV, V, N;
     float ambientStrength = 0.05, diffStrength=1 , specularStrength= 0.5;
     float diff, spec, shininess = 128;
@@ -152,30 +152,30 @@ struct BlinnPhongShader : public IShader {
 // Shader that uses normal mapping instead of vertex normal interpolation
 struct NormalMapShader : public IShader {
     //Variables set per model
-    Texture *albedoT, *normalT;
+    Texture *albedoT, *normalT, *ambientOT;
     Matrix4 MVP, MV, V, M, N;
     Vector3f cameraPos;
 
     //Light Variables
     Vector3f lightColor{1,1,1}, white{1,1,1};
-    float ambientStrength = 0.05, diffStrength = 0.9, specularStrength = 0.8;
+    float ambientStrength = 0.1, diffStrength = 0.9, specularStrength = 0.8;
     float diff, spec, shininess = 128;
     Vector3f lightDir[3];
 
     //Variables set per vertex
-    Vector3f viewDir[3], texCoords[3], tangentFragPos[3];
+    Vector3f viewDir[3], texCoords[3];
     Vector3f normal_WS, tangent_WS, biTangent_WS;
     Matrix4 TBN;
     
     //Interpolated variables
     Vector3f interpCoords, interpLightDir, interpNormal,
-             interpViewDir, interpCol;
+             interpViewDir, interpCol, interpAO;
 
     //Per fragment
     Vector3f ambient, diffuse, specular ;
     Vector3f halfwayDir;
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) override{
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals, const Vector3f &tangent, const Vector3f &light, int index) override{
         //Creating TBN matrix
         normal_WS     = N.matMultDir(normal).normalized();
         tangent_WS    = N.matMultDir(tangent).normalized();
@@ -186,8 +186,8 @@ struct NormalMapShader : public IShader {
         texCoords[index] = textureVals;
 
         //Passing all lighting related data to tangent space
-        lightDir[index]       = TBN.matMultVec(light);
-        viewDir[index]        = TBN.matMultVec(cameraPos - M.matMultVec(vertex));
+        lightDir[index]  = TBN.matMultVec(light);
+        viewDir[index]   = TBN.matMultVec(cameraPos - M.matMultVec(vertex));
         
         return MVP.matMultVec(vertex);
     }
@@ -200,11 +200,12 @@ struct NormalMapShader : public IShader {
 
         //Reading albedo and normal data from textures
         interpCol    = albedoT->getPixelVal(interpCoords.x, interpCoords.y);
+        interpAO     = ambientOT->getIntensityVal(interpCoords.x, interpCoords.y);
         interpNormal = normalT->getPixelVal(interpCoords.x, interpCoords.y);
         interpNormal = interpNormal.normalized();
 
         //Ambient 
-        ambient = lightColor * ambientStrength;
+        ambient = lightColor * ambientStrength * interpAO;
 
         //Diffuse
         diff = std::max(0.0f, interpNormal.dotProduct(interpLightDir));

@@ -13,6 +13,7 @@ class Texture{
         ~Texture();
 
         Vector3f getPixelVal(float u, float v);
+        float getIntensityVal(float u, float v);
 
     private:
         float *pixelData;

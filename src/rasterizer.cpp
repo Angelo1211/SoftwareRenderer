@@ -122,11 +122,6 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
         e.z = e_row.z;
 
         for(int x = xMin; x <= xMax; ++x){
-            // if(x == 640){
-            //     (*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat, 0xFF, 0xFF, 0xFF);
-            //     printf("here! %d, %d\n", x,y);
-            //     continue;
-            // }
             //Only draw if inside pixel and following top left rule
             if(inside(e.x, A01, B01) && inside(e.y, A12, B12) && inside(e.z, A20, B20) ){
 

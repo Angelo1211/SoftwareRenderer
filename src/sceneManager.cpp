@@ -5,7 +5,7 @@ SceneManager::SceneManager(){}
 SceneManager::~SceneManager(){}
 
 bool SceneManager::startUp(){
-    if (!loadScene()){
+    if (!loadScene("firehydrant")){
         printf("Could not load scene. No models succesfully loaded!\n");
         return false;
     }
@@ -17,13 +17,14 @@ void SceneManager::shutDown(){
 }
 
 //Not implemented yet, but I will want to do this in the future
-bool SceneManager::switchScene(){
-    return true;
+bool SceneManager::switchScene(std::string sceneID){
+    delete currentScene;
+    return loadScene(sceneID);
 }
 
-//for now just loads a single .obj based on the  given string
-bool SceneManager::loadScene(){
-    currentScene = new Scene("FireHydrantMesh.obj");
+//Loads the given scene and all related textures
+bool SceneManager::loadScene(std::string sceneID){
+    currentScene = new Scene(sceneID);
     return  !currentScene->checkIfEmpty(); //True if empty, so it's negated for startup
 }
 

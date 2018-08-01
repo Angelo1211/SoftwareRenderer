@@ -1,13 +1,4 @@
 #include "model.h"
-#include "objParser.h"
-
-Model::Model(std::string path, TransformParameters &initParameters){
-    OBJ::buildMeshFromFile(mMesh, path);
-    mBounds.buildAABB(mMesh);
-    mMesh.buildFacetNormals();
-    mMesh.buildTangentSpace();
-    mModelMatrix = Matrix4::transformMatrix(initParameters);
-}
 
 Mesh * Model::getMesh(){
     return &mMesh;
@@ -33,4 +24,8 @@ Texture *Model::getAlbedo(){
 
 Texture *Model::getNormal(){
     return &mNormal;
+}
+
+Texture *Model::getAO(){
+    return &mAmbient;
 }

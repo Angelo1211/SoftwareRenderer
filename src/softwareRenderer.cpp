@@ -31,20 +31,23 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     std::vector<Vector3i> * nIndices = &triMesh->normalsIndices;
     std::vector<Vector3f> * fNormals = &triMesh->fNormals;
 
-    std::vector<Vector3f> * vertices   = &triMesh->vertices;
-    std::vector<Vector3f> * texels     = &triMesh->texels;
-    std::vector<Vector3f> * normals    = &triMesh->normals;
-    std::vector<Vector3f> * tangents   = &triMesh->tangents;
+    std::vector<Vector3f> * vertices = &triMesh->vertices;
+    std::vector<Vector3f> * texels   = &triMesh->texels;
+    std::vector<Vector3f> * normals  = &triMesh->normals;
+    std::vector<Vector3f> * tangents = &triMesh->tangents;
     int numFaces = triMesh->numFaces;
 
     //Array grouping vertices together into triangle
     Vector3f trianglePrimitive[3], normalPrim[3], uvPrim[3],
              tangentPrim[3];
 
-    //Initializing shader 
+    //Initializing shader textures
     NormalMapShader shader;
-    shader.albedoT = currentModel->getAlbedo();
-    shader.normalT = currentModel->getNormal();
+    shader.albedoT   = currentModel->getAlbedo();
+    shader.normalT   = currentModel->getNormal();
+    shader.ambientOT = currentModel->getAO();
+
+    //Initializing shader matrices
     shader.MV  = (mCamera->viewMatrix)*(*(currentModel->getModelMatrix()));
     shader.MVP = (mCamera->projectionMatrix)*shader.MV;
     shader.V   = (mCamera->viewMatrix);
@@ -66,7 +69,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     // Iterate through every triangle
     int count = 0;
 
-   #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim) firstprivate(shader)
+    #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim) firstprivate(shader)
     for (int j= 0; j < numFaces; ++j){
         //Current vertex and normal indices
         Vector3i f = (*vIndices)[j];
@@ -79,7 +82,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
         buildTri(u, uvPrim, *texels);
         buildTri(f, tangentPrim, *tangents);
 
-        //Early quit if 
+        //Early quit if face is pointing away from camera
         if (backFaceCulling((*fNormals)[j], trianglePrimitive[0], worldToObject)) continue;
         ++count;
         //Apply vertex shader

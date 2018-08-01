@@ -33,16 +33,13 @@ class Frustrum{
         };
     public:
         float  fov, AR, near, far , nearH, nearW, farH, farW;
-        Frustrum(float ratio): fov(35), near(0.01), far(1000), AR(ratio){};
+        Frustrum(float ratio): fov(90), near(0.01), far(1000), AR(ratio){};
         Plane pl[6];
 
         void setCamInternals();
         void updatePlanes(Matrix4 &viewMat, const Vector3f &cameraPos) ;
         bool checkIfInside(AABox *bounds);
 };
-
-
-
 
 
 #endif
