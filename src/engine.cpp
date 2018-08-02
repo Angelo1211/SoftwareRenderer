@@ -95,12 +95,12 @@ void Engine::run(){
         end = SDL_GetTicks();
         printf("%2.1d: Loop elapsed time (ms):%d\n",count,end - start);
         total += end - start;
-        if (count == 1000) break;
-        if (count == 100) switchScene = true;
+        //if (count == 1000) break;
+        //if (count == 100) switchScene = true;
 
     }
 
     printf("Closing down engine.\n");
-    printf("Average frame time over %2.1d frames: %f\n", count,total/(float)count);
+    printf("Average frame time over %2.1d frames: %2.fms.\n", count,total/(float)count);
     
 }

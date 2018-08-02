@@ -5,7 +5,7 @@ SceneManager::SceneManager(){}
 SceneManager::~SceneManager(){}
 
 bool SceneManager::startUp(){
-    if (!loadScene("firehydrant")){
+    if (!loadScene("teapot")){
         printf("Could not load scene. No models succesfully loaded!\n");
         return false;
     }

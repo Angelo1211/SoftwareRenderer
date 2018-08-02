@@ -149,8 +149,8 @@ struct BlinnPhongShader : public IShader {
 
 };
 
-// Shader that uses normal mapping instead of vertex normal interpolation
-struct NormalMapShader : public IShader {
+// Shader that uses texture mapping extensively
+struct TextureMapShader : public IShader {
     //Variables set per model
     Texture *albedoT, *normalT, *ambientOT;
     Matrix4 MVP, MV, V, M, N;
@@ -217,6 +217,129 @@ struct NormalMapShader : public IShader {
         specular = lightColor * spec * specularStrength;
 
         return (ambient + diffuse) * interpCol + specular * white;
+    }
+
+};
+
+// Shader that uses texture mapping and a PBR approach for shading
+// Uses a cook-torrance BRDF for direct light sources. 
+struct PBRShader : public IShader {
+    //Variables set per model
+    Texture *albedoT, *normalT, *ambientOT, *roughT, *metalT;
+    Matrix4 MVP, MV, V, M, N;
+    Vector3f cameraPos;
+
+    //Light Variables
+    Vector3f lightColor{1,1,1}, F0{0.04, 0.04, 0.04}, F0corrected; //Default value dielectric
+    float nDotL, nDotV, ambientInt = 0.1;
+    Vector3f lightDir[3];
+
+    //Variables set per vertex
+    Vector3f viewDir[3], texCoords[3];
+    Vector3f normal_WS, tangent_WS, biTangent_WS;
+    Matrix4 TBN;
+    
+    //Interpolated variables
+    Vector3f interpCoords, interpLightDir,
+             interpNormal, interpViewDir,
+             interpCol;
+
+    //Per fragment
+    Vector3f F, NDF, G ; //Fresnel, normal distribution function and geometry occlusion 
+    Vector3f halfwayDir, radianceOut, ambient;
+    Vector3f specular, kD, kS;
+    float interpRough, interpAO, interpMetal;
+
+    //BRDF functions
+    Vector3f fresnelSchlick(float cosTheta, Vector3f &fresnel0 ){
+        return fresnel0 + (Vector3f(1.0)- fresnel0)* std::pow(1.0 - cosTheta, 5.0);
+    }
+    float distributionGGX(Vector3f normal, Vector3f halfway, float roughness){
+        float a      = roughness*roughness;
+        float a2     = a*a;
+        float NdotH  = std::max(normal.dotProduct(halfway), 0.0f);
+        float NdotH2 = NdotH*NdotH;
+        
+        float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+        denom = M_PI * denom * denom;
+        
+        return a2 / denom;
+    }
+    float GeometrySchlickGGX(float NdotV, float roughness){
+        float r = (roughness + 1.0); 
+        float k = (r*r) / 8.0; //Only useful for direct lighting must be changed in ibr
+        float denom = NdotV * (1.0 - k) + k;
+        
+        return NdotV / denom;
+    }
+    float GeometrySmith(float roughness){
+        return GeometrySchlickGGX(nDotL, roughness) * GeometrySchlickGGX(nDotV, roughness);
+    }
+
+    //Vertex shader
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals, const Vector3f &tangent, const Vector3f &light, int index) override{
+        //Creating TBN matrix
+        normal_WS     = N.matMultDir(normal).normalized();
+        tangent_WS    = N.matMultDir(tangent).normalized();
+        biTangent_WS  = normal_WS.crossProduct(tangent_WS);
+        TBN = Matrix4::TBNMatrix(tangent_WS, biTangent_WS, normal_WS);
+        
+        //Getting UV coordinates for use in all textures
+        texCoords[index] = textureVals;
+
+        //Passing all lighting related data to tangent space
+        lightDir[index]  = TBN.matMultVec(light);
+        viewDir[index]   = TBN.matMultVec(cameraPos - M.matMultVec(vertex));
+        
+        return MVP.matMultVec(vertex);
+    }
+
+    //Fragment shader
+    Vector3f fragment(float u, float v) override{
+        //Interpolated stuff
+        interpCoords   = texCoords[0] + (texCoords[1] - texCoords[0])* u + (texCoords[2] - texCoords[0]) * v;
+        interpLightDir = lightDir[0] + (lightDir[1] - lightDir[0])* u + (lightDir[2] - lightDir[0]) * v;
+        interpViewDir  = viewDir[0] + (viewDir[1] - viewDir[0])* u + (viewDir[2] - viewDir[0]) * v;
+
+        //Reading data from textures for use in lighting calculations
+        interpCol    = albedoT->getPixelVal(interpCoords.x, interpCoords.y);
+        interpAO     = ambientOT->getIntensityVal(interpCoords.x, interpCoords.y);
+        interpRough  = roughT->getIntensityVal(interpCoords.x, interpCoords.y);
+        interpMetal  = metalT->getIntensityVal(interpCoords.x, interpCoords.y);
+        interpNormal = normalT->getPixelVal(interpCoords.x, interpCoords.y);
+        interpNormal = interpNormal.normalized();
+        interpViewDir = interpViewDir.normalized();
+
+        //Setting up Direct Lighting variables
+        halfwayDir = (interpLightDir + interpViewDir).normalized();
+        nDotV = std::max(interpNormal.dotProduct(interpViewDir), 0.0f);
+        nDotL = std::max(interpNormal.dotProduct(interpLightDir), 0.0f);
+        F0corrected = (F0 * (1.0f-interpMetal)) + (interpCol * interpMetal);//Varying f0 based on metallicness of surface
+        radianceOut.zero();
+
+        //TODO:: Iterate through every light and set radiance 
+        //We assume the only light in the scene is the sun so there is no attenuation
+        
+        //Setting up BRDF
+        F   = fresnelSchlick(std::max(halfwayDir.dotProduct(interpViewDir), 0.0f), F0corrected);
+        NDF = distributionGGX(interpNormal, halfwayDir, interpRough); 
+        G   = GeometrySmith(interpRough);
+
+        //Calculating specular component of BRDF
+        Vector3f numerator = F * (G*NDF);
+        float invDenominator  = 1 / std::max(4.0 * nDotL * nDotV, 0.001);
+        specular  = numerator * invDenominator;
+
+        //Calculating the full rendering equation for a single light
+        kS = F;
+        kD = (Vector3f(1.0) - kS);
+        kD = kD * (1.0f - interpMetal); 
+        radianceOut = ( (kD * (interpCol * (1/M_PI)) + specular ) * nDotL * lightColor);
+
+        //Simplistic ambient term
+        ambient =  interpCol * (ambientInt * interpAO);
+
+        return ambient + radianceOut;
     }
 
 };

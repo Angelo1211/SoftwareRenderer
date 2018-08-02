@@ -51,11 +51,13 @@ bool Scene::loadSceneModels(const std::string &sceneFolder){
         }
         else{
             printf( "%s is a valid mesh\n", meshFilePath.c_str() );
+            //For now initParameters are calculated here
+            //IMPLEMENT: read directly from file
             TransformParameters initParameters;
             initParameters.rotation = Vector3f(90*M_PI/180.0f, 0 , 0);
             // initParameters.translation = Vector3f(0, -0.5, 0);
-            initParameters.scaling = Vector3f(0.3, 0.3, 0.3);
-            initParameters.translation = Vector3f(0, 0, 0);
+            initParameters.scaling = Vector3f(0.4, 0.4, 0.4);
+            //initParameters.translation = Vector3f(0, 0, 0);
             modelsInScene.push_back(new Model(baseFilePath, initParameters));
             return false;
         }

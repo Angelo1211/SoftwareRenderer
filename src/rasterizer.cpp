@@ -208,5 +208,5 @@ float Rasterizer::clamp(float n, float lower, float upper) {
 
 
 float Rasterizer::gammaAdjust(float n, float gamma) {
-  return std::pow(n, 1.0/gamma)*256.0f;
+  return std::pow(n, 1.0/gamma)*255.0f;
 }

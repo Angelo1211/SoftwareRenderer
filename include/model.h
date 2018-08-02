@@ -14,6 +14,8 @@ class Model{
             mAlbedo(basePath + "_albedo.png", "RGB"),
             mNormal(basePath + "_normal.png", "XYZ"),
             mAmbient(basePath + "_ao.png", "BW"),
+            mRoughness(basePath + "_rough.png", "BW"),
+            mMetallic(basePath + "_metal.png", "BW"),
             mModelMatrix(Matrix4::transformMatrix(initParameters))
         {   
             OBJ::buildMeshFromFile(mMesh, basePath + "_mesh.obj");
@@ -29,6 +31,9 @@ class Model{
         Texture *getAlbedo();
         Texture *getNormal();
         Texture *getAO();
+        Texture *getRoughness();
+        Texture *getMetallic();
+
 
         void update();
 
@@ -39,6 +44,9 @@ class Model{
         Texture mAlbedo;
         Texture mNormal;
         Texture mAmbient;
+        Texture mRoughness;
+        Texture mMetallic;
+
         Mesh mMesh;
         AABox mBounds;
         Matrix4 mModelMatrix;

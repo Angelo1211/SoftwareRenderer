@@ -42,10 +42,12 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
              tangentPrim[3];
 
     //Initializing shader textures
-    NormalMapShader shader;
+    PBRShader shader;
     shader.albedoT   = currentModel->getAlbedo();
     shader.normalT   = currentModel->getNormal();
     shader.ambientOT = currentModel->getAO();
+    shader.roughT    = currentModel->getRoughness();
+    shader.metalT    = currentModel->getMetallic();
 
     //Initializing shader matrices
     shader.MV  = (mCamera->viewMatrix)*(*(currentModel->getModelMatrix()));

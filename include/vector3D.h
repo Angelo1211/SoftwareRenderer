@@ -101,6 +101,12 @@ struct Vector3{
         }
         printf(str.c_str(),x,y,z);
     }
+
+    void zero() {
+        x = 0;
+        y = 0; 
+        z = 0;
+    }
 };
 
 //Shorthands for the common vector types we use

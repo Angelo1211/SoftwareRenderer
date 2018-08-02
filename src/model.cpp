@@ -29,3 +29,11 @@ Texture *Model::getNormal(){
 Texture *Model::getAO(){
     return &mAmbient;
 }
+
+Texture *Model::getRoughness(){
+    return &mRoughness;
+}
+
+Texture *Model::getMetallic(){
+    return &mMetallic;
+}

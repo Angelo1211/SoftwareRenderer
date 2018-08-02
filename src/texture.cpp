@@ -9,19 +9,19 @@ Texture::Texture(std::string path, std::string type){
         if(type == "RGB"){
             pixelData = new float[width*height*channels];
             for(int i = 0; i < width*height*channels; ++i){
-                pixelData[i] = (float)data[i] * (1/256.0f);
+                pixelData[i] = std::pow((float)data[i] * (1/255.0f), 2.2f);
             }
         }
         else if (type == "XYZ"){
             pixelData = new float[width*height*channels];
             for(int i = 0; i < width*height*channels; ++i){
-                pixelData[i] = (float)data[i] * (2/256.0f) - 1.0f;
+                pixelData[i] = (float)data[i] * (2/255.0f) - 1.0f;
             }
         }
         else if (type == "BW"){
             pixelData = new float[width*height*channels];
             for(int i = 0; i < width*height*channels; ++i){
-                pixelData[i] = (float)data[i] * (1/256.0f);
+                pixelData[i] = (float)data[i] * (1/255.0f);
             }
         }
         else{
