@@ -48,10 +48,15 @@ void RenderManager::render(){
 //Gets the list of visible models from the current scene
 //Done every frame in case scene changes
 void RenderManager::buildRenderQueue(){
+
+    //set scene info
+    Scene* currentScene = sceneLocator->getCurrentScene();
     
     //Set renderer camera
-    Scene* currentScene = sceneLocator->getCurrentScene();
     renderInstance.setCameraToRenderFrom(currentScene->getCurrentCamera());
+
+    //Update the pointer to the list of lights in the scene
+    renderInstance.setSceneLights(currentScene->getCurrentLights(), currentScene->getLightCount() );
 
     //Get pointers to the visible model queu
     renderObjectQueue = currentScene->getVisiblemodels();

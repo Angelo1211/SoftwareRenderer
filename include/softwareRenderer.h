@@ -5,6 +5,7 @@
 #include "buffer.h"
 #include "model.h"
 #include "camera.h"
+#include "light.h"
 
 class SoftwareRenderer {
 
@@ -42,6 +43,8 @@ class SoftwareRenderer {
         Buffer<Uint32>* getRenderTarget();
 
         void setCameraToRenderFrom(Camera * camera);
+
+        void setSceneLights(BaseLight * lights, int numLights);
     private:
         //Buffer methods
         bool createBuffers(int w, int h);
@@ -57,6 +60,10 @@ class SoftwareRenderer {
         //Pointer to the scene's target camera
         Camera * mCamera;
         bool startUpComplete = false;
+
+        //Pointer to structs containing all the light info
+        int mNumLights;
+        BaseLight *mLights;
 
         Buffer<float> * zBuffer;
         Buffer<Uint32> * pixelBuffer;

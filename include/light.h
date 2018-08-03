@@ -1,11 +1,11 @@
-// #ifndef LIGHT_H
-// #define LIGHT_H
+#ifndef LIGHT_H
+#define LIGHT_H
 
-// #include "vector3D.h"
+#include "vector3D.h"
 
-// struct BaseLight{
-//     Vector3f position;
-//     Vector3f color;
-// };
+struct BaseLight{
+    Vector3f position;
+    Vector3f color;
+};
 
-// #endif
+#endif

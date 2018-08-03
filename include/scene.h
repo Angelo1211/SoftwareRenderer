@@ -1,12 +1,11 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-
 #include <vector>
 #include <queue>
 #include "model.h"
 #include "camera.h"
-
+#include "light.h"
 
 //Keeps track of all the lights, models and cameras contained in a current
 //scene. Also performs frustrumc ulling to determine what objects to send to
@@ -26,12 +25,21 @@ class Scene{
 
         Camera * getCurrentCamera();
 
+        BaseLight * getCurrentLights();
+        int getLightCount();
+        
+
         //Used in the scene loading check to determine if models were loaded 
         //correctly. It sends this info upstream to the scene manager to abort
         //the load procedure.
         bool checkIfEmpty();
+        
     private:
         Camera mainCamera;
+        
+        BaseLight *lights;
+        int lightCount;
+
         bool emptyScene;
         std::vector<Model*> modelsInScene;
         //Contains the models that remain after frustrum culling

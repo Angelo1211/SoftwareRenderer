@@ -28,6 +28,7 @@ Scene::~Scene(){
         for(Model *models : modelsInScene){
             delete models;
         }
+        delete [] lights;
     }
 }
 
@@ -63,9 +64,15 @@ void Scene::frustrumCulling(){
     }
 }
 
- std::queue<Model*>* Scene::getVisiblemodels(){
+std::queue<Model*>* Scene::getVisiblemodels(){
     return &visibleModels;
 }
+
+BaseLight * Scene::getCurrentLights(){
+    return lights;
+}
+
+
 
 Camera* Scene::getCurrentCamera(){
     return &mainCamera;
@@ -131,7 +138,7 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
                         for(int i = 0; i < max; ++i){
 
                             //Burn one line with model type for now
-                            std::getline(file,line); 
+                            std::getline(file,line);
 
                             //Position
                             std::getline(file,line);
@@ -162,9 +169,28 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
                     else if(key == "l"){ //light related setup
                         printf("Loading lights...\n");
                         iss >> key;
-                        int max = stoi(key);
-                        for(int i = 0; i < max; ++i){
-                            printf("Light 1\n");
+                        lightCount = stoi(key);
+                        lights = new BaseLight[lightCount];
+                        for(int i = 0; i < lightCount; ++i){
+
+                            //Burn one line with light type for now
+                            std::getline(file,line);
+
+                            //Position
+                            std::getline(file,line);
+                            std::istringstream pos(line);
+                            pos >> key >> x >> y >> z;
+                            lights[i].position = Vector3f(stof(x), stof(y), stof(z));
+
+                            //Color
+                            std::getline(file,line);
+                            std::istringstream col(line);
+                            col >> key >> x >> y >> z;
+                            lights[i].color = Vector3f(stof(x), stof(y), stof(z));
+
+                            //Burning empty line that makes the config easier to read
+                            std::getline(file,line);
+                            
                         }
                     }
                     else if(key == "c"){ //camera related setup
@@ -178,4 +204,8 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
             }
         }
     }
+}
+
+int Scene::getLightCount(){
+    return lightCount;
 }

@@ -15,6 +15,7 @@ bool SoftwareRenderer::startUp(int w, int h){
 }
 
 void SoftwareRenderer::shutDown(){
+    mLights = nullptr;
     mCamera = nullptr;
     if (startUpComplete){
         delete zBuffer;
@@ -24,7 +25,6 @@ void SoftwareRenderer::shutDown(){
 
 void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     //Getting the vertices, faces, texture data 
-
     Mesh *triMesh = currentModel->getMesh();
     std::vector<Vector3i> * vIndices = &triMesh->vertexIndices;
     std::vector<Vector3i> * tIndices = &triMesh->textureIndices;
@@ -49,7 +49,16 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     shader.roughT    = currentModel->getRoughness();
     shader.metalT    = currentModel->getMetallic();
 
-    //Initializing shader matrices
+    //Setting up lighting
+    Vector3f lightDir[mNumLights * 3 ];
+    Vector3f lightPositions[mNumLights];
+    Vector3f lightCol[mNumLights];
+    for(int x = 0; x < mNumLights; ++x){
+        lightCol[x] = mLights[x].color;
+        lightPositions[x] = mLights[x].position;
+    }
+
+    //Initializing shader matrices & variables
     shader.MV  = (mCamera->viewMatrix)*(*(currentModel->getModelMatrix()));
     shader.MVP = (mCamera->projectionMatrix)*shader.MV;
     shader.V   = (mCamera->viewMatrix);
@@ -57,15 +66,18 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     shader.N   = (shader.M.inverse()).transpose(); 
     shader.cameraPos = mCamera->position;
 
-    //Basic light direction
-    Vector3f lightDir{1, 0, 0};
-    lightDir = lightDir.normalized();
+    shader.numLights  = mNumLights;
+    shader.lightColor = lightCol;
+    shader.lightDirForInterp = lightDir;
+    shader.lightPos = lightPositions;
+
 
     //Building worldToObject matrix
     Matrix4 worldToObject = (*(currentModel->getModelMatrix())).inverse();
 
     // Iterate through every triangle
     int count = 0;
+    Vector3f dummyDir; //TO DO FIX THIS
 
     #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim) firstprivate(shader)
     for (int j= 0; j < numFaces; ++j){
@@ -88,7 +100,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
             trianglePrimitive[i] = shader.vertex(
                 trianglePrimitive[i], normalPrim[i],
                 uvPrim[i], tangentPrim[i], 
-                lightDir, i);
+                dummyDir, i);
         }
 
         //Skip triangles that are outside viewing frustrum
@@ -117,6 +129,13 @@ Buffer<Uint32>* SoftwareRenderer::getRenderTarget(){
 void SoftwareRenderer::setCameraToRenderFrom(Camera * camera){
     mCamera = camera;
 }
+
+
+void SoftwareRenderer::setSceneLights(BaseLight * lights, int numLights){
+    mNumLights = numLights;
+    mLights = lights;
+}
+
 
 bool SoftwareRenderer::createBuffers(int w, int h){
     int pixelCount = w*h;
