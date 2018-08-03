@@ -10,7 +10,7 @@
 
 class Model{
     public:
-        Model(std::string basePath, TransformParameters &initParameters) : 
+        Model(std::string basePath,const TransformParameters &initParameters) : 
             mAlbedo(basePath + "_albedo.png", "RGB"),
             mNormal(basePath + "_normal.png", "XYZ"),
             mAmbient(basePath + "_ao.png", "BW"),

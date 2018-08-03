@@ -58,10 +58,6 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     shader.cameraPos = mCamera->position;
 
     //Basic light direction
-    float t = static_cast<float>(SDL_GetTicks());
-    float radius = 1;
-    float lX   = std::sin(t/4000) * radius;
-    float lY   = std::cos(t/4000) * radius;
     Vector3f lightDir{1, 0, 0};
     lightDir = lightDir.normalized();
 

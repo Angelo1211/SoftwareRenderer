@@ -1,0 +1,21 @@
+s teapot
+//First line just checks that you are indeed reading the right config file
+/
+//SECTION: models
+m 1
+01 teapot
+pos 0.0 0.0 0.0 
+rot 90.0 0.0 0.0
+sca 0.4 0.4 0.4 
+/
+//SECTION: lights
+l 1
+l01 sun
+pos 1.0 1.0 1.0
+col 1.0 1.0 1.0
+//
+//SECTION: cameras
+c 
+/
+
+

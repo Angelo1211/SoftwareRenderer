@@ -42,6 +42,7 @@ Texture::~Texture(){
 Vector3f Texture::getPixelVal(float u, float v){
 
     //Simple bilinear filtering
+    //DISABLED FOR NOW since it trashes the FPS
     // float intU;
     // float tU = std::modf(u * (width-1), &intU);
     // int uIntLo = (int)intU; 
@@ -72,6 +73,7 @@ Vector3f Texture::getPixelVal(float u, float v){
 
 float Texture::getIntensityVal(float u, float v){
     //Simple bilinear filtering
+    //DISABLED FOR NOW since it trashes the FPS
     // float intU;
     // float tU = std::modf(u * (width-1), &intU);
     // int uIntLo = (int)intU; 

@@ -14,7 +14,7 @@
 class Scene{
     public:
         //Builds a scene based on a path to the folder containing the scene's
-        //content
+        //content and setup information
         Scene(const std::string &sceneFolder);
         ~Scene();
 
@@ -32,18 +32,24 @@ class Scene{
         bool checkIfEmpty();
     private:
         Camera mainCamera;
-
         bool emptyScene;
-
         std::vector<Model*> modelsInScene;
-
         //Contains the models that remain after frustrum culling
         std::queue<Model*> visibleModels;
-        
-        bool loadSceneModels(const std::string &sceneFolder);
 
-        //Cull objects that should not be visible and add the visible to the 
-        //visibleModels list for rendering TO DO 
+        //Check if the current scene folder acually exists both in windows and linux
+        //And also checks for accessibility 
+        bool findSceneFolder(const std::string &scenePath);
+
+        //Loads scene models, checks first if they exist by looking for the 
+        //mesh .If it finds it assumes (dangerously) that all the other 
+        //texture data also exists
+        void loadSceneModel(const std::string &baseFilePath, const TransformParameters &init);
+
+        bool loadContent(const std::string &baseFilePath, const std::string &sceneName);
+
+        //Cull objects that should not be visible and add the visible ones to the 
+        //visibleModels list for rendering 
         void frustrumCulling();
 };
 
