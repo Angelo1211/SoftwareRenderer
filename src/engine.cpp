@@ -95,7 +95,7 @@ void Engine::run(){
         end = SDL_GetTicks();
         printf("%2.1d: Loop elapsed time (ms):%d\n",count,end - start);
         total += end - start;
-        //if (count == 1000) break;
+        if (count == 500) break;
         //if (count == 100) switchScene = true;
 
     }

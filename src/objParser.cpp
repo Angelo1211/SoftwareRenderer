@@ -40,10 +40,7 @@ void OBJ::loadFileData(Mesh &mesh, std::ifstream &file){
         }
         else if(key == "vt"){ //Texture data
             iss >> x >> y;
-            tempU = std::modf(std::stof(x), &intpart);
-            tempV = std::modf(std::stof(y), &intpart);
-            Vector3f tex(tempU, tempV, 0);
-            //Vector3f tex(std::stof(x), std::stof(y), 0);
+            Vector3f tex(std::stof(x), std::stof(y), 0);
             mesh.texels.push_back(tex);
         }
         else if(key == "f"){ //index data

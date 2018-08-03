@@ -140,9 +140,9 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
                     rgbVals = shader.fragment(uPers , vPers);
                     //Update pixel buffer with clamped values 
                     (*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat,
-                    clamp(gammaAdjust(rgbVals.data[0], 1), 0, 255.0f), //
-                    clamp(gammaAdjust(rgbVals.data[1], 1), 0, 255.0f),//
-                    clamp(gammaAdjust(rgbVals.data[2], 1), 0, 255.0f));//
+                    clamp(gammaAdjust(rgbVals.data[0], 2.2), 0, 255.0f), //
+                    clamp(gammaAdjust(rgbVals.data[1], 2.2), 0, 255.0f),//
+                    clamp(gammaAdjust(rgbVals.data[2], 2.2), 0, 255.0f));//
                     //(*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat,0xFF, 0xFF, 0xFF);
                 }   
             }

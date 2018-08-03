@@ -231,7 +231,7 @@ struct PBRShader : public IShader {
 
     //Light Variables
     Vector3f lightColor{1,1,1}, F0{0.04, 0.04, 0.04}, F0corrected; //Default value dielectric
-    float nDotL, nDotV, ambientInt = 0.1;
+    float nDotL, nDotV, ambientInt = 0.01;
     Vector3f lightDir[3];
 
     //Variables set per vertex
@@ -249,6 +249,7 @@ struct PBRShader : public IShader {
     Vector3f halfwayDir, radianceOut, ambient;
     Vector3f specular, kD, kS;
     float interpRough, interpAO, interpMetal;
+    float u, v, intPart;
 
     //BRDF functions
     Vector3f fresnelSchlick(float cosTheta, Vector3f &fresnel0 ){
@@ -301,12 +302,16 @@ struct PBRShader : public IShader {
         interpLightDir = lightDir[0] + (lightDir[1] - lightDir[0])* u + (lightDir[2] - lightDir[0]) * v;
         interpViewDir  = viewDir[0] + (viewDir[1] - viewDir[0])* u + (viewDir[2] - viewDir[0]) * v;
 
+        //Correcting UV's for tiling
+        u = std::modf(interpCoords.x, &intPart);
+        v = std::modf(interpCoords.y, &intPart);
+
         //Reading data from textures for use in lighting calculations
-        interpCol    = albedoT->getPixelVal(interpCoords.x, interpCoords.y);
-        interpAO     = ambientOT->getIntensityVal(interpCoords.x, interpCoords.y);
-        interpRough  = roughT->getIntensityVal(interpCoords.x, interpCoords.y);
-        interpMetal  = metalT->getIntensityVal(interpCoords.x, interpCoords.y);
-        interpNormal = normalT->getPixelVal(interpCoords.x, interpCoords.y);
+        interpCol    = albedoT->getPixelVal(u, v);
+        interpAO     = ambientOT->getIntensityVal(u, v);
+        interpRough  = roughT->getIntensityVal(u, v);;
+        interpMetal  = metalT->getIntensityVal(u, v);
+        interpNormal = normalT->getPixelVal(u, v);
         interpNormal = interpNormal.normalized();
         interpViewDir = interpViewDir.normalized();
 

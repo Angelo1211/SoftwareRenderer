@@ -15,7 +15,7 @@ void Camera::update(){
     float camX   = std::sin(t/6000) * radius;
     float camZ   = std::cos(t/6000) * radius;
     position.x   = camX;
-    position.y   = camX;
+    position.y   = 0;
     position.z   = camZ;
     target.z     = 0;
     viewMatrix   = Matrix4::lookAt(position,target,up);

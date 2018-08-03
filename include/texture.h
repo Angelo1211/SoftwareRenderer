@@ -16,6 +16,7 @@ class Texture{
         float getIntensityVal(float u, float v);
 
     private:
+        int bilinearFiltering(float u, float v);
         float *pixelData;
         int width, height, channels;
 };
