@@ -233,7 +233,9 @@ struct PBRShader : public IShader {
     Vector3f F0{0.04, 0.04, 0.04}, F0corrected; //Default value dielectric
     float nDotL, nDotV, ambientInt = 0.01;
     int numLights;
-    Vector3f *lightDirForInterp, *lightColor, *lightPos;
+    Vector3f *lightDirVal;
+    Vector3f *lightCol;
+    Vector3f *lightPos;
 
     //Variables set per vertex
     Vector3f viewDir[3], texCoords[3];
@@ -292,8 +294,7 @@ struct PBRShader : public IShader {
         //Passing all lighting related data to tangent space
         for(int lIndex = 0; lIndex < numLights; ++lIndex){
             int indc2 = (lIndex*3) + index;
-            lightDirForInterp[indc2]  = TBN.matMultVec(lightPos[lIndex]);
-            //printf("%d\n",indc2);
+            lightDirVal[indc2]  = TBN.matMultVec(lightPos[lIndex]);
         }
         viewDir[index]   = TBN.matMultVec(cameraPos - M.matMultVec(vertex));
         
@@ -323,9 +324,10 @@ struct PBRShader : public IShader {
         radianceOut.zero();
         for(int light = 0; light < numLights; ++light ){
             int val = light*3;
-            interpLightDir = lightColor[0];
-            //interpLightDir = lightDirForInterp[0] + (lightDirForInterp[1] - lightDirForInterp[0])* u + (lightDirForInterp[2] - lightDirForInterp[0]) * v;
-            halfwayDir = (interpLightDir + interpViewDir).normalized();
+            //interpLightDir = lightColor[0];
+
+            interpLightDir = lightDirVal[0] +  (lightDirVal[1] - lightDirVal[0])* u +  (lightDirVal[2] - lightDirVal[0]) * v;
+            halfwayDir = (interpLightDir.normalized() + interpViewDir).normalized();
             nDotV = std::max(interpNormal.dotProduct(interpViewDir), 0.0f);
             nDotL = std::max(interpNormal.dotProduct(interpLightDir), 0.0f);
             F0corrected = (F0 * (1.0f-interpMetal)) + (interpCol * interpMetal);//Varying f0 based on metallicness of surface
@@ -347,7 +349,7 @@ struct PBRShader : public IShader {
             kS = F;
             kD = (Vector3f(1.0) - kS);
             kD = kD * (1.0f - interpMetal); 
-            radianceOut = radianceOut +  ( (kD * (interpCol * (1/M_PI)) + specular ) * nDotL * lightColor[light]);
+            radianceOut +=  ( (kD * (interpCol * (1/M_PI)) + specular ) * nDotL * lightCol[light]);
         }
         
         //Simplistic ambient term

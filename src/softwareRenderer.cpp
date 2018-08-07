@@ -52,9 +52,9 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     //Setting up lighting
     Vector3f lightDir[mNumLights * 3 ];
     Vector3f lightPositions[mNumLights];
-    Vector3f lightCol[mNumLights];
+    Vector3f lColor[mNumLights];
     for(int x = 0; x < mNumLights; ++x){
-        lightCol[x] = mLights[x].color;
+        lColor[x] = mLights[x].color;
         lightPositions[x] = mLights[x].position;
     }
 
@@ -67,8 +67,8 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     shader.cameraPos = mCamera->position;
 
     shader.numLights  = mNumLights;
-    shader.lightColor = lightCol;
-    shader.lightDirForInterp = lightDir;
+    shader.lightCol = lColor;
+    shader.lightDirVal = lightDir;
     shader.lightPos = lightPositions;
 
 
@@ -79,7 +79,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     int count = 0;
     Vector3f dummyDir; //TO DO FIX THIS
 
-    #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim) firstprivate(shader)
+    //#pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim) firstprivate(shader)
     for (int j= 0; j < numFaces; ++j){
         //Current vertex and normal indices
         Vector3i f = (*vIndices)[j];
