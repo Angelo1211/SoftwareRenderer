@@ -401,6 +401,9 @@ Matrix4 Matrix4::TBNMatrix(const Vector3f &tangent, const Vector3f &biTangent, c
     tangentMat(2,1) = biTangent.z;
     tangentMat(2,2) = normal.z;
 
+    //fourth row
+    tangentMat(3,3) = 1.0;
+
     return tangentMat.transpose();
 
 }
