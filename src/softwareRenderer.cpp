@@ -71,7 +71,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     // Iterate through every triangle
     int count = 0;
 
-    #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim) firstprivate(shader)
+    //#pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim) firstprivate(shader)
     for (int j= 0; j < numFaces; ++j){
         //Current vertex and normal indices
         Vector3i f = (*vIndices)[j];
