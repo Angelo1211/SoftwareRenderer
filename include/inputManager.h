@@ -19,8 +19,8 @@ class InputManager{
         //Processes all the SDL events that have ocurred in the given frame
         void processInput(bool &done);
     private:
-    SceneManager *sceneController;
-    void handleEvent(SDL_Event * event);
+        SceneManager *sceneController;
+        void handleEvent(SDL_Event * event, bool &done);
 };
 
 

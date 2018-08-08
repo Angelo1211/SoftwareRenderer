@@ -52,7 +52,7 @@ void Engine::shutDown(){
     printf("Closed display manager.\n");
 }
 
-//Runs main application loop and allows for scene changes
+//Runs main application loop
 void Engine::run(){
 
     //Main flags
@@ -61,28 +61,17 @@ void Engine::run(){
 
     //Iteration and time keeping counters
     int count = 0;
-    unsigned int end = 0;
+    unsigned int diff = 0;
     unsigned int start = 0;;
     unsigned int total = 0;
 
     printf("Entered Main Loop!\n");
     while(!done){
-        start = SDL_GetTicks();
         ++count;
-        
-        //If scene switching is invoked it will attempt to switch to target scene
-        //If for whatever reason it can't it will quit out of the whole engine
-        if( switchScene ){
-            if( !gSceneManager.switchScene("teapot") ){
-                printf("Failed to switch scene! Quitting.\n");
-                break;
-            }
-            else{
-                switchScene = false;
-            } 
-        }
+        start = SDL_GetTicks();
 
         //Handle all user input
+        //Switches scene too
         gInputManager.processInput(done);
         
         //Update all models, camera and lighting in the current scene
@@ -92,11 +81,9 @@ void Engine::run(){
         gRenderManager.render();
 
         //Stats about frame
-        end = SDL_GetTicks();
-        printf("%2.1d: Loop elapsed time (ms):%d\n",count,end - start);
-        total += end - start;
-        if (count == 500) break;
-        if (count == 100) switchScene = true;
+        diff = SDL_GetTicks() - start;
+        printf("%2.1d: Loop elapsed time (ms):%d\n",count, diff);
+        total += diff;
 
     }
 

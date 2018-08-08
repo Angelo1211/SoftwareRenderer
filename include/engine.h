@@ -21,7 +21,7 @@ class Engine{
         bool startUp();
         void shutDown();
 
-        //Contains the scene switching logic and the main application loop
+        //Contains all high level logic and the main application loop
         void run();
 
     private:
