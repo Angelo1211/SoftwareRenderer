@@ -21,13 +21,13 @@ bool Engine::startUp(){
         else{
             //Initializes renderer and connects it to the window manager
             //Also gets pointer to current scene
-            if( !gRenderManager.startUp(gDisplayManager,gSceneManager) ){
+            if( !gRenderManager.startUp(gDisplayManager, gSceneManager) ){
             success = false;
             printf("Failed to initialize render manager.\n");
             
             }
             else{
-                if ( !gInputManager.startUp() ){
+                if ( !gInputManager.startUp(gSceneManager) ){
                     success = false;
                     printf("Failed to initialize input manager.\n");
                 }
@@ -70,7 +70,8 @@ void Engine::run(){
         start = SDL_GetTicks();
         ++count;
         
-        //If scene switching has been called you break out of the current loop 
+        //If scene switching is invoked it will attempt to switch to target scene
+        //If for whatever reason it can't it will quit out of the whole engine
         if( switchScene ){
             if( !gSceneManager.switchScene("teapot") ){
                 printf("Failed to switch scene! Quitting.\n");
@@ -82,9 +83,8 @@ void Engine::run(){
         }
 
         //Handle all user input
-        done = gInputManager.processInput();
+        gInputManager.processInput(done);
         
-
         //Update all models, camera and lighting in the current scene
         gSceneManager.update();
 
@@ -96,11 +96,11 @@ void Engine::run(){
         printf("%2.1d: Loop elapsed time (ms):%d\n",count,end - start);
         total += end - start;
         if (count == 500) break;
-        //if (count == 100) switchScene = true;
+        if (count == 100) switchScene = true;
 
     }
 
     printf("Closing down engine.\n");
-    printf("Average frame time over %2.1d frames: %2.fms.\n", count,total/(float)count);
+    printf("Average frame time over %2.1d frames:%2.fms.\n", count,total/(float)count);
     
 }

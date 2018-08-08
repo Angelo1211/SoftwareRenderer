@@ -5,7 +5,8 @@ SceneManager::SceneManager(){}
 SceneManager::~SceneManager(){}
 
 bool SceneManager::startUp(){
-    if (!loadScene("teapot")){
+    currentSceneID = "teapot";
+    if (!loadScene(currentSceneID)){
         printf("Could not load scene. No models succesfully loaded!\n");
         return false;
     }
@@ -16,10 +17,16 @@ void SceneManager::shutDown(){
     delete currentScene;
 }
 
-//Not implemented yet, but I will want to do this in the future
-bool SceneManager::switchScene(std::string sceneID){
-    delete currentScene;
-    return loadScene(sceneID);
+bool SceneManager::switchScene(std::string newSceneID){
+    if( newSceneID != currentSceneID ){
+        currentSceneID = newSceneID;
+        delete currentScene;
+        return loadScene(newSceneID);
+    }
+    else{
+        printf("Selected already loaded scene.\n");
+        return true;
+    }
 }
 
 //Loads the given scene and all related textures

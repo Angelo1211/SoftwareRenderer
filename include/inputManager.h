@@ -2,7 +2,8 @@
 #define INPUTMANAGER_H
 
 //Headers
-#include"SDL.h"
+#include "sceneManager.h"
+#include "SDL.h"
 
 class InputManager{
 
@@ -12,15 +13,14 @@ class InputManager{
         InputManager();
         ~InputManager();
 
-        bool startUp();
+        bool startUp(SceneManager &sceneManager);
         void shutDown();
 
         //Processes all the SDL events that have ocurred in the given frame
-        //For now only listens to the SDL_QUIT event that signifies the window was 
-        //closed.
-        bool processInput();
+        void processInput(bool &done);
     private:
-        bool handleEvent(SDL_Event * event);
+    SceneManager *sceneController;
+    void handleEvent(SDL_Event * event);
 };
 
 

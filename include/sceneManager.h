@@ -27,6 +27,7 @@ class SceneManager{
         bool loadScene(std::string sceneID);
         bool closeScene();
 
+        std::string currentSceneID;
         Scene *currentScene;
 };
 

@@ -3,8 +3,9 @@
 InputManager::InputManager(){}
 InputManager::~InputManager(){}
 
-bool InputManager::startUp(){
-    //Nothing to do yet
+bool InputManager::startUp(SceneManager &sceneManager){
+
+    sceneController = &sceneManager;
     return true;
 }
 
@@ -12,19 +13,24 @@ void InputManager::shutDown(){
     //Nothing to do yet
 }
 
-bool InputManager::processInput(){
-    bool done = false;
-    SDL_Event Event;
-    while(SDL_PollEvent(&Event)){
-       done = handleEvent(&Event);
+void InputManager::processInput(bool &done){
+    SDL_Event event;
+    while(SDL_PollEvent(&event)){
+
+        //First check if user requests an exit
+        if(event.type == SDL_QUIT){
+            done = true;
+            return;       
+        }
+        //Handle any other relevant input data 
+        //Keypresses, mouse etc
+        else{
+            handleEvent(&event);
+        }
     }
-    return done;
 }
 
 //TODO all input handling will go here
-bool InputManager::handleEvent(SDL_Event * event){
-    if(event->type == SDL_QUIT){
-        return true;
-    }
-    return false;
+void InputManager::handleEvent(SDL_Event * event){
+
 }
