@@ -14,9 +14,9 @@ void Camera::update(){
     float radius = 2;
     float camX   = std::sin(t/6000) * radius;
     float camZ   = std::cos(t/6000) * radius;
-    position.x   = 0;
-    position.y   = 0;
-    position.z   = 2;
+    position.x   = camX;
+    position.y   = camX;
+    position.z   = camZ;
     target.z     = 0;
     viewMatrix   = Matrix4::lookAt(position,target,up);
     cameraFrustrum.updatePlanes(viewMatrix, position);

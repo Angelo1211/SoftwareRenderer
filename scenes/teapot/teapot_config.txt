@@ -14,18 +14,22 @@ rot 90.0 0 0.0
 sca 0.4 0.4 0.4 
 /
 //SECTION: lights
-l 1
+l 2
 l01 sun
 pos 1.0 0.0 0.0
 col 1.0 1.0 1.0
 /
 l02 sun
-pos 0.0 1.0 0.0
+pos 1.0 0.0 1.0
 col 1.0 1.0 1.0
 /
 l03 sun
 pos 0.0 0.0 1.0
-col 1.0 1.0 1.0
+col 0.0 0.0 1.0
+/
+l04 sun
+pos 1.0 1.0 1.0
+col 1.0 0.0 1.0
 /
 //SECTION: cameras
 c 

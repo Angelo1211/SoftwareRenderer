@@ -252,7 +252,7 @@ struct PBRShader : public IShader {
     Vector3f halfwayDir, radianceOut, ambient;
     Vector3f specular, kD, kS;
     float interpRough, interpAO, interpMetal;
-    float u, v, intPart;
+    float uTexture, vTexture, intPart;
 
     //BRDF functions
     Vector3f fresnelSchlick(float cosTheta, Vector3f &fresnel0 ){
@@ -294,7 +294,7 @@ struct PBRShader : public IShader {
         //Passing all lighting related data to tangent space
         for(int lIndex = 0; lIndex < numLights; ++lIndex){
             int indc2 = (lIndex*3) + index;
-            lightDirVal[indc2]  = TBN.matMultVec(lightPos[lIndex]);
+            lightDirVal[indc2]  = TBN.matMultDir(lightPos[lIndex]);
         }
         viewDir[index]   = TBN.matMultVec(cameraPos - M.matMultVec(vertex));
         
@@ -308,15 +308,15 @@ struct PBRShader : public IShader {
         interpViewDir  = viewDir[0] + (viewDir[1] - viewDir[0])* u + (viewDir[2] - viewDir[0]) * v;
 
         //Correcting UV's for tiling
-        u = std::modf(interpCoords.x, &intPart);
-        v = std::modf(interpCoords.y, &intPart);
+        uTexture = std::modf(interpCoords.x, &intPart);
+        vTexture = std::modf(interpCoords.y, &intPart);
 
         //Reading data from textures for use in lighting calculations
-        interpCol    = albedoT->getPixelVal(u, v);
-        interpAO     = ambientOT->getIntensityVal(u, v);
-        interpRough  = roughT->getIntensityVal(u, v);;
-        interpMetal  = metalT->getIntensityVal(u, v);
-        interpNormal = normalT->getPixelVal(u, v);
+        interpCol    = albedoT->getPixelVal(uTexture, vTexture);
+        interpAO     = ambientOT->getIntensityVal(uTexture, vTexture);
+        interpRough  = roughT->getIntensityVal(uTexture, vTexture);;
+        interpMetal  = metalT->getIntensityVal(uTexture, vTexture);
+        interpNormal = normalT->getPixelVal(uTexture, vTexture);
         interpNormal = interpNormal.normalized();
         interpViewDir = interpViewDir.normalized();
 
@@ -324,14 +324,11 @@ struct PBRShader : public IShader {
         radianceOut.zero();
         for(int light = 0; light < numLights; ++light ){
             int val = light*3;
-            //interpLightDir = lightColor[0];
-
-            interpLightDir = lightDirVal[0] +  (lightDirVal[1] - lightDirVal[0])* u +  (lightDirVal[2] - lightDirVal[0]) * v;
+            interpLightDir = lightDirVal[val] +  (lightDirVal[val + 1] - lightDirVal[val])* u +  (lightDirVal[val + 2] - lightDirVal[val]) * v;
             halfwayDir = (interpLightDir.normalized() + interpViewDir).normalized();
             nDotV = std::max(interpNormal.dotProduct(interpViewDir), 0.0f);
             nDotL = std::max(interpNormal.dotProduct(interpLightDir), 0.0f);
             F0corrected = (F0 * (1.0f-interpMetal)) + (interpCol * interpMetal);//Varying f0 based on metallicness of surface
-
 
             //We assume the only light in the scene is the sun so there is no attenuation
             

@@ -68,7 +68,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
 
     shader.numLights  = mNumLights;
     shader.lightCol = lColor;
-    shader.lightDirVal = lightDir;
+    
     shader.lightPos = lightPositions;
 
 
@@ -79,8 +79,9 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     int count = 0;
     Vector3f dummyDir; //TO DO FIX THIS
 
-    //#pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim) firstprivate(shader)
+    #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim, lightDir) firstprivate(shader)
     for (int j= 0; j < numFaces; ++j){
+        shader.lightDirVal = lightDir;
         //Current vertex and normal indices
         Vector3i f = (*vIndices)[j];
         Vector3i n = (*nIndices)[j];
