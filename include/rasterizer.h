@@ -38,7 +38,7 @@ class Rasterizer{
 
         static float clamp(float n, float lower, float upper);
 
-        static float gammaAdjust(float n, float gamma);
+        static float gammaAdjust(float n);
 
     private:
         Rasterizer(){}; //Ensuring an object can never be instanced accidentally

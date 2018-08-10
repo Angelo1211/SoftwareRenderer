@@ -87,7 +87,7 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
 
     //Per fragment variables
     float depth, uPers, vPers, areaPers, count = 0; //u, v, are perspective corrected
-    Vector3f e, e_row, e_init, f;
+    Vector3f e, e_row, f;
     Vector3f rgbVals{255,255,255};
     
 
@@ -123,7 +123,8 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
 
         for(int x = xMin; x <= xMax; ++x){
             //Only draw if inside pixel and following top left rule
-            if(inside(e.x, A01, B01) && inside(e.y, A12, B12) && inside(e.z, A20, B20) ){
+            // if(inside(e.x, A01, B01) && inside(e.y, A12, B12) && inside(e.z, A20, B20) ){
+            if( (e.x >= 0) && (e.y >= 0 ) && (e.z >= 0 )){
 
                 //Zbuffer check
                 depth = (e*area).dotProduct(zVals);
@@ -136,13 +137,13 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
                     uPers =  f.data[1] * areaPers;
                     vPers =  f.data[2] * areaPers;
 
-                    //Run fragment shader
+                    //Run fragment shader (U, v are barycentric coords)
                     rgbVals = shader.fragment(uPers , vPers);
                     //Update pixel buffer with clamped values 
                     (*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat,
-                    clamp(gammaAdjust(rgbVals.data[0], 2.2), 0, 255.0f), //
-                    clamp(gammaAdjust(rgbVals.data[1], 2.2), 0, 255.0f),//
-                    clamp(gammaAdjust(rgbVals.data[2], 2.2), 0, 255.0f));//
+                    clamp(gammaAdjust(rgbVals.data[0]), 0, 255.0f), //
+                    clamp(gammaAdjust(rgbVals.data[1]), 0, 255.0f),//
+                    clamp(gammaAdjust(rgbVals.data[2]), 0, 255.0f));//
                     //(*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat,0xFF, 0xFF, 0xFF);
                 }   
             }
@@ -207,6 +208,6 @@ float Rasterizer::clamp(float n, float lower, float upper) {
 }
 
 
-float Rasterizer::gammaAdjust(float n, float gamma) {
-  return std::pow(n, 1.0/gamma)*255.0f;
+float Rasterizer::gammaAdjust(float n) {
+  return std::pow(n, 1.0/2.2)*255.0f;
 }

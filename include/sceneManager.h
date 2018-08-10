@@ -19,7 +19,7 @@ class SceneManager{
         bool switchScene(std::string sceneID);
 
         // Update current scene
-        void update();
+        void update(unsigned int deltaT);
 
         //Called by the rendermanager to prep the render queue 
         Scene* getCurrentScene();

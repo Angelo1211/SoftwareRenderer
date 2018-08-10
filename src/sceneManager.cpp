@@ -35,8 +35,8 @@ bool SceneManager::loadScene(std::string sceneID){
     return  !currentScene->checkIfEmpty(); //True if empty, so it's negated for startup
 }
 
-void SceneManager::update(){
-    currentScene->update();
+void SceneManager::update(unsigned int deltaT){
+    currentScene->update(deltaT);
 }
 
 Scene* SceneManager::getCurrentScene(){

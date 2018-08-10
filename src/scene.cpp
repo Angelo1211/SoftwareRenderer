@@ -32,8 +32,8 @@ Scene::~Scene(){
     }
 }
 
-void Scene::update(){
-    mainCamera.update();
+void Scene::update(unsigned int deltaT){
+    mainCamera.update(deltaT);
     for(Model *models : modelsInScene){
         models->update();
     }
@@ -53,10 +53,9 @@ void Scene::loadSceneModel(const std::string &baseFilePath, const TransformParam
 }
 
 void Scene::frustrumCulling(){
-    bool visible = true;
     for(Model *model : modelsInScene){
 
-        visible = mainCamera.checkVisibility(model->getBounds());
+        bool visible = mainCamera.checkVisibility(model->getBounds());
 
         if (visible) {
             visibleModels.push(model);

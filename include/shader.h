@@ -256,7 +256,9 @@ struct PBRShader : public IShader {
 
     //BRDF functions
     Vector3f fresnelSchlick(float cosTheta, Vector3f &fresnel0 ){
-        return fresnel0 + (Vector3f(1.0)- fresnel0)* std::pow(1.0 - cosTheta, 5.0);
+        //return fresnel0 + (Vector3f(1.0)- fresnel0)* std::pow(2.0,(-5.55473*cosTheta * cosTheta) - 6.98316*cosTheta);
+        float invcCosTheta = 1.0 - cosTheta;
+        return fresnel0 + (Vector3f(1.0)- fresnel0) * (invcCosTheta * invcCosTheta * invcCosTheta * invcCosTheta * invcCosTheta);
     }
     float distributionGGX(Vector3f normal, Vector3f halfway, float roughness){
         float a      = roughness*roughness;
@@ -265,16 +267,16 @@ struct PBRShader : public IShader {
         float NdotH2 = NdotH*NdotH;
         
         float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-        denom = M_PI * denom * denom;
+        denom = M_1_PI / (denom * denom);
         
-        return a2 / denom;
+        return a2 * denom;
     }
     float GeometrySchlickGGX(float NdotV, float roughness){
         float r = (roughness + 1.0); 
         float k = (r*r) / 8.0; //Only useful for direct lighting must be changed in ibr
-        float denom = NdotV * (1.0 - k) + k;
+        float denom = 1 / (NdotV * (1.0 - k) + k);
         
-        return NdotV / denom;
+        return NdotV * denom;
     }
     float GeometrySmith(float roughness){
         return GeometrySchlickGGX(nDotL, roughness) * GeometrySchlickGGX(nDotV, roughness);
@@ -296,7 +298,7 @@ struct PBRShader : public IShader {
             int indc2 = (lIndex*3) + index;
             lightDirVal[indc2]  = TBN.matMultDir(lightPos[lIndex]);
         }
-        viewDir[index]   = TBN.matMultVec(cameraPos - M.matMultVec(vertex));
+        viewDir[index]   = TBN.matMultDir(cameraPos - M.matMultVec(vertex));
         
         return MVP.matMultVec(vertex);
     }
@@ -312,12 +314,12 @@ struct PBRShader : public IShader {
         vTexture = std::modf(interpCoords.y, &intPart);
 
         //Reading data from textures for use in lighting calculations
-        interpCol    = albedoT->getPixelVal(uTexture, vTexture);
-        interpAO     = ambientOT->getIntensityVal(uTexture, vTexture);
-        interpRough  = roughT->getIntensityVal(uTexture, vTexture);;
-        interpMetal  = metalT->getIntensityVal(uTexture, vTexture);
-        interpNormal = normalT->getPixelVal(uTexture, vTexture);
-        interpNormal = interpNormal.normalized();
+        interpCol     = albedoT->getPixelVal(uTexture, vTexture);
+        interpAO      = ambientOT->getIntensityVal(uTexture, vTexture);
+        interpRough   = roughT->getIntensityVal(uTexture, vTexture);;
+        interpMetal   = metalT->getIntensityVal(uTexture, vTexture);
+        interpNormal  = normalT->getPixelVal(uTexture, vTexture);
+        interpNormal  = interpNormal.normalized();
         interpViewDir = interpViewDir.normalized();
 
         //Setting up Direct Lighting variables
@@ -330,7 +332,7 @@ struct PBRShader : public IShader {
             nDotL = std::max(interpNormal.dotProduct(interpLightDir), 0.0f);
             F0corrected = (F0 * (1.0f-interpMetal)) + (interpCol * interpMetal);//Varying f0 based on metallicness of surface
 
-            //We assume the only light in the scene is the sun so there is no attenuation
+            //We assume the only lights in the scene are far away so there is no attenuation
             
             //Setting up BRDF
             F   = fresnelSchlick(std::max(halfwayDir.dotProduct(interpViewDir), 0.0f), F0corrected);

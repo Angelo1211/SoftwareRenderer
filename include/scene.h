@@ -18,7 +18,7 @@ class Scene{
         ~Scene();
 
         //Updates all models, lights and cameras in scene
-        void update();
+        void update(unsigned int deltaT);
 
         //Returns the list of models not culled by the frustrum
         std::queue<Model*>* getVisiblemodels();
