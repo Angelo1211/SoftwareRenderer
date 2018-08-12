@@ -97,6 +97,14 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             sceneCamera->position += sceneCamera->side * speed;
             break;
 
+            case SDLK_q:
+            sceneCamera->position += sceneCamera->up * speed;
+            break;
+
+            case SDLK_e:
+            sceneCamera->position -= sceneCamera->up * speed;
+            break;
+
             //CAMERA CONTROLS (RESET AND ORBITING)
             case SDLK_r:
             sceneCamera->resetCamera(); 
