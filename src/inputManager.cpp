@@ -99,20 +99,12 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
 
             //CAMERA CONTROLS (RESET AND ORBITING)
             case SDLK_r:
-            sceneCamera->position = Vector3f(0, 0, 8.0);
-            sceneCamera->target.zero();  
-            sceneCamera->side = sceneCamera->front.crossProduct(sceneCamera->up);
-            sceneCamera->front = Vector3f(0, 0, -1);
-            sceneCamera->radius = 2;  
+            sceneCamera->resetCamera(); 
             break;
 
             case SDLK_TAB:
             sceneCamera->orbiting = !sceneCamera->orbiting;
-            sceneCamera->position = Vector3f(0, 0, 8.0);
-            sceneCamera->target.zero();
-            sceneCamera->side = sceneCamera->front.crossProduct(sceneCamera->up);
-            sceneCamera->front = Vector3f(0, 0, -1);
-            sceneCamera->radius = 2;    
+            sceneCamera->resetCamera();   
             break;
 
             default:
@@ -131,56 +123,56 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             else{
                 printf("Loaded %s Scene.\n", sceneID.c_str());
                 sceneCamera = (sceneController->getCurrentScene()->getCurrentCamera());
-                sceneCamera->position = Vector3f(0, 0, 8.0);
-                sceneCamera->target.zero();
-                sceneCamera->side = sceneCamera->front.crossProduct(sceneCamera->up);
-                sceneCamera->front = Vector3f(0, 0, -1);
-                
+                sceneCamera->resetCamera(); 
             }
 
         }
     }
     //Handling Mouse Motion
     else if( event->type == SDL_MOUSEMOTION){
-        float sens = 0.001f;
-        float xRot = -(float)event->motion.yrel * sens;
-        float yRot = -(float)event->motion.xrel * sens;
+        //Only move camera if the right button is pressed
+        if( event->motion.state & SDL_BUTTON_RMASK ) {
+            float sens = 0.05f;
+            float xOffset = (float)event->motion.xrel * sens;
+            float yOffset = -(float)event->motion.yrel * sens;
 
-        Matrix4 cameraRot = Matrix4::fullRotMat(xRot, yRot, 0.0f);
+            sceneCamera->yaw   += xOffset;
+            sceneCamera->pitch += yOffset;
 
-        sceneCamera->front = cameraRot.matMultVec(sceneCamera->front).normalized();
-        sceneCamera->side  = cameraRot.matMultVec(sceneCamera->side).normalized();
-        
-        // Matrix4 camTransform = (sceneCamera->viewMatrix);
-        // Vector3f newDir      = Vector3f((float)event->motion.xrel*0.01f, -(float)event->motion.yrel*0.01f, 0.0f);
-        // Vector3f relMov      = camTransform.matMultDir(newDir);
+            //Limiting the range of the pitch to avoid flips
+            if(sceneCamera->pitch > 89.0f){
+                sceneCamera->pitch =  89.0f;
+            }
+            else if(sceneCamera->pitch < -89.0f){
+                sceneCamera->pitch = -89.0f;
+            }
 
-        // sceneCamera->front = (sceneCamera->front + relMov).normalized();
-        
-        // if(event->motion.xrel > 0){
-        //     sceneCamera->front = (sceneCamera->front + Vector3f((float)event->motion.xrel*0.001f, 0.0f, 0.0f)).normalized();
-        //     printf("Moved right!\n");
-            
-        // }
+            //Updating the front and side vectors to allow wasd movement and 
+            //free camera movement.
+            sceneCamera->front.x = cos( sceneCamera->pitch * M_PI / 180.0f ) * cos( sceneCamera->yaw * M_PI / 180.0f );
+            sceneCamera->front.y = sin( sceneCamera->pitch * M_PI / 180.0f );
+            sceneCamera->front.z = cos( sceneCamera->pitch * M_PI / 180.0f ) * sin( sceneCamera->yaw * M_PI / 180.0f );
+            sceneCamera->front   = sceneCamera->front.normalized();
+            sceneCamera->side    = sceneCamera->front.crossProduct(sceneCamera->up);
+        }
+    }
+    else if( event->type == SDL_MOUSEWHEEL){
+        float zoom = 5.0f;
+        float fov  = sceneCamera->cameraFrustrum.fov; 
+        if(event->wheel.y > 0){ // scroll up
+            fov -= zoom;
+        }
+        else if(event->wheel.y < 0) {// scroll down
+            fov += zoom;
+        }
 
-        // if(event->motion.xrel < 0){
-            
-        //     printf("Moved left!\n");
-        // }
+        if(fov < 30){
+            fov = 20;
+        }
+        else if (fov > 120){
+            fov = 120;
+        }
 
-        // if(event->motion.yrel > 0){
-        //     printf("Moved down!\n");
-        // }
-
-        // if(event->motion.yrel < 0){
-        //     printf("Moved up!\n");
-        // }
+        sceneCamera->cameraFrustrum.fov = fov;
     }
 }
-
-
-//Handling Mouse Input
-    // else if((event->type == SDL_MOUSEBUTTONDOWN) && (event->button.button == SDL_BUTTON_RIGHT)){
-    //     printf("Right mouse Click detected\n");
-    //     SDL_Delay(1000);
-    // }

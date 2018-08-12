@@ -11,8 +11,9 @@ struct Camera{
     
     bool checkVisibility(AABox *bounds);
 
-    //In the future user input should control this. For now just simple movement
+    //Updates the camera matrices with the user input obtained in the input class
     void update(unsigned int deltaT);
+    void resetCamera();
 
     Matrix4 viewMatrix;
     Matrix4 projectionMatrix;
@@ -25,11 +26,13 @@ struct Camera{
     Vector3f side;
 
     //Values related to orbiting mode
-    float radius = 2;
+    float radius  = 2;
     bool orbiting = false;
 
     //Momentary fixed camera speed (FPS dependent)
     float camSpeed = 0.1f;
+    float pitch    = 0;
+    float yaw      = -90;
 
     Frustrum cameraFrustrum{DisplayManager::SCREEN_ASPECT_RATIO};
 };

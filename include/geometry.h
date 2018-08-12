@@ -32,7 +32,7 @@ class Frustrum{
 		RIGHT, NEARP, FARP
         };
     public:
-        float  fov, AR, near, far , nearH, nearW, farH, farW;
+        float  fov, AR, near, far , nearH, nearW;
         Frustrum(float ratio): fov(50), near(0.1), far(100), AR(ratio){};
         Plane pl[6];
 

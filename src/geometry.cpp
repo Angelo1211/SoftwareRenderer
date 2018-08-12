@@ -75,31 +75,40 @@ void Plane::setNormalAndPoint(const Vector3f &n, const Vector3f &p0){
 
 void Frustrum::setCamInternals(){
     float tanHalfFOV  =  tan( (fov/2) * (M_PI / 180) );
-    nearH = near * tanHalfFOV;
+    nearH = near * tanHalfFOV; //Half of the frustrum near plane height
     nearW = nearH * AR;
-
-    farH  = far * tanHalfFOV;
-    farW  = farH * AR;
 }
 
 //Calculates frustrum planes in world space
 void Frustrum::updatePlanes(Matrix4 &viewMat, const Vector3f &cameraPos){
-    Vector3f X(viewMat(0,0), viewMat(0,1), viewMat(0,2));
-    Vector3f Y(viewMat(1,0), viewMat(1,1), viewMat(1,2));
-    Vector3f Z(viewMat(2,0), viewMat(2,1), viewMat(2,2));
+    setCamInternals();
+    Vector3f X(viewMat(0,0), viewMat(0,1), viewMat(0,2)); //Side Unit Vector
+    Vector3f Y(viewMat(1,0), viewMat(1,1), viewMat(1,2)); //Up Unit Vector
+    Vector3f Z(viewMat(2,0), viewMat(2,1), viewMat(2,2)); //Forward vector
     
+    //Gets worlds space position of the center points of the near and far planes
+    //The forward vector Z points towards the viewer so you need to negate it and scale it
+    //by the distance (near or far) to the plane to get the center positions
     Vector3f nearCenter = cameraPos - Z * near;
     Vector3f farCenter  = cameraPos - Z * far;
 
     Vector3f point;
     Vector3f normal;
 
-    //Near plane 
+    //We build the planes using a normal and a point (in this case the center)
+    //Z is negative here because we want the normal vectors we choose to point towards
+    //the inside of the view frustrum that way we can cehck in or out with a simple 
+    //Dot product
     pl[NEARP].setNormalAndPoint(-Z, nearCenter);
     //Far plane 
     pl[FARP].setNormalAndPoint(Z, farCenter);
 
-    //Top plane
+    //Again, want to get the plane from a normal and point
+    //You scale the up vector by the near plane height and added to the nearcenter to 
+    //optain a point on the edge of both near and top plane.
+    //Subtracting the cameraposition from this point generates a vector that goes along the 
+    //surface of the plane, if you take the cross product with the direction vector equal
+    //to the shared edge of the planes you get the normal
     point  = nearCenter + Y*nearH;
     normal = (point - cameraPos).normalized();
     normal = normal.crossProduct(X);
