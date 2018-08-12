@@ -6,8 +6,10 @@ InputManager::~InputManager(){}
 bool InputManager::startUp(SceneManager &sceneManager){
     sceneController = &sceneManager;
     sceneCamera = (sceneController->getCurrentScene()->getCurrentCamera());
-
-    return true;
+    
+    //Only really care about relative mouse motion because we're building a space camera
+    bool success = !SDL_SetRelativeMouseMode(SDL_TRUE);
+    return success;
 }
 
 void InputManager::shutDown(){
@@ -48,7 +50,7 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             break;
 
             case SDLK_2:
-            sceneID = "firehydrant";
+            sceneID = "teapotMetal";
             break;
 
             case SDLK_3:
@@ -99,14 +101,18 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             case SDLK_r:
             sceneCamera->position = Vector3f(0, 0, 8.0);
             sceneCamera->target.zero();  
-            sceneCamera->radius = 3;  
+            sceneCamera->side = sceneCamera->front.crossProduct(sceneCamera->up);
+            sceneCamera->front = Vector3f(0, 0, -1);
+            sceneCamera->radius = 2;  
             break;
 
             case SDLK_TAB:
             sceneCamera->orbiting = !sceneCamera->orbiting;
             sceneCamera->position = Vector3f(0, 0, 8.0);
             sceneCamera->target.zero();
-            sceneCamera->radius = 3;    
+            sceneCamera->side = sceneCamera->front.crossProduct(sceneCamera->up);
+            sceneCamera->front = Vector3f(0, 0, -1);
+            sceneCamera->radius = 2;    
             break;
 
             default:
@@ -127,8 +133,54 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
                 sceneCamera = (sceneController->getCurrentScene()->getCurrentCamera());
                 sceneCamera->position = Vector3f(0, 0, 8.0);
                 sceneCamera->target.zero();
+                sceneCamera->side = sceneCamera->front.crossProduct(sceneCamera->up);
+                sceneCamera->front = Vector3f(0, 0, -1);
+                
             }
 
         }
     }
+    //Handling Mouse Motion
+    else if( event->type == SDL_MOUSEMOTION){
+        float sens = 0.001f;
+        float xRot = -(float)event->motion.yrel * sens;
+        float yRot = -(float)event->motion.xrel * sens;
+
+        Matrix4 cameraRot = Matrix4::fullRotMat(xRot, yRot, 0.0f);
+
+        sceneCamera->front = cameraRot.matMultVec(sceneCamera->front).normalized();
+        sceneCamera->side  = cameraRot.matMultVec(sceneCamera->side).normalized();
+        
+        // Matrix4 camTransform = (sceneCamera->viewMatrix);
+        // Vector3f newDir      = Vector3f((float)event->motion.xrel*0.01f, -(float)event->motion.yrel*0.01f, 0.0f);
+        // Vector3f relMov      = camTransform.matMultDir(newDir);
+
+        // sceneCamera->front = (sceneCamera->front + relMov).normalized();
+        
+        // if(event->motion.xrel > 0){
+        //     sceneCamera->front = (sceneCamera->front + Vector3f((float)event->motion.xrel*0.001f, 0.0f, 0.0f)).normalized();
+        //     printf("Moved right!\n");
+            
+        // }
+
+        // if(event->motion.xrel < 0){
+            
+        //     printf("Moved left!\n");
+        // }
+
+        // if(event->motion.yrel > 0){
+        //     printf("Moved down!\n");
+        // }
+
+        // if(event->motion.yrel < 0){
+        //     printf("Moved up!\n");
+        // }
+    }
 }
+
+
+//Handling Mouse Input
+    // else if((event->type == SDL_MOUSEBUTTONDOWN) && (event->button.button == SDL_BUTTON_RIGHT)){
+    //     printf("Right mouse Click detected\n");
+    //     SDL_Delay(1000);
+    // }

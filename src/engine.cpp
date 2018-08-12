@@ -57,7 +57,6 @@ void Engine::run(){
 
     //Main flags
     bool done = false;
-    bool switchScene = false;
 
     //Iteration and time keeping counters
     int count = 0;
@@ -84,10 +83,10 @@ void Engine::run(){
         deltaT = SDL_GetTicks() - start;
         printf("%2.1d: Loop elapsed time (ms):%d\n",count, deltaT);
         total += deltaT;
-        if(count == 500) break;
+        //if(count == 500) break;
     }
 
     printf("Closing down engine.\n");
-    printf("Average frame time over %2.1d frames:%2.fms.\n", count,total/(float)count);
+    printf("Average frame time over %2.1d frames:%2.fms.\n", count, total/(float)count);
     
 }

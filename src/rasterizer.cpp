@@ -90,7 +90,6 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
     Vector3f e, e_row, f;
     Vector3f rgbVals{255,255,255};
     
-
     //Transform into viewport coordinates 
     Rasterizer::viewportTransform(pixelBuffer, vertices);
 

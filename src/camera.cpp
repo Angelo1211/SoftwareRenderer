@@ -10,15 +10,17 @@ Camera::Camera(){
 
 void Camera::update(unsigned int deltaT){
     if(orbiting){
-        float t = static_cast<float>(SDL_GetTicks());
-        float camX   = std::sin(t/6000) * radius;
-        float camZ   = std::cos(t/6000) * radius;
+        float ang = 2*M_PI*static_cast<float>(SDL_GetTicks())/3e4;
+        float camX   = std::sin(ang) * radius; 
+        float camZ   = std::cos(ang) * radius;
         position.x   = camX;
         position.y   = camX;
         position.z   = camZ;
     }
     else{
+        // target = front;
         target = position + front;
+
     }
     viewMatrix   = Matrix4::lookAt(position,target,up);
     cameraFrustrum.updatePlanes(viewMatrix, position);

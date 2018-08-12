@@ -71,7 +71,6 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     
     shader.lightPos = lightPositions;
 
-
     //Building worldToObject matrix
     Matrix4 worldToObject = (*(currentModel->getModelMatrix())).inverse();
 
