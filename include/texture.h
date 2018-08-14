@@ -4,8 +4,6 @@
 #include <string>
 #include "vector3D.h"
 
-
-
 class Texture{
     public:
         Texture(std::string path, std::string type); 
@@ -17,8 +15,9 @@ class Texture{
 
     private:
         int bilinearFiltering(float u, float v);
+        void tileData();
         float *pixelData;
-        int width, height, channels;
+        int width, height, channels, tileW = 2, tileH = 2;
 };
 
 #endif

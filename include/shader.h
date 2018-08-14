@@ -322,15 +322,22 @@ struct PBRShader : public IShader {
         interpNormal  = interpNormal.normalized();
         interpViewDir = interpViewDir.normalized();
 
+        //Varying f0 based on metallicness of surface
+        float invMetal = (1.0f-interpMetal);
+        F0corrected = (F0 * invMetal) + (interpCol * interpMetal);
+        
+        nDotV = std::max(interpNormal.dotProduct(interpViewDir), 0.0f);
+
         //Setting up Direct Lighting variables
         radianceOut.zero();
-        for(int light = 0; light < numLights; ++light ){
+        const int maxLights = numLights;
+        Vector3f radiaceLights[maxLights];
+        //#pragma omp simd 
+        for(int light = 0; light < maxLights; ++light ){
             int val = light*3;
             interpLightDir = lightDirVal[val] +  (lightDirVal[val + 1] - lightDirVal[val])* u +  (lightDirVal[val + 2] - lightDirVal[val]) * v;
             halfwayDir = (interpLightDir.normalized() + interpViewDir).normalized();
-            nDotV = std::max(interpNormal.dotProduct(interpViewDir), 0.0f);
             nDotL = std::max(interpNormal.dotProduct(interpLightDir), 0.0f);
-            F0corrected = (F0 * (1.0f-interpMetal)) + (interpCol * interpMetal);//Varying f0 based on metallicness of surface
 
             //We assume the only lights in the scene are far away so there is no attenuation
             
@@ -345,12 +352,16 @@ struct PBRShader : public IShader {
             specular  = numerator * invDenominator;
 
             //Calculating the full rendering equation for a single light
-            kS = F;
-            kD = (Vector3f(1.0) - kS);
-            kD = kD * (1.0f - interpMetal); 
-            radianceOut +=  ( (kD * (interpCol * (1/M_PI)) + specular ) * nDotL * lightCol[light]);
+            //kS = F;
+            kD = (Vector3f(1.0) - F);
+            kD = kD *invMetal; 
+            radiaceLights[light] = ( (kD * (interpCol * (1/M_PI)) + specular ) * nDotL * lightCol[light]);
         }
         
+        for(int i = 0; i < maxLights; ++i) {
+            radianceOut += radiaceLights[i];
+        }
+
         //Simplistic ambient term
         ambient =  interpCol * (ambientInt * interpAO);
 

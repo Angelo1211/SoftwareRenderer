@@ -83,7 +83,7 @@ void Engine::run(){
         deltaT = SDL_GetTicks() - start;
         printf("%2.1d: Loop elapsed time (ms):%d\n",count, deltaT);
         total += deltaT;
-        //if(count == 500) break;
+        if(count == 500) break;
     }
 
     printf("Closing down engine.\n");

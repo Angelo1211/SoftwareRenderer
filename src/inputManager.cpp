@@ -174,7 +174,7 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             fov += zoom;
         }
 
-        if(fov < 30){
+        if(fov < 20){
             fov = 20;
         }
         else if (fov > 120){

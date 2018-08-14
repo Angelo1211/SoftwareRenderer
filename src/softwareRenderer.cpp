@@ -50,7 +50,6 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     shader.metalT    = currentModel->getMetallic();
 
     //Setting up lighting
-    Vector3f lightDir[mNumLights * 3 ];
     Vector3f lightPositions[mNumLights];
     Vector3f lColor[mNumLights];
     for(int x = 0; x < mNumLights; ++x){
@@ -67,8 +66,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     shader.cameraPos = mCamera->position;
 
     shader.numLights  = mNumLights;
-    shader.lightCol = lColor;
-    
+    shader.lightCol   = lColor;
     shader.lightPos = lightPositions;
 
     //Building worldToObject matrix
@@ -78,8 +76,9 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     int count = 0;
     Vector3f dummyDir; //TO DO FIX THIS
 
-    #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim, lightDir) firstprivate(shader)
+    #pragma omp parallel for private(trianglePrimitive, normalPrim, uvPrim, tangentPrim) firstprivate(shader) schedule(dynamic)
     for (int j= 0; j < numFaces; ++j){
+        Vector3f lightDir[mNumLights * 3 ];
         shader.lightDirVal = lightDir;
         //Current vertex and normal indices
         Vector3i f = (*vIndices)[j];
@@ -114,7 +113,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
         Rasterizer::drawTriangles(trianglePrimitive, shader, pixelBuffer, zBuffer);
         
     }
-    printf("%d faces drawn.\n", count);
+    //printf("%d faces drawn.\n", count);
 }
 
 void SoftwareRenderer::clearBuffers(){

@@ -38,7 +38,7 @@ class Rasterizer{
 
         static float clamp(float n, float lower, float upper);
 
-        static float gammaAdjust(float n);
+        static int gammaAdjust(float n);
 
     private:
         Rasterizer(){}; //Ensuring an object can never be instanced accidentally
@@ -52,8 +52,10 @@ class Rasterizer{
         static const Uint32 red;
         static const Uint32 green;
         static const Uint32 blue; 
+
+        //Gamma correction look-up table for gamma = 2.2
+        static const int gammaTable[256];
+
 };
-
-
 
 #endif

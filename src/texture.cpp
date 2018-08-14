@@ -5,25 +5,29 @@
 
 Texture::Texture(std::string path, std::string type){
     stbi_set_flip_vertically_on_load(true);  
+
     unsigned char * data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+
+    pixelData = new float[width*height*channels];
+
     if (data){
         if(type == "RGB"){
-            pixelData = new float[width*height*channels];
             for(int i = 0; i < width*height*channels; ++i){
                 pixelData[i] = std::pow((float)data[i] * (1/255.0f), 2.2f);
             }
+            //tileData(tileSize);
         }
         else if (type == "XYZ"){
-            pixelData = new float[width*height*channels];
             for(int i = 0; i < width*height*channels; ++i){
                 pixelData[i] = (float)data[i] * (2/255.0f) - 1.0f;
             }
+            //tileData(tileSize);
         }
         else if (type == "BW"){
-            pixelData = new float[width*height*channels];
             for(int i = 0; i < width*height*channels; ++i){
                 pixelData[i] = (float)data[i] * (1/255.0f);
             }
+            //tileData(tileSize);
         }
         else{
             printf("Error unrecognized texture format type.\n");
@@ -33,6 +37,53 @@ Texture::Texture(std::string path, std::string type){
         printf("Failed to load texture at: %s\n",path.c_str());
     }
     stbi_image_free(data);
+}
+
+void Texture::tileData(){
+    float *tiledPixelData = new float[width*height*channels];
+
+    int tileNumW = width / tileW;
+    int tileNumH = height / tileH;
+
+    for(int i = 0; i < tileH; ++i){
+        
+        for(int j = 0; j < tileW; ++j){
+
+            for(int pH = 0; pH < tileH; ++pH){
+
+                for(int pW = 0; pW < tileW; ++pW){
+
+                    
+
+                }
+
+            }
+
+        }
+
+    }
+
+    // //Channel by channel every i 3 = 1 pixel
+    // int currentPixel = 0;
+    // for(int i = 0; i < width*height*channels; ++i){
+    //     int currentChannel = i % channels;
+
+    //     if(currentChannel == 0){
+    //         ++currentPixel;
+    //     }
+
+
+    //     if(currentPixel %)
+
+
+    //     tiledPixelData[i] = pixelData[i];
+
+
+    // }
+
+
+    delete [] pixelData;
+    pixelData = tiledPixelData;
 }
 
 Texture::~Texture(){
