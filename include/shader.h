@@ -4,7 +4,7 @@
 #include "vector3D.h"
 #include "matrix.h"
 #include "texture.h"
-#include <array>
+#include <math.h>
 
 //Shader Interface for a class that emulates modern GPU fragment and vertex shaders
 struct IShader {
@@ -243,12 +243,11 @@ struct PBRShader : public IShader {
     Matrix4 TBN;
     
     //Interpolated variables
-    Vector3f interpCoords, interpLightDir,
-             interpNormal, interpViewDir,
+    Vector3f interpCoords, interpNormal, interpViewDir,
              interpCol;
 
     //Per fragment
-    Vector3f F, NDF, G ; //Fresnel, normal distribution function and geometry occlusion 
+   // Vector3f F, NDF, G ; //Fresnel, normal distribution function and geometry occlusion 
     Vector3f halfwayDir, radianceOut, ambient;
     Vector3f specular, kD, kS;
     float interpRough, interpAO, interpMetal;
@@ -266,20 +265,20 @@ struct PBRShader : public IShader {
         float NdotH  = std::max(normal.dotProduct(halfway), 0.0f);
         float NdotH2 = NdotH*NdotH;
         
-        float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-        denom = M_1_PI / (denom * denom);
+        float denom = (NdotH2 * (a2 - 1.0f) + 1.0f);
+        denom =  M_1_PIf32/ (denom * denom);
         
         return a2 * denom;
     }
-    float GeometrySchlickGGX(float NdotV, float roughness){
-        float r = (roughness + 1.0); 
-        float k = (r*r) / 8.0; //Only useful for direct lighting must be changed in ibr
-        float denom = 1 / (NdotV * (1.0 - k) + k);
+    float GeometrySchlickGGX(float Ndot, float roughness){
+        float r = (roughness + 1.0f); 
+        float k = (r*r) / 8.0f; //Only useful for direct lighting must be changed in ibr
+        float denom = 1.0f / (Ndot * (1.0f- k) + k);
         
-        return NdotV * denom;
+        return Ndot * denom;
     }
-    float GeometrySmith(float roughness){
-        return GeometrySchlickGGX(nDotL, roughness) * GeometrySchlickGGX(nDotV, roughness);
+    float GeometrySmith(float roughness, float nDL, float nDV){
+        return GeometrySchlickGGX(nDL, roughness) * GeometrySchlickGGX(nDV, roughness);
     }
 
     //Vertex shader
@@ -325,41 +324,49 @@ struct PBRShader : public IShader {
         //Varying f0 based on metallicness of surface
         float invMetal = (1.0f-interpMetal);
         F0corrected = (F0 * invMetal) + (interpCol * interpMetal);
-        
         nDotV = std::max(interpNormal.dotProduct(interpViewDir), 0.0f);
 
         //Setting up Direct Lighting variables
         radianceOut.zero();
         const int maxLights = numLights;
-        Vector3f radiaceLights[maxLights];
-        //#pragma omp simd 
-        for(int light = 0; light < maxLights; ++light ){
-            int val = light*3;
-            interpLightDir = lightDirVal[val] +  (lightDirVal[val + 1] - lightDirVal[val])* u +  (lightDirVal[val + 2] - lightDirVal[val]) * v;
-            halfwayDir = (interpLightDir.normalized() + interpViewDir).normalized();
-            nDotL = std::max(interpNormal.dotProduct(interpLightDir), 0.0f);
-
-            //We assume the only lights in the scene are far away so there is no attenuation
-            
-            //Setting up BRDF
-            F   = fresnelSchlick(std::max(halfwayDir.dotProduct(interpViewDir), 0.0f), F0corrected);
-            NDF = distributionGGX(interpNormal, halfwayDir, interpRough); 
-            G   = GeometrySmith(interpRough);
-
-            //Calculating specular component of BRDF
-            Vector3f numerator = F * (G*NDF);
-            float invDenominator  = 1 / std::max(4.0 * nDotL * nDotV, 0.001);
-            specular  = numerator * invDenominator;
-
-            //Calculating the full rendering equation for a single light
-            //kS = F;
-            kD = (Vector3f(1.0) - F);
-            kD = kD *invMetal; 
-            radiaceLights[light] = ( (kD * (interpCol * (1/M_PI)) + specular ) * nDotL * lightCol[light]);
+        int val;
+        Vector3f radianceLights[maxLights];
+        Vector3f interpLightDir[maxLights];
+        Vector3f halfwayDir[maxLights];
+        Vector3f F[maxLights];
+        Vector3f numerator[maxLights];
+        Vector3f specular[maxLights];
+        Vector3f kD[maxLights];
+        float  NDF[maxLights];
+        float  nDotL[maxLights];
+        float  invDenominator[maxLights];
+        float  G[maxLights];
+        for(int i = 0; i < maxLights; ++i ){
+            val = i*3;
+            interpLightDir[i] = (lightDirVal[val] +  (lightDirVal[val + 1] - lightDirVal[val])* u +  (lightDirVal[val + 2] - lightDirVal[val]) * v).normalized();
         }
-        
+
+        #pragma omp simd
+        for(int light = 0; light < maxLights; ++light ){
+            halfwayDir[light] = (interpLightDir[light] + interpViewDir);
+            halfwayDir[light] = halfwayDir[light].normalized();
+            nDotL[light] = std::fmax(interpNormal.dotProduct(interpLightDir[light]), 0.0f);
+            //#pragma distribute_point
+            F[light]     = fresnelSchlick(std::fmax(halfwayDir[light].dotProduct(interpViewDir), 0.0f), F0corrected);
+            NDF[light]   = distributionGGX(interpNormal, halfwayDir[light], interpRough); 
+            G[light]     = GeometrySmith(interpRough, nDotL[light] , nDotV);
+           // #pragma distribute_point
+            numerator[light] = F[light] * G[light]*NDF[light];
+            invDenominator[light]  = 1.0f / std::fmax(4.0f * (nDotL[light] * nDotV), 0.001f);
+            specular[light]  = numerator[light] * invDenominator[light];
+            //#pragma distribute_point
+            kD[light] = (Vector3f(1.0f) - F[light])*invMetal;
+            radianceLights[light] = (kD[light] * (interpCol * (M_1_PIf32)) + specular[light] ) * nDotL[light] * lightCol[light];
+
+        }
+
         for(int i = 0; i < maxLights; ++i) {
-            radianceOut += radiaceLights[i];
+            radianceOut += radianceLights[i];
         }
 
         //Simplistic ambient term
@@ -370,7 +377,29 @@ struct PBRShader : public IShader {
 
 };
 
+        //#pragma omp simd simdlen(512)
+        // for(int light = 0; light < maxLights; ++light ){
+        //     halfwayDir = (interpLightDir[light] + interpViewDir).normalized();
+        //     nDotL = std::max(interpNormal.dotProduct(interpLightDir[light]), 0.0f);
 
+        //     //We assume the only lights in the scene are far away so there is no attenuation
+            
+        //     //Setting up BRDF
+        //     F   = fresnelSchlick(std::max(halfwayDir.dotProduct(interpViewDir), 0.0f), F0corrected);
+        //     NDF = distributionGGX(interpNormal, halfwayDir, interpRough); 
+        //     G   = GeometrySmith(interpRough);
+
+        //     //Calculating specular component of BRDF
+        //     Vector3f numerator = F * (G*NDF);
+        //     invDenominator  = 1.0f / std::max(4.0f * nDotL * nDotV, 0.001f);
+        //     specular  = numerator * invDenominator;
+
+        //     //Calculating the full rendering equation for a single light
+        //     //kS = F;
+        //     kD = (Vector3f(1.0f) - F)*invMetal;
+        //     //kD = kD *invMetal; 
+        //     radianceLights[light] = ( (kD * (interpCol * (1/M_PI)) + specular ) * nDotL * lightCol[light]);
+        // }
 
 
 

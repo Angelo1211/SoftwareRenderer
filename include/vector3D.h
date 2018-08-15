@@ -51,8 +51,11 @@ struct Vector3{
     Vector3 operator+(const Vector3 &rhs) const
     {return Vector3(x + rhs.x, y + rhs.y, z + rhs.z);}
 
-    void operator+=(const Vector3 &rhs) 
-    {(*this) = (*this) + rhs ;}
+    void operator+=(const Vector3 &rhs) {   
+        x += rhs.x;
+        y += rhs.y;
+        z += rhs.z;
+    }
 
     void operator-=(const Vector3 &rhs) 
     {(*this) = (*this) - rhs ;}
@@ -72,18 +75,12 @@ struct Vector3{
     T length() const
     {return std::sqrt(x*x + y*y + z*z);}
 
-    Vector3 &normalized()
-    {
+    Vector3 &normalized(){
         T len = length();
-        if( len > 0){
-            T factor = 1 / len;
-            x *= factor;
-            y *= factor;
-            z *= factor;
-        }
-        else {
-            printf("WARNING: Attempting to normalize a vector of length 0.\n");
-        }
+        T factor = 1.0f / len;
+        x *= factor;
+        y *= factor;
+        z *= factor;
 
         return *this;
     }

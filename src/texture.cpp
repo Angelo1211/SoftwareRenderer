@@ -39,45 +39,9 @@ Texture::Texture(std::string path, std::string type){
     stbi_image_free(data);
 }
 
-// void Texture::tileData(){
-//     float *tiledPixelData = new float[width*height*channels];
-
-//     int tileNumW    = width / tileW;
-//     int tileNumH    = height / tileH;
-//     int linearIndex = 0;
-//     int tiledIndex  = 0;
-//     for(int tileRow = 0; tileRow < tileNumW; ++tileRow){
-
-//         for(int tileCol = 0; tileCol < tileNumH; ++tileCol){
-
-//             for(int tilePixelHeight = 0; tilePixelHeight < tileH; ++tilePixelHeight){
-                
-//                 //Increment the linear index by one width to move down
-//                 linearIndex = (width*tilePixelHeight + tileW*tileCol + tileRow*tileH)*channels;
-
-//                 for(int tilepixelWidth = 0; tilePixelWidth < tileW; P+tilepixelWidth){
-
-//    P                //To move width wise you just increment again by the channel numbers
-
-//                     for(int pC = 0; pC < channels; ++pC){
-//                         printf("%d, %d\n", tiledIndex, linearIndex);
-//                         tiledPixelData[tiledIndex] = pixelData[linearIndex];
-//                         ++linearIndex;
-//                         ++tiledIndex;
-                        
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     delete [] pixelData;
-//     pixelData = tiledPixelData;
-// }
-
 void Texture::tileData(){
     float *tiledPixelData = new float[width*height*channels];
 
-    
     int tileNumW    = width / tileW;
     int tileNumH    = height / tileH;
     int linearIndex = 0;
@@ -88,10 +52,16 @@ void Texture::tileData(){
         for(int tileCol = 0; tileCol < tileNumH; ++tileCol){
 
             for(int tilePixelHeight = 0; tilePixelHeight < tileH; ++tilePixelHeight){
+
+                //1.First multiplication accounts for a change in pixel height within a tile
+                //2.Second accounts for a change of tile along arrow(tile movement column wise)
+                //3.Third accounts for the movement of one whole tile row downwards
                 
                 linearIndex = (tilePixelHeight*width + tileCol*tileW + tileRow*width*tileH)*channels;
 
                 for(int tilePixelWidth = 0; tilePixelWidth < tileW; ++tilePixelWidth){
+                    
+                    //Pixel wise movement is equal to channelwise movement in the array
 
                     for(int pC = 0; pC < channels; ++pC){
 
@@ -100,7 +70,6 @@ void Texture::tileData(){
                         ++tiledIndex;
                         
                     }
-
                 }
             }
         }
