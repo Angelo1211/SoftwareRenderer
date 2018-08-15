@@ -7,7 +7,7 @@ Texture::Texture(std::string path, std::string type){
     stbi_set_flip_vertically_on_load(true);  
 
     unsigned char * data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-
+    widthInTiles = (width + tileW -1) / tileW;
     pixelData = new float[width*height*channels];
 
     if (data){
@@ -15,19 +15,19 @@ Texture::Texture(std::string path, std::string type){
             for(int i = 0; i < width*height*channels; ++i){
                 pixelData[i] = std::pow((float)data[i] * (1/255.0f), 2.2f);
             }
-            //tileData(tileSize);
+            tileData();
         }
         else if (type == "XYZ"){
             for(int i = 0; i < width*height*channels; ++i){
                 pixelData[i] = (float)data[i] * (2/255.0f) - 1.0f;
             }
-            //tileData(tileSize);
+            tileData();
         }
         else if (type == "BW"){
             for(int i = 0; i < width*height*channels; ++i){
                 pixelData[i] = (float)data[i] * (1/255.0f);
             }
-            //tileData(tileSize);
+            tileData();
         }
         else{
             printf("Error unrecognized texture format type.\n");
@@ -39,52 +39,77 @@ Texture::Texture(std::string path, std::string type){
     stbi_image_free(data);
 }
 
+// void Texture::tileData(){
+//     float *tiledPixelData = new float[width*height*channels];
+
+//     int tileNumW    = width / tileW;
+//     int tileNumH    = height / tileH;
+//     int linearIndex = 0;
+//     int tiledIndex  = 0;
+//     for(int tileRow = 0; tileRow < tileNumW; ++tileRow){
+
+//         for(int tileCol = 0; tileCol < tileNumH; ++tileCol){
+
+//             for(int tilePixelHeight = 0; tilePixelHeight < tileH; ++tilePixelHeight){
+                
+//                 //Increment the linear index by one width to move down
+//                 linearIndex = (width*tilePixelHeight + tileW*tileCol + tileRow*tileH)*channels;
+
+//                 for(int tilepixelWidth = 0; tilePixelWidth < tileW; P+tilepixelWidth){
+
+//    P                //To move width wise you just increment again by the channel numbers
+
+//                     for(int pC = 0; pC < channels; ++pC){
+//                         printf("%d, %d\n", tiledIndex, linearIndex);
+//                         tiledPixelData[tiledIndex] = pixelData[linearIndex];
+//                         ++linearIndex;
+//                         ++tiledIndex;
+                        
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     delete [] pixelData;
+//     pixelData = tiledPixelData;
+// }
+
 void Texture::tileData(){
     float *tiledPixelData = new float[width*height*channels];
 
-    int tileNumW = width / tileW;
-    int tileNumH = height / tileH;
+    
+    int tileNumW    = width / tileW;
+    int tileNumH    = height / tileH;
+    int linearIndex = 0;
+    int tiledIndex  = 0;
 
-    for(int i = 0; i < tileH; ++i){
-        
-        for(int j = 0; j < tileW; ++j){
+    for(int tileRow = 0; tileRow < tileNumW; ++tileRow){
 
-            for(int pH = 0; pH < tileH; ++pH){
+        for(int tileCol = 0; tileCol < tileNumH; ++tileCol){
 
-                for(int pW = 0; pW < tileW; ++pW){
+            for(int tilePixelHeight = 0; tilePixelHeight < tileH; ++tilePixelHeight){
+                
+                linearIndex = (tilePixelHeight*width + tileCol*tileW + tileRow*width*tileH)*channels;
 
-                    
+                for(int tilePixelWidth = 0; tilePixelWidth < tileW; ++tilePixelWidth){
+
+                    for(int pC = 0; pC < channels; ++pC){
+
+                        tiledPixelData[tiledIndex] = pixelData[linearIndex];
+                        ++linearIndex;
+                        ++tiledIndex;
+                        
+                    }
 
                 }
-
             }
-
         }
-
     }
-
-    // //Channel by channel every i 3 = 1 pixel
-    // int currentPixel = 0;
-    // for(int i = 0; i < width*height*channels; ++i){
-    //     int currentChannel = i % channels;
-
-    //     if(currentChannel == 0){
-    //         ++currentPixel;
-    //     }
-
-
-    //     if(currentPixel %)
-
-
-    //     tiledPixelData[i] = pixelData[i];
-
-
-    // }
-
-
     delete [] pixelData;
     pixelData = tiledPixelData;
 }
+
+
 
 Texture::~Texture(){
     delete [] pixelData;
@@ -115,9 +140,25 @@ Vector3f Texture::getPixelVal(float u, float v){
 
     // return Vector3f{red, green, blue};
 
+    // int uInt = u * (width-1); 
+    // int vInt = v * (height-1);
+    // int index = (vInt*width + uInt)*channels;
+    // return Vector3f{pixelData[index], pixelData[index+1], pixelData[index+2]};
+
     int uInt = u * (width-1); 
     int vInt = v * (height-1);
-    int index = (vInt*width + uInt)*channels;
+
+    int tileX = uInt / tileW;
+    int tileY = vInt / tileH;
+
+    int inTileX = uInt % tileW;
+    int inTileY = vInt % tileH;
+
+    int index = ((tileY * widthInTiles + tileX) * (tileW * tileH)
+                + inTileY * tileW
+                + inTileX)*channels;
+
+
     return Vector3f{pixelData[index], pixelData[index+1], pixelData[index+2]};
 
 }
@@ -144,9 +185,24 @@ float Texture::getIntensityVal(float u, float v){
 
     // return val;
 
+    // int uInt = u * (width-1); 
+    // int vInt = v * (height-1);
+    // int index = (vInt*width + uInt);
+    // return pixelData[index];
+
     int uInt = u * (width-1); 
     int vInt = v * (height-1);
-    int index = (vInt*width + uInt);
+
+    int tileX = uInt / tileW;
+    int tileY = vInt / tileH;
+
+    int inTileX = uInt % tileW;
+    int inTileY = vInt % tileH;
+
+    int index = ((tileY * widthInTiles + tileX) * (tileW * tileH)
+                + inTileY * tileW
+                + inTileX);
+
     return pixelData[index];
 }
 

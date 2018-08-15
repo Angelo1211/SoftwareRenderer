@@ -17,7 +17,7 @@ class Texture{
         int bilinearFiltering(float u, float v);
         void tileData();
         float *pixelData;
-        int width, height, channels, tileW = 2, tileH = 2;
+        int width, height, channels, tileW = 32, tileH = 32, widthInTiles;
 };
 
 #endif
