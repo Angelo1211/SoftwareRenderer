@@ -38,8 +38,11 @@ Scene::~Scene(){
 //Update Order is critical for correct culling
 void Scene::update(unsigned int deltaT){
     mainCamera.update(deltaT);
-    for(Model *models : modelsInScene){
-        models->update();
+    for(int i=0; i < lightCount; ++i){
+        lights[i].update(deltaT);
+    }
+    for(Model *model : modelsInScene){
+        model->update();
     }
     frustrumCulling();
 }
@@ -144,11 +147,36 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
                         iss >> key;
                         lightCount = stoi(key);
                         //Initializes light array
+                        std::string lightType, radius, period;
                         lights = new BaseLight[lightCount];
                         for(int i = 0; i < lightCount; ++i){
 
-                            //Burn one line with light type for now
+                            //Obtain light type and depending on that get orbit or linear
                             std::getline(file,line);
+                            std::istringstream lightData(line);
+                            lightData >> key >> lightType;
+                            if(lightType == "o"){
+                                lights[i].type = 'o';
+                                std::getline(file,line);
+                                std::istringstream orb(line);
+                                orb >> key >> radius >> period;
+                                lights[i].radius = stof(radius);
+                                lights[i].time /= stof(period)*1000; //miliseconds
+                            }
+                            else if(lightType == "l"){
+                                lights[i].type = 'l';
+                                std::getline(file,line);
+                                std::istringstream orb(line);
+                                orb >> key >> radius >> period;
+                                lights[i].radius = stof(radius);
+                                lights[i].time /= stof(period)*1000;
+                            }
+                            else if(lightType == "c"){
+                                lights[i].type = 'c';
+                            }
+                            else if(lightType == "f"){
+                                lights[i].type = 'f';
+                            }
 
                             //Position
                             std::getline(file,line);

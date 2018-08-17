@@ -8,25 +8,23 @@ pos 0.0 0.0 0.0
 rot 0.0 0.0 0.0
 sca 1.0 1.0 1.0 
 /
-
 //SECTION: lights
-l 1
-l01 sun
+l 3
+l01 c
+pos 0.0 0.0 -1.0
+col 0.8 0.0 0.4
+/
+l02 o
+orb 4 20
 pos 1.0 0.0 0.0
 col 1.0 1.0 1.0
 /
-l02 sun
-pos 1.0 0.0 2.0
-col 0.0 1.0 0.0
-/
-l03 sun
-pos 0.0 0.0 -1.0
-col 0.5 0.0 0.0
-/
-l04 sun
+l03 l
+lin 4.0 20
 pos 1.0 1.0 1.0
-col 0.0 0.0 1.0
+col 0.0 1.0 1.0
 /
+
 //SECTION: cameras
 c 
 /

@@ -12,6 +12,46 @@
 struct BaseLight{
     Vector3f position;
     Vector3f color;
+    float radius;
+    char type;
+    float time = 2 * M_PI ;
+    unsigned int totalTime;
+
+    void update(unsigned int deltaT){
+        totalTime += deltaT;
+        float ang    = static_cast<float>(totalTime) * time;
+        switch(type){
+            case 'o':
+                float orbX   = std::sin(ang) * radius; 
+                float orbZ   = std::cos(ang) * radius;
+                position.x   = orbX;
+                position.y   = orbX;
+                position.z   = orbZ;
+            break;
+
+            case 'f':
+            break;
+
+            case 'c':
+                float colX    = (std::sin(ang/12e3) + 1)/2.0f ; 
+                float colY    = (std::cos(ang/6e3) + 1)/2.0f ; 
+                color.x       = colX;
+                color.y       = 1.0f-colY;
+                color.z       = colY;
+                printf("%f\n",ang);
+                color.print();
+            break;
+
+            case 'l':
+                float linX    = std::sin(ang) * radius ; 
+                position.x    = linX;
+            break;
+
+            default:
+            break;
+        }
+    }
+
 };
 
 #endif

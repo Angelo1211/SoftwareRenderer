@@ -70,7 +70,7 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             break;
 
             case SDLK_2:
-            sceneID = "teapotMetal";
+            sceneID = "chest";
             break;
 
             case SDLK_3:
@@ -133,6 +133,20 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             case SDLK_TAB:
             sceneCamera->orbiting = !sceneCamera->orbiting;
             sceneCamera->resetCamera();   
+            break;
+
+            case SDLK_UP:
+            sceneCamera->period -= 2;
+            if (sceneCamera->period  < 4){
+                sceneCamera->period = 4;
+            }
+            break;
+
+            case SDLK_DOWN:
+            sceneCamera->period += 2;
+            if (sceneCamera->period  > 60){
+                sceneCamera->period = 60;
+            }
             break;
 
             default:

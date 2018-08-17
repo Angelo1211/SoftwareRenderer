@@ -44,6 +44,7 @@ struct Camera{
 
     //Values related to orbiting mode
     float radius  = 2;
+    float period  = 30; //in seconds
     bool orbiting = true;
 
     //Momentary fixed camera speed (FPS dependent)

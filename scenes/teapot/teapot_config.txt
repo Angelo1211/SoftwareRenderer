@@ -15,24 +15,22 @@ sca 0.4 0.4 0.4
 /
 //SECTION: lights
 l 4
-l01 sun
+l01 sun fixed
 pos 1.0 0.0 0.0
 col 1.0 1.0 1.0
 /
-l02 sun
+l02 sun fixed
 pos 1.0 0.0 2.0
 col 0.0 1.0 0.0
 /
-l03 sun
+l03 sun fixed
 pos 0.0 0.0 -1.0
 col 0.5 0.0 0.0
 /
-l04 sun
+l04 sun fixed
 pos 1.0 1.0 1.0
 col 0.0 0.0 1.0
 /
-//SECTION: cameras
-c 
-/
+
 
 

@@ -97,7 +97,6 @@ void Engine::run(){
         deltaT = SDL_GetTicks() - start;
         printf("%2.1d: Frame elapsed time (ms):%d\n",count, deltaT);
         total += deltaT;
-        if(count == 500) break;
     }
     printf("Closing down engine.\n");
     printf("Average frame time over %2.1d frames:%2.fms.\n", count, total/(float)count);
