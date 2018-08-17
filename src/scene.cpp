@@ -14,7 +14,6 @@
 Scene::Scene(const std::string &sceneName){
     //Building all the useful path strings
     std::string folderPath = "../scenes/" + sceneName;
-    std::string baseFilePath = folderPath + "/" + sceneName;
     
     if( !findSceneFolder(folderPath)){
         //If you do not find the scene folder quit
@@ -22,7 +21,7 @@ Scene::Scene(const std::string &sceneName){
     }
     else{
         //Load all cameras, models and lights and return false if it fails
-        emptyScene = !loadContent(baseFilePath, sceneName);
+        emptyScene = !loadContent(folderPath, sceneName);
     }
 }
 
@@ -68,7 +67,7 @@ bool Scene::checkIfEmpty(){
 //TODO: separate into new class or function
 //Config file parsing, gets all the important 
 bool Scene::loadContent(const std::string &baseFilePath, const std::string &sceneName ){
-    std::string configFilePath = baseFilePath + "_config.txt";
+    std::string configFilePath = baseFilePath + "/"+ sceneName + "_config.txt";
     std::ifstream file(configFilePath.c_str());
     TransformParameters initParameters;
 
@@ -105,11 +104,14 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
                     if(key == "m"){ 
                         printf("Loading models...\n");
                         iss >> key;
-                        int max = stoi(key);
-                        for(int i = 0; i < max; ++i){
+                        int modelCount = stoi(key);
+                        std::string modelMeshID, modelMaterialID;
+                        for(int i = 0; i < modelCount; ++i){
 
-                            //Burn one line with model type for now
+                            //Get model mesh and material info
                             std::getline(file,line);
+                            std::istringstream modelData(line);
+                            modelData >> key >> modelMeshID >> modelMaterialID;
 
                             //Position
                             std::getline(file,line);
@@ -133,7 +135,7 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
                             std::getline(file,line);
                             
                             //Attempts to load model with the initparameters it has read
-                            loadSceneModel(baseFilePath, initParameters);
+                            loadSceneModel(baseFilePath, initParameters, modelMeshID, modelMaterialID);
                         }
                     }
                     //LIGHT SETUP
@@ -191,15 +193,16 @@ bool Scene::findSceneFolder(const std::string &scenePath){
     }
 }
 
-void Scene::loadSceneModel(const std::string &baseFilePath, const TransformParameters &init){
-    std::string meshFilePath = baseFilePath + "_mesh.obj";
+void Scene::loadSceneModel(const std::string &baseFilePath, const TransformParameters &init,const std::string modelMeshID, const std::string modelMaterialID){
+    std::string meshFilePath = baseFilePath + "/meshes/" + modelMeshID + "_mesh.obj";
     if(!OBJ::fileExists(meshFilePath)){
         //If the mesh deos not exist it's very likely nothing else does, quit early
         printf("Error! Mesh: %s does not exist.\n",meshFilePath.c_str());
     }
     else{
         printf( "%s is a valid mesh\n", meshFilePath.c_str() );
-        modelsInScene.push_back(new Model(baseFilePath, init));
+        std::string materialPath = baseFilePath + "/materials/" + modelMaterialID + "/"  + modelMaterialID;
+        modelsInScene.push_back(new Model(init, meshFilePath, materialPath));
     }
 }
 

@@ -70,7 +70,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     shader.M   = *(currentModel->getModelMatrix());
     shader.N   = (shader.M.inverse()).transpose(); 
 
-    shader.cameraPos = mCamera->position;
+    shader.cameraPos  = mCamera->position;
     shader.numLights  = mNumLights;
     shader.lightCol   = lColor;
     shader.lightPos   = lightPositions;

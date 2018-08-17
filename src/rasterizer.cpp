@@ -246,6 +246,6 @@ float Rasterizer::clamp(float n, float lower, float upper) {
 //Gamma adjustment table precalculated for a 2.2 gamma value
 //signficant ms gains from this!!
 int Rasterizer::gammaAdjust(float n) {
-    int val = round(clamp(n*255, 0, 255));
+    int val = (int)clamp(n*255, 0, 255);
     return gammaTable[val];
 }

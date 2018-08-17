@@ -25,15 +25,15 @@ class Model{
     public:
         //On model creation all textures are loaded, the mesh is built and even an
         //AABB is built.
-        Model(std::string basePath,const TransformParameters &initParameters) : 
-            mAlbedo(basePath + "_albedo.png", "RGB"),
-            mNormal(basePath + "_normal.png", "XYZ"),
-            mAmbient(basePath + "_ao.png", "BW"),
-            mRoughness(basePath + "_rough.png", "BW"),
-            mMetallic(basePath + "_metal.png", "BW"),
+        Model( const TransformParameters &initParameters, const std::string meshPath, const std::string materialPath) : 
+            mAlbedo(materialPath + "_albedo.png", "RGB"),
+            mNormal(materialPath + "_normal.png", "XYZ"),
+            mAmbient(materialPath + "_ao.png", "BW"),
+            mRoughness(materialPath + "_rough.png", "BW"),
+            mMetallic(materialPath + "_metal.png", "BW"),
             mModelMatrix(Matrix4::transformMatrix(initParameters))
         {   
-            OBJ::buildMeshFromFile(mMesh, basePath + "_mesh.obj");
+            OBJ::buildMeshFromFile(mMesh, meshPath);
             mBounds.buildAABB(mMesh);
             mMesh.buildFacetNormals();
             mMesh.buildTangentSpace();

@@ -55,9 +55,8 @@ class Scene{
         bool loadContent(const std::string &baseFilePath, const std::string &sceneName);
         //Check if scene folder acually exists and also checks accessibility 
         bool findSceneFolder(const std::string &scenePath);
-        void loadSceneModel(const std::string &baseFilePath, const TransformParameters &init);
+        void loadSceneModel(const std::string &baseFilePath, const TransformParameters &init ,const std::string modelMeshID, const std::string modelMaterialID);
         
-
         //Finds objects that the camera can see
         void frustrumCulling();
 };

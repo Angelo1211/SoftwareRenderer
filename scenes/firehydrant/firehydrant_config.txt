@@ -3,15 +3,10 @@ s firehydrant
 /
 //SECTION: models
 m 1
-m01 firehydrant
+m01 firehydrant firehydrant
 pos 0.0 -0.5 0.0 
 rot 0.0 0.0 0.0
 sca 1.0 1.0 1.0 
-/
-m02 firehydrant
-pos 1.0 1.0 0.0 
-rot 90.0 0 0.0
-sca 0.4 0.4 0.4 
 /
 //SECTION: lights
 l 3

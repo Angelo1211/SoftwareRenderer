@@ -1,0 +1,34 @@
+s chest
+//First line just checks that you are indeed reading the right config file
+/
+//SECTION: models
+m 1
+m01 chest chest
+pos 0.0 0.0 0.0 
+rot 0.0 0.0 0.0
+sca 1.0 1.0 1.0 
+/
+
+//SECTION: lights
+l 1
+l01 sun
+pos 1.0 0.0 0.0
+col 1.0 1.0 1.0
+/
+l02 sun
+pos 1.0 0.0 2.0
+col 0.0 1.0 0.0
+/
+l03 sun
+pos 0.0 0.0 -1.0
+col 0.5 0.0 0.0
+/
+l04 sun
+pos 1.0 1.0 1.0
+col 0.0 0.0 1.0
+/
+//SECTION: cameras
+c 
+/
+
+

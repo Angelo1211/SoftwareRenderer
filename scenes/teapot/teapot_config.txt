@@ -3,13 +3,13 @@ s teapot
 /
 //SECTION: models
 m 1
-m01 teapot
+m01 teapot marble
 pos 0.0 0.0 0.0 
 rot 90.0 0.0 0.0
 sca 0.4 0.4 0.4 
 /
-m02 teapot
-pos 0.0 0.0 1.5 
+m02 teapot metal1
+pos 0.0 0.0 2 
 rot 90.0 0 0.0
 sca 0.4 0.4 0.4 
 /
