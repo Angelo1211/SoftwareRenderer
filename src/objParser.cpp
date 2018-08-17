@@ -1,3 +1,9 @@
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-14
+// ===============================
+
+//Headers
 #include "objParser.h"
 
 Mesh& OBJ::buildMeshFromFile(Mesh &mesh, std::string path){

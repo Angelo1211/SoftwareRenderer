@@ -1,3 +1,9 @@
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-03
+// ===============================
+
+//Headers
 #include "mesh.h"
 
 void Mesh::describeMesh(){
@@ -15,7 +21,10 @@ void Mesh::buildFacetNormals(){
         fNormals.push_back((N1.crossProduct(N2)).normalized());
     }
 }
-
+//Builds per vertex tangent and bitangents by first finding tangeents and bitangents
+//per face. Then taking the average value at each vertex and then renormalizing because
+//average process might be altering direction. Then also corrects for any incorrect handedness
+//issues. Finally sets the correct vectors in a per vertex fashion
 void Mesh::buildTangentSpace(){
     std::vector<std::vector<Vector3f>> tempTangents(numVertices);
     std::vector<std::vector<Vector3f>> tempBiTangents(numVertices);
@@ -23,6 +32,7 @@ void Mesh::buildTangentSpace(){
 
     //Extract the tangent and bitangentn of each surface triangle
     //Assign the value to a temporary vector of vectors of vector3's (yikes)
+    //“When I wrote this, only God and I understood what I was doing. Now, God only knows.”
     for(int i = 0; i < numFaces; ++i){
         Vector3i vIndices = vertexIndices[i];
         Vector3i tIndices = textureIndices[i];
@@ -108,23 +118,21 @@ void Mesh::buildTangentSpace(){
         Vector3f biTangentV1 = biTangents[vIndices.data[1]];
         Vector3f biTangentV2 = biTangents[vIndices.data[2]];
 
+        //Renormalizing
         tangentV0  = (tangentV0 - (normalV0*tangentV0.dotProduct(normalV0))).normalized();
         tangentV1  = (tangentV1 - (normalV1*tangentV1.dotProduct(normalV1))).normalized();
         tangentV2  = (tangentV2 - (normalV2*tangentV2.dotProduct(normalV2))).normalized();
 
-
+        //Correcting handedness
         if (biTangentV0.dotProduct(normalV0.crossProduct(tangentV0)) < 0.0f){
-            //printf("here0!\n");
             tangentV0 = tangentV0  * -1.0f;
         }
 
         if (biTangentV1.dotProduct(normalV1.crossProduct(tangentV1)) < 0.0f){
-            //printf("here1!\n");
             tangentV1 = tangentV1  * -1.0f;
         }
 
         if (biTangentV2.dotProduct(normalV2.crossProduct(tangentV2)) < 0.0f){
-            //printf("here2!\n");
             tangentV2 = tangentV2  * -1.0f;
         }
 

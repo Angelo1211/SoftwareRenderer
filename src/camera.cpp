@@ -1,3 +1,9 @@
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-10
+// ===============================
+
+//Headers
 #include "camera.h"
 
 Camera::Camera(){
@@ -8,6 +14,8 @@ Camera::Camera(){
     cameraFrustrum.updatePlanes(viewMatrix, position);
 }
 
+//Updates target and position based on camera movement mode.
+///Also updates view matrix and projection matrix for rendering
 void Camera::update(unsigned int deltaT){
     if(orbiting){
         float ang    = 2 * M_PI * static_cast<float>(SDL_GetTicks()) / 3e4;
@@ -25,10 +33,12 @@ void Camera::update(unsigned int deltaT){
     projectionMatrix = Matrix4::projectionMatrix(cameraFrustrum.fov, cameraFrustrum.AR, cameraFrustrum.near, cameraFrustrum.far);
 }
 
+//View frustrum culling using a models AAB
 bool Camera::checkVisibility(AABox *bounds){
     return cameraFrustrum.checkIfInside(bounds);
 }
 
+//Used by input to reset camera to origin in case user loses their bearings
 void Camera::resetCamera(){
     position = Vector3f(0, 0, 8.0);
     target.zero();  

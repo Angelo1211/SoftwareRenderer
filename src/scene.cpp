@@ -1,3 +1,9 @@
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-10
+// ===============================
+
+//Headers
 #include "scene.h"
 #include "objParser.h"
 #include <fstream>
@@ -5,19 +11,17 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-//For now a scene only contains a single model
 Scene::Scene(const std::string &sceneName){
     //Building all the useful path strings
     std::string folderPath = "../scenes/" + sceneName;
     std::string baseFilePath = folderPath + "/" + sceneName;
     
     if( !findSceneFolder(folderPath)){
-        //If you do not find the scene folder quit early and gracefully
+        //If you do not find the scene folder quit
         emptyScene = true; 
     }
     else{
-        //Load all cameras, models and lights and return false if it failed
-        //to load anything
+        //Load all cameras, models and lights and return false if it fails
         emptyScene = !loadContent(baseFilePath, sceneName);
     }
 }
@@ -32,6 +36,7 @@ Scene::~Scene(){
     }
 }
 
+//Update Order is critical for correct culling
 void Scene::update(unsigned int deltaT){
     mainCamera.update(deltaT);
     for(Model *models : modelsInScene){
@@ -39,72 +44,37 @@ void Scene::update(unsigned int deltaT){
     }
     frustrumCulling();
 }
-
-//Returns false if there was any issue loading the scene object
-void Scene::loadSceneModel(const std::string &baseFilePath, const TransformParameters &init){
-    std::string meshFilePath = baseFilePath + "_mesh.obj";
-    if(!OBJ::fileExists(meshFilePath)){
-        printf("Error! Mesh: %s does not exist.\n",meshFilePath.c_str());
-    }
-    else{
-        printf( "%s is a valid mesh\n", meshFilePath.c_str() );
-        modelsInScene.push_back(new Model(baseFilePath, init));
-    }
-}
-
-void Scene::frustrumCulling(){
-    for(Model *model : modelsInScene){
-
-        bool visible = mainCamera.checkVisibility(model->getBounds());
-
-        if (visible) {
-            visibleModels.push(model);
-        }
-    }
-}
-
+//-----------------------------GETTERS----------------------------------------------
 std::queue<Model*>* Scene::getVisiblemodels(){
     return &visibleModels;
 }
-
-BaseLight * Scene::getCurrentLights(){
-    return lights;
-}
-
-
-
 Camera* Scene::getCurrentCamera(){
     return &mainCamera;
 }
+BaseLight * Scene::getCurrentLights(){
+    return lights;
+}
+int Scene::getLightCount(){
+    return lightCount;
+}
+//----------------------------------------------------------------
 
 bool Scene::checkIfEmpty(){
     return emptyScene;
 }
 
-bool Scene::findSceneFolder(const std::string &scenePath){
-    struct stat info;
-    if( stat( scenePath.c_str(), &info ) != 0 ){
-        printf( "cannot access %s\n", scenePath.c_str() );
-         return false;
-    }
-    else if( info.st_mode & S_IFDIR ){
-        printf( "%s is a valid scene\n", scenePath.c_str() );
-        return true;
-    }
-    else{
-        printf("Error! Scene: %s does not exist.\n",scenePath.c_str());
-        return false;
-    }
-}
+//-----------------------------SCENE LOADING-----------------------------------
 
+//TODO: separate into new class or function
+//Config file parsing, gets all the important 
 bool Scene::loadContent(const std::string &baseFilePath, const std::string &sceneName ){
     std::string configFilePath = baseFilePath + "_config.txt";
     std::ifstream file(configFilePath.c_str());
     TransformParameters initParameters;
 
-    //Does config file parsing here
-    //TODO: separate into new class or function
+    //Begin config file parsing
     if(!file.good()){
+        //Check config file exists
         printf("Error! Config: %s does not exist.\n",configFilePath.c_str());
         return false;
     }
@@ -121,6 +91,7 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
         else{
             iss >> key;
             if(key != sceneName){
+                //Checks the config file belongs to the correct scene
                 printf("Error! Config file: %s does not belong to current scene.\n",configFilePath.c_str());
                 return false;
             }
@@ -130,7 +101,8 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
                     std::getline(file,line);
                     std::istringstream iss(line);
                     iss >> key;
-                    if(key == "m"){ //model related setup
+                    //MODEL SETUP
+                    if(key == "m"){ 
                         printf("Loading models...\n");
                         iss >> key;
                         int max = stoi(key);
@@ -161,14 +133,15 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
                             std::getline(file,line);
                             
                             //Attempts to load model with the initparameters it has read
-                            //if it fails it won't do anything much now 
                             loadSceneModel(baseFilePath, initParameters);
                         }
                     }
-                    else if(key == "l"){ //light related setup
+                    //LIGHT SETUP
+                    else if(key == "l"){ 
                         printf("Loading lights...\n");
                         iss >> key;
                         lightCount = stoi(key);
+                        //Initializes light array
                         lights = new BaseLight[lightCount];
                         for(int i = 0; i < lightCount; ++i){
 
@@ -189,15 +162,9 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
 
                             //Burning empty line that makes the config easier to read
                             std::getline(file,line);
-                            
                         }
                     }
-                    else if(key == "c"){ //camera related setup
-                        printf("Loading camera...\n");
-                        //TODO: camera initialization setup
-                    }
                 }
-
                 //Lastly we check if the scene is empty and return 
                 return !modelsInScene.empty();       
             }
@@ -205,6 +172,56 @@ bool Scene::loadContent(const std::string &baseFilePath, const std::string &scen
     }
 }
 
-int Scene::getLightCount(){
-    return lightCount;
+bool Scene::findSceneFolder(const std::string &scenePath){
+    struct stat info;
+    //folder is blocking access
+    if( stat( scenePath.c_str(), &info ) != 0 ){
+        printf( "cannot access %s\n", scenePath.c_str() );
+         return false;
+    }
+    else if( info.st_mode & S_IFDIR ){
+        //Folder is accessible
+        printf( "%s is a valid scene\n", scenePath.c_str() );
+        return true;
+    }
+    else{
+        //Folder does not exist
+        printf("Error! Scene: %s does not exist.\n",scenePath.c_str());
+        return false;
+    }
 }
+
+void Scene::loadSceneModel(const std::string &baseFilePath, const TransformParameters &init){
+    std::string meshFilePath = baseFilePath + "_mesh.obj";
+    if(!OBJ::fileExists(meshFilePath)){
+        //If the mesh deos not exist it's very likely nothing else does, quit early
+        printf("Error! Mesh: %s does not exist.\n",meshFilePath.c_str());
+    }
+    else{
+        printf( "%s is a valid mesh\n", meshFilePath.c_str() );
+        modelsInScene.push_back(new Model(baseFilePath, init));
+    }
+}
+
+//-------------------------------------------------------------
+
+void Scene::frustrumCulling(){
+    for(Model *model : modelsInScene){
+        bool visible = mainCamera.checkVisibility(model->getBounds());
+        if (visible) {
+            visibleModels.push(model);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+

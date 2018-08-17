@@ -1,6 +1,13 @@
 #ifndef OBJPARSER_H
 #define OBJPARSER_H
 
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-14
+// PURPOSE      : Read .OBJ files and load the data into a mesh
+// ===============================
+
+//Headers
 #include <fstream>
 #include <sstream>
 #include "mesh.h"

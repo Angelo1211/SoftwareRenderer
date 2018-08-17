@@ -1,3 +1,9 @@
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-19
+// ===============================
+
+//Headers
 #include "geometry.h"
 #include <limits>
 #include <math.h>
@@ -26,11 +32,15 @@ void AABox::buildAABB(const Mesh &mesh){
     maxPoints = maxVals;
 }
 
+//Any change in the posiiton, rotation, scale of an object will cause a change
+//in the AABB This function rebuilds it based on those changes
+//which are contained within a model matrix.
 void AABox::update(const Matrix4 &modelMatrix){
     Vector3f minVals(std::numeric_limits<float>::max());
     Vector3f maxVals(std::numeric_limits<float>::min());
     Vector3f vertices[8];
 
+    //Reconstructing the 8 vertices of an AABB from the min and max valuesin the struct
     vertices[0] = Vector3f(minPoints.x, minPoints.y, minPoints.z);
     vertices[1] = Vector3f(maxPoints.x, minPoints.y, minPoints.z);
     vertices[2] = Vector3f(minPoints.x, maxPoints.y, minPoints.z);
@@ -61,7 +71,8 @@ void AABox::update(const Matrix4 &modelMatrix){
 
 
 //---------------------------------PLANE------------------------------------//
-
+//Returns a negative value if not aligned in the same direction of plane normal
+//which I established to be pointing towards the interior of the camera frustrum
 float Plane::distance(const Vector3f &points){
     return normal.dotProduct(points) + D;
 }
@@ -154,7 +165,3 @@ bool Frustrum::checkIfInside(AABox *box){
     }
     return true;
 }
-
-
-
-

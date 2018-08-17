@@ -1,6 +1,19 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-12
+// PURPOSE      : Emulate modern programmable vertex and fragment shaders. Allow texture
+//                reading and full Physically based rendering models. 
+// ===============================
+// SPECIAL NOTES: I kpet the older shaders that I wrote while working towards
+// building the final PBR model because I thought it would be nice to see the progression
+// Although using pure interface classes would seem to incur a perforamnce
+// penalty through pointer chasing I did not measure it through profiling.
+// ===============================
+
+//Headers
 #include "vector3D.h"
 #include "matrix.h"
 #include "texture.h"
@@ -9,7 +22,9 @@
 //Shader Interface for a class that emulates modern GPU fragment and vertex shaders
 struct IShader {
     virtual ~IShader() {};
-    virtual Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) = 0;
+    virtual Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,
+                            const Vector3f &textureVals,const Vector3f &tangent,
+                            int index,  const Vector3f &light = Vector3f{1,1,1}) = 0;
     virtual Vector3f fragment(float u, float v) = 0;
 };
 
@@ -19,7 +34,10 @@ struct FlatShader : public IShader {
     float varIntensity;
     Vector3f rgb{255,255,255};
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) override{
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,
+                    const Vector3f &textureVals,const Vector3f &tangent,
+                    int index, const Vector3f &light) override
+    {
         varIntensity = std::max(0.0f,normal.dotProduct(light));
         return MVP.matMultVec(vertex); //Transforms verts into projected space
     }
@@ -33,30 +51,43 @@ struct FlatShader : public IShader {
 //More Complex shader that calculates a per-vertex intensity and interpolates 
 //through the fragments of the triangle
 struct GouraudShader : public IShader {
+    //Per object data
     Matrix4 MVP, MV, V, N;
-    float ambientStrength = 0.05, diffStrength = 0, specularStrength = 0.5, spec = 0;
-    Vector3f ambient, diffuse, specular;
     Vector3f lightColor1{1,1,1}, lightColor2{0,0,1}, lightColor3{1,1,1};
-    Vector3f varying_diffuse, varying_specular, reflectDir, viewDir, light2, normal2;
+    float ambientStrength = 0.05, diffStrength = 0, specularStrength = 0.5, spec = 0;
     Vector3f rgb{255,255,255};
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) override{
-        normal2 = N.matMultDir(normal).normalized();
-        light2 = V.matMultDir(light).normalized();
-        reflectDir = Vector3f::reflect(-light2, normal);
+    //Per vertex data
+    Vector3f varying_diffuse, varying_specular, reflectDir, viewDir, lightDir, correctNormal;
+
+    //Per pixel data
+    Vector3f ambient, diffuse, specular;
+
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,
+                    const Vector3f &textureVals,const Vector3f &tangent,
+                    int index, const Vector3f &light) override
+    {   
+        //Vertex attributes
+        correctNormal = N.matMultDir(normal).normalized();
+        lightDir = V.matMultDir(light).normalized();
+        reflectDir = Vector3f::reflect(-lightDir, correctNormal);
         viewDir = MV.matMultVec(vertex).normalized();
+        
+        //Values to be interpolated
         varying_specular.data[index] = std::pow( std::max( -viewDir.dotProduct(reflectDir), 0.0f), 32.0f);
-        varying_diffuse.data[index] = std::max(0.0f, (normal).dotProduct(-light2));
+        varying_diffuse.data[index] = std::max(0.0f, (correctNormal).dotProduct(-lightDir));
+
         return MVP.matMultVec(vertex);
     }
 
     Vector3f fragment(float u, float v) override{
-        ambient = lightColor1 * ambientStrength;
-
+        //Interpolating
         diffStrength = varying_diffuse.x + u*(varying_diffuse.y - varying_diffuse.x) + v*(varying_diffuse.z - varying_diffuse.x);
-        diffuse = lightColor2 * diffStrength;
-
         spec = varying_specular.x + u*(varying_specular.y - varying_specular.x) + v*(varying_specular.z - varying_specular.x);
+
+        //Phong reflection model
+        ambient = lightColor1 * ambientStrength;
+        diffuse = lightColor2 * diffStrength;
         specular = lightColor3 * (specularStrength * spec);
 
         return (ambient + diffuse + specular) * rgb;
@@ -67,18 +98,29 @@ struct GouraudShader : public IShader {
 //Even more complex shader that interpolates normals and calculates intensities per fragment instead
 //instead of per vertex.
 struct PhongShader : public IShader {
+    //Per object data
     Matrix4 MVP, MV, V, N;
     float ambientStrength = 0.05, diffStrength = 0, specularStrength = 0.9, spec = 0;
-    Vector3f normals[3], viewDir[3];
-    Vector3f ambient, diffuse, specular, interpNormal, interpViewDir;
     Vector3f lightColor{0,0.1,1},lightColorSpec{1,1,1};
-    Vector3f varying_diffuse, varying_specular, reflectDir, light2;
     Vector3f rgb{255,255,255};
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) override{
+    //Per vertex data
+    Vector3f normals[3], viewDir[3];
+    Vector3f varying_diffuse, varying_specular, reflectDir, lightDir;
+
+    //Per pixel data
+    Vector3f ambient, diffuse, specular, interpNormal, interpViewDir;
+
+
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,
+                    const Vector3f &textureVals,const Vector3f &tangent,
+                    int index, const Vector3f &light) override
+    {
+        //Vertex attributes
         normals[index] = N.matMultDir(normal).normalized();
         viewDir[index] = MV.matMultVec(vertex).normalized();
-        light2 = V.matMultDir(light).normalized();
+        lightDir = V.matMultDir(light).normalized();
+
         return MVP.matMultVec(vertex);
     }
 
@@ -90,11 +132,11 @@ struct PhongShader : public IShader {
         ambient = lightColor * ambientStrength;
 
         //Diffuse
-        diffStrength = std::max(0.0f, (interpNormal.normalized()).dotProduct(light2));
+        diffStrength = std::max(0.0f, (interpNormal.normalized()).dotProduct(lightDir));
         diffuse = lightColor * diffStrength;
         
         //Specular
-        reflectDir = Vector3f::reflect(-light2, interpNormal);
+        reflectDir = Vector3f::reflect(-lightDir, interpNormal);
         spec = std::pow( std::max( (-interpViewDir.normalized()).dotProduct(reflectDir), 0.0f), 50.0f);
         specular = lightColorSpec * (specularStrength * spec);
 
@@ -106,17 +148,24 @@ struct PhongShader : public IShader {
 //Optimized version of Phong shader that uses a half angle instead of individual reflection
 //angles
 struct BlinnPhongShader : public IShader {
+    //Per object data
     Texture *albedoT;
     Matrix4 MVP, MV, V, N;
     float ambientStrength = 0.05, diffStrength=1 , specularStrength= 0.5;
-    float diff, spec, shininess = 128;
-    Vector3f normals[3], viewDir[3], UV[3];
-    Vector3f ambient, diffuse, specular, interpNormal, interpViewDir, interpUV;
     Vector3f lightColor{1,1,1};
+
+    //Per vertex data
+    Vector3f normals[3], viewDir[3], UV[3];
+    float diff, spec, shininess = 128;
+    
+    //Per fragment data
+    Vector3f ambient, diffuse, specular, interpNormal, interpViewDir, interpUV;
     Vector3f halfwayDir, lightDir;
     Vector3f interpCol, white{255,255,255};
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals,const Vector3f &tangent, const Vector3f &light, int index) override{
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,
+                    const Vector3f &textureVals,const Vector3f &tangent,
+                    int index, const Vector3f &light) override{
         normals[index] = N.matMultDir(normal).normalized();
         UV[index] = textureVals;
         viewDir[index] = MV.matMultVec(vertex).normalized();
@@ -175,7 +224,9 @@ struct TextureMapShader : public IShader {
     Vector3f ambient, diffuse, specular ;
     Vector3f halfwayDir;
 
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals, const Vector3f &tangent, const Vector3f &light, int index) override{
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,
+                    const Vector3f &textureVals, const Vector3f &tangent,
+                    int index, const Vector3f &light) override{
         //Creating TBN matrix
         normal_WS     = N.matMultDir(normal).normalized();
         tangent_WS    = N.matMultDir(tangent).normalized();
@@ -193,7 +244,7 @@ struct TextureMapShader : public IShader {
     }
 
     Vector3f fragment(float u, float v) override{
-        //Interpolated stuff
+        //Interpolated attributes
         interpCoords   = texCoords[0] + (texCoords[1] - texCoords[0])* u + (texCoords[2] - texCoords[0]) * v;
         interpLightDir = lightDir[0] + (lightDir[1] - lightDir[0])* u + (lightDir[2] - lightDir[0]) * v;
         interpViewDir  = viewDir[0] + (viewDir[1] - viewDir[0])* u + (viewDir[2] - viewDir[0]) * v;
@@ -231,11 +282,9 @@ struct PBRShader : public IShader {
 
     //Light Variables
     Vector3f F0{0.04, 0.04, 0.04}, F0corrected; //Default value dielectric
+    Vector3f *lightDirVal, *lightCol, *lightPos;
     float nDotL, nDotV, ambientInt = 0.01;
     int numLights;
-    Vector3f *lightDirVal;
-    Vector3f *lightCol;
-    Vector3f *lightPos;
 
     //Variables set per vertex
     Vector3f viewDir[3], texCoords[3];
@@ -243,19 +292,15 @@ struct PBRShader : public IShader {
     Matrix4 TBN;
     
     //Interpolated variables
-    Vector3f interpCoords, interpNormal, interpViewDir,
-             interpCol;
+    Vector3f interpCoords, interpNormal, interpViewDir, interpCol;
 
     //Per fragment
-   // Vector3f F, NDF, G ; //Fresnel, normal distribution function and geometry occlusion 
-    Vector3f halfwayDir, radianceOut, ambient;
-    Vector3f specular, kD, kS;
+    Vector3f radianceOut, ambient;
     float interpRough, interpAO, interpMetal;
     float uTexture, vTexture, intPart;
 
     //BRDF functions
     Vector3f fresnelSchlick(float cosTheta, Vector3f &fresnel0 ){
-        //return fresnel0 + (Vector3f(1.0)- fresnel0)* std::pow(2.0,(-5.55473*cosTheta * cosTheta) - 6.98316*cosTheta);
         float invcCosTheta = 1.0 - cosTheta;
         return fresnel0 + (Vector3f(1.0)- fresnel0) * (invcCosTheta * invcCosTheta * invcCosTheta * invcCosTheta * invcCosTheta);
     }
@@ -282,7 +327,10 @@ struct PBRShader : public IShader {
     }
 
     //Vertex shader
-    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,const Vector3f &textureVals, const Vector3f &tangent, const Vector3f &n, int index) override{
+    Vector3f vertex(const Vector3f &vertex, const Vector3f &normal,
+                     const Vector3f &textureVals, const Vector3f &tangent,
+                    int index, const Vector3f &light = Vector3f{1,1,1}) override
+    {             
         //Creating TBN matrix
         normal_WS     = N.matMultDir(normal).normalized();
         tangent_WS    = N.matMultDir(tangent).normalized();
@@ -304,7 +352,7 @@ struct PBRShader : public IShader {
 
     //Fragment shader
     Vector3f fragment(float u, float v) override{
-        //Interpolated stuff
+        //Interpolated attributes
         interpCoords   = texCoords[0] + (texCoords[1] - texCoords[0])* u + (texCoords[2] - texCoords[0]) * v;
         interpViewDir  = viewDir[0] + (viewDir[1] - viewDir[0])* u + (viewDir[2] - viewDir[0]) * v;
 
@@ -327,44 +375,59 @@ struct PBRShader : public IShader {
         nDotV = std::max(interpNormal.dotProduct(interpViewDir), 0.0f);
 
         //Setting up Direct Lighting variables
-        radianceOut.zero();
         const int maxLights = numLights;
-        int val;
+
+        //Fresnel, normal distribution function and geometry occlusion 
+        Vector3f F[maxLights];
+        float  NDF[maxLights];
+        float  G[maxLights];
+        
+        //Storing in array for vectorizing
         Vector3f radianceLights[maxLights];
         Vector3f interpLightDir[maxLights];
         Vector3f halfwayDir[maxLights];
-        Vector3f F[maxLights];
+        float  nDotL[maxLights];
         Vector3f numerator[maxLights];
+        float  invDenominator[maxLights];
         Vector3f specular[maxLights];
         Vector3f kD[maxLights];
-        float  NDF[maxLights];
-        float  nDotL[maxLights];
-        float  invDenominator[maxLights];
-        float  G[maxLights];
+        
+        //Interpolating each light direction for every light
+        int val;
         for(int i = 0; i < maxLights; ++i ){
             val = i*3;
             interpLightDir[i] = (lightDirVal[val] +  (lightDirVal[val + 1] - lightDirVal[val])* u +  (lightDirVal[val + 2] - lightDirVal[val]) * v).normalized();
         }
 
+        //Per light illumination calculations that can be simdified
+        //Currently uses widest SIMD array to perform all light iterations in one trip
+        //Which I believe leaves some extra 
         #pragma omp simd
         for(int light = 0; light < maxLights; ++light ){
             halfwayDir[light] = (interpLightDir[light] + interpViewDir);
             halfwayDir[light] = halfwayDir[light].normalized();
             nDotL[light] = std::fmax(interpNormal.dotProduct(interpLightDir[light]), 0.0f);
-            //#pragma distribute_point
+
+            //No problem vectorizing these functions because they are inlined by the compiler
+            //And also only consist of math operations to the vectors
             F[light]     = fresnelSchlick(std::fmax(halfwayDir[light].dotProduct(interpViewDir), 0.0f), F0corrected);
             NDF[light]   = distributionGGX(interpNormal, halfwayDir[light], interpRough); 
             G[light]     = GeometrySmith(interpRough, nDotL[light] , nDotV);
-           // #pragma distribute_point
+
             numerator[light] = F[light] * G[light]*NDF[light];
             invDenominator[light]  = 1.0f / std::fmax(4.0f * (nDotL[light] * nDotV), 0.001f);
             specular[light]  = numerator[light] * invDenominator[light];
-            //#pragma distribute_point
-            kD[light] = (Vector3f(1.0f) - F[light])*invMetal;
-            radianceLights[light] = (kD[light] * (interpCol * (M_1_PIf32)) + specular[light] ) * nDotL[light] * lightCol[light];
 
+            //kd is 1 - kf which is the stuff to the right of the vecotr 
+            kD[light] = (Vector3f(1.0f) - F[light])*invMetal;
+
+            //The rendering equation result for a given light
+            radianceLights[light] = (kD[light] * (interpCol * (M_1_PIf32)) + specular[light] ) * nDotL[light] * lightCol[light];
         }
 
+        //Summing up all radiance values since SIMD won't work if I do this within the
+        //previous loop
+        radianceOut.zero();
         for(int i = 0; i < maxLights; ++i) {
             radianceOut += radianceLights[i];
         }
@@ -374,33 +437,6 @@ struct PBRShader : public IShader {
 
         return ambient + radianceOut;
     }
-
+    
 };
-
-        //#pragma omp simd simdlen(512)
-        // for(int light = 0; light < maxLights; ++light ){
-        //     halfwayDir = (interpLightDir[light] + interpViewDir).normalized();
-        //     nDotL = std::max(interpNormal.dotProduct(interpLightDir[light]), 0.0f);
-
-        //     //We assume the only lights in the scene are far away so there is no attenuation
-            
-        //     //Setting up BRDF
-        //     F   = fresnelSchlick(std::max(halfwayDir.dotProduct(interpViewDir), 0.0f), F0corrected);
-        //     NDF = distributionGGX(interpNormal, halfwayDir, interpRough); 
-        //     G   = GeometrySmith(interpRough);
-
-        //     //Calculating specular component of BRDF
-        //     Vector3f numerator = F * (G*NDF);
-        //     invDenominator  = 1.0f / std::max(4.0f * nDotL * nDotV, 0.001f);
-        //     specular  = numerator * invDenominator;
-
-        //     //Calculating the full rendering equation for a single light
-        //     //kS = F;
-        //     kD = (Vector3f(1.0f) - F)*invMetal;
-        //     //kD = kD *invMetal; 
-        //     radianceLights[light] = ( (kD * (interpCol * (1/M_PI)) + specular ) * nDotL * lightCol[light]);
-        // }
-
-
-
 #endif

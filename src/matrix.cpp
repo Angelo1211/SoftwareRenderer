@@ -1,6 +1,16 @@
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-04
+// ===============================
+
+//Headers
 #include "matrix.h"
 #include <math.h>
 
+//The full matrix vector multiplication routine 
+//using the full 4x4 values.
+//Also changes the secret w component in the vec3 to w 
+//which is only really ever used in perspective divide and clipping
 Vector3f Matrix4::matMultVec(const Vector3f &vec){
     Vector3f newVec(0,0,0);
     float w2 = 0;
@@ -29,6 +39,8 @@ Vector3f Matrix4::matMultVec(const Vector3f &vec){
     return newVec;
 }
 
+//Used to multiply direction vectors or when you do not what your vector to be
+//translated. Implicitely makes the matrix a 3x3
 Vector3f Matrix4::matMultDir(const Vector3f &vec){
     Vector3f newVec(0,0,0);
     newVec.x = vec.x*(*this)(0,0)+
@@ -195,9 +207,6 @@ Matrix4 Matrix4::inverse(){
 
     det = mMatrix[0] * inverseMat(0,0) + mMatrix[1] * inverseMat(1,0) + mMatrix[2] * inverseMat(2,0) + mMatrix[3] * inverseMat(3,0);
 
-   // if (det == 0)
-        //return false;
-
     det = 1.0 / det;
 
     for (i = 0; i < 4; ++i){
@@ -206,8 +215,6 @@ Matrix4 Matrix4::inverse(){
         }   
     }
 
-
-    //return true;
     return inverseMat;
 }
 
@@ -239,6 +246,7 @@ Matrix4 Matrix4::operator*(Matrix4 &rhs){
     return results;
 }
 
+// 1-15 values 
 Matrix4 Matrix4::makeTestMat(){
     Matrix4 testMat;
     int n = 4;
@@ -260,6 +268,7 @@ Matrix4 Matrix4::unitMatrix(){
     testMat(3,3) = 1;
     return testMat;
 }
+
 //Uses ZYX convention for rotation
 Matrix4 Matrix4::fullRotMat(float alpha, float beta, float gamma){
     Matrix4 rotMat;
@@ -293,6 +302,7 @@ Matrix4 Matrix4::fullRotMat(float alpha, float beta, float gamma){
     return rotMat;
 }
 
+//Fills values along diagonal only
 Matrix4 Matrix4::scaleMat(float scaleX, float scaleY, float scaleZ){
     Matrix4 scaleMat;
     scaleMat(0,0) = scaleX;
@@ -302,6 +312,7 @@ Matrix4 Matrix4::scaleMat(float scaleX, float scaleY, float scaleZ){
     return scaleMat;
 }
 
+//Could porbably be combined with scale mat
 Matrix4 Matrix4::translateMat(float dx, float dy, float dz){
     Matrix4 transMat;
     transMat(0,0) = 1;
@@ -313,7 +324,8 @@ Matrix4 Matrix4::translateMat(float dx, float dy, float dz){
     transMat(3,3) = 1;
     return transMat;
 }
-
+//Multiplication order is very important
+// translation *(rotation*(scaling)) to avoid unexpected behaviour
 Matrix4 Matrix4::transformMatrix(TransformParameters transform){
     Matrix4 rotMatrix = Matrix4::fullRotMat(transform.rotation.x,
                          transform.rotation.y, transform.rotation.z);
@@ -326,6 +338,8 @@ Matrix4 Matrix4::transformMatrix(TransformParameters transform){
     return  translationMatrix*(temp);
 }
 
+//Moves the whole world to place the origin at the current camera position
+//And wrt its direction
 Matrix4 Matrix4::lookAt(Vector3f& position, Vector3f& target, Vector3f& temp){
     //Gram–Schmidt process
     Vector3f forward = (position - target).normalized();
@@ -336,7 +350,6 @@ Matrix4 Matrix4::lookAt(Vector3f& position, Vector3f& target, Vector3f& temp){
     //The idea is that we don't care where the camera is, we only care about what
     //transformation would put the origin at the camera world space position
     //With the z axis behind the camera.
-    //I bet you this will be really confusing in a couple of weeks
     Matrix4 worldToCam;
     
     //First row
@@ -362,7 +375,8 @@ Matrix4 Matrix4::lookAt(Vector3f& position, Vector3f& target, Vector3f& temp){
 
     return worldToCam;
 }
-
+//Assumes a symmetrical frustrum with euqal fov for horizontal and vertical
+//Also uses the inverse z trick to in theory improve zbuffer precision
 Matrix4 Matrix4::projectionMatrix(float fov, float AR, float near, float far){
     Matrix4 projectionMat;
     float tanHalfFOVInverse   =  1/tan( (fov/2) * (M_PI / 180) );
@@ -373,7 +387,7 @@ Matrix4 Matrix4::projectionMatrix(float fov, float AR, float near, float far){
     //Second row
     projectionMat(1,1) = AR * tanHalfFOVInverse; //near / top (top = right /AR)
 
-    //Third row (Calculated for 1- 0)
+    //Third row (Calculated for 1- 0) Inverse z buffer black magic
     projectionMat(2,2) =  (near) / (far - near);
     projectionMat(2,3) =  (far * near) / (far - near);
     
@@ -383,6 +397,8 @@ Matrix4 Matrix4::projectionMatrix(float fov, float AR, float near, float far){
     return projectionMat;
 }
 
+//Transposed to get world-tangent transform
+//You can transpose it instead of inverting it because it's orthogonal
 Matrix4 Matrix4::TBNMatrix(const Vector3f &tangent, const Vector3f &biTangent, const Vector3f &normal){
     Matrix4 tangentMat;
 

@@ -1,9 +1,13 @@
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-03
+// ===============================
+
+//Includes
 #include "rasterizer.h"
-#include "vector"
-#include "array"
 #include <algorithm>
 
-//Gamma correction lookup table
+//Gamma correction lookup table, much much faster than actually calculating it
 const int Rasterizer::gammaTable[256] = {0, 21, 28, 34, 39, 43, 46,
         50, 53, 56, 59, 61, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84,
         85, 87, 89, 90, 92, 93, 95, 96, 98, 99, 101, 102, 103, 105, 106,
@@ -32,6 +36,8 @@ const Uint32 Rasterizer::red(SDL_MapRGBA(mappingFormat, 0xFF,0x00,0x00,0xFF));
 const Uint32 Rasterizer::green(SDL_MapRGBA(mappingFormat, 0x00,0xFF,0x00,0xFF));
 const Uint32 Rasterizer::blue(SDL_MapRGBA(mappingFormat, 0x00,0x00,0xFF,0xFF));
 
+
+//Early pixel buffer traversal test
 void Rasterizer::makeCoolPattern(Buffer<Uint32> *pixelBuffer){
     for(int y = 0; y < pixelBuffer->mHeight; ++y){
         for(int x = 0; x < pixelBuffer->mWidth; ++x){
@@ -100,7 +106,13 @@ void Rasterizer::drawWireFrame(Vector3f *vertices, IShader &shader, Buffer<Uint3
     drawLine(vertices[0], vertices[2], blue, pixelBuffer);
 }  
 
-//Draws triangles
+//Candidate for future total overhaul into a SIMD function
+//Why not now? Before doing this I have to do:
+//1.vectorize: Shader, vector3 class rewrite
+//2.Edge detection
+//3.Fixed point rewrite
+//4.SDL function rewrite
+//5.Zbuffer rewrite
 void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint32> *pixelBuffer, Buffer<float> *zBuffer){
     //Per triangle variables
     float area;
@@ -142,8 +154,14 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
         e.z = e_row.z;
 
         for(int x = xMin; x <= xMax; ++x){
-            //Only draw if inside pixel and following top left rule
+
+            //Originally I followed top left rule to avoid edge rewrites but it was
+            //costing me more to perform this check every pixel than just allowing the rewrite
+            //It's saved in case the pixel shader gets more complex and the tradeoff becomes
+            //worth it
             // if(inside(e.x, A01, B01) && inside(e.y, A12, B12) && inside(e.z, A20, B20) ){
+
+            //Only draw if pixel inside triangle 
             if( (e.x >= 0) && (e.y >= 0 ) && (e.z >= 0 )){
 
                 //Zbuffer check
@@ -159,12 +177,12 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
 
                     //Run fragment shader (U, v are barycentric coords)
                     rgbVals = shader.fragment(uPers , vPers);
+
                     //Update pixel buffer with clamped values 
                     (*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat,
-                    gammaAdjust(rgbVals.data[0]), //
-                    gammaAdjust(rgbVals.data[1]),//
-                    gammaAdjust(rgbVals.data[2]));//
-                    //(*pixelBuffer)(x,y) = SDL_MapRGB(mappingFormat,0xFF, 0xFF, 0xFF);
+                                                gammaAdjust(rgbVals.data[0]), 
+                                                gammaAdjust(rgbVals.data[1]),
+                                                gammaAdjust(rgbVals.data[2]));
                 }   
             }
 
@@ -183,6 +201,7 @@ void Rasterizer::drawTriangles(Vector3f *vertices, IShader &shader, Buffer<Uint3
 
 void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertices){
     for(int i = 0; i < 3; ++i){
+        //Adding half a pixel to avoid gaps on small vertex values
         vertices[i].x = ((vertices[i].x + 1 ) * pixelBuffer->mWidth * 0.5)  + 0.5;
         vertices[i].y = ((vertices[i].y + 1 ) * pixelBuffer->mHeight * 0.5) + 0.5;
     }
@@ -190,7 +209,7 @@ void Rasterizer::viewportTransform(Buffer<Uint32> *pixelBuffer, Vector3f *vertic
 
 void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin,Vector3f *vertices, Buffer<Uint32> *pixelBuffer){
     // xMax = std::ceil(std::max({vertices[0].x, vertices[1].x, vertices[2].x}));
-    //xMin = std::ceil(std::min({vertices[0].x, vertices[1].x, vertices[2].x}));
+    // xMin = std::ceil(std::min({vertices[0].x, vertices[1].x, vertices[2].x}));
     xMax = std::max({vertices[0].x, vertices[1].x, vertices[2].x});
     xMin = std::min({vertices[0].x, vertices[1].x, vertices[2].x});
 
@@ -210,7 +229,7 @@ void Rasterizer::triBoundBox(int &xMax, int &xMin, int &yMax, int &yMin,Vector3f
 float Rasterizer::edge(Vector3f &a, Vector3f &b, Vector3f &c){
     return (b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x);
 }
-
+//Doing this check was slower than allowing overwrites on certain triangle edges so it's
 bool Rasterizer::inside(float e, float a, float b){
     if ( e > 0 )  return true;
     if ( e < 0 )  return false;
@@ -224,6 +243,8 @@ float Rasterizer::clamp(float n, float lower, float upper) {
   return std::max(lower, std::min(n, upper));
 }
 
+//Gamma adjustment table precalculated for a 2.2 gamma value
+//signficant ms gains from this!!
 int Rasterizer::gammaAdjust(float n) {
     int val = round(clamp(n*255, 0, 255));
     return gammaTable[val];

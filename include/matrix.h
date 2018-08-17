@@ -1,6 +1,21 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-04
+// PURPOSE      : Perform matrix operations and linear algebra related operations.
+//                Also to have constructors to build the most common matrices used in 
+//                rendering.
+// ===============================
+// SPECIAL NOTES: All matrices are described as 4x4 matrices even if thery are supposed
+// to be only 3x3. This is because there is a special matmulDir function that performs
+// the equivalent multiplication that a 3x3 matrix would. Matrices are stored in memory
+// in row major order, but operations are done as if it was Column major. Exactly how
+// Opengl does. 
+// ===============================
+
+//Headers
 #include <array>
 #include "vector3D.h"
 
@@ -12,10 +27,10 @@ struct TransformParameters{
     Vector3f scaling;
 };
 
-//Matrices are stored in memory in row major order, but operations are done as if it was
-//Column major. 
 class Matrix4{
     public:
+        Matrix4(){};
+
         //Operators
         float& operator()(size_t y, size_t x){
             return mMatrix[y*4 + x];
@@ -35,8 +50,7 @@ class Matrix4{
         Matrix4 static fullRotMat(float alpha, float beta, float gamma);
         Matrix4 static scaleMat(float scaleX, float scaleY, float scaleZ);
         Matrix4 static translateMat(float dx, float dy, float dz);
-        Matrix4(){};
-
+        
         //Builds a matrix that scales, rotates and translates all at once
         Matrix4 static transformMatrix(TransformParameters transform);
 
@@ -47,6 +61,7 @@ class Matrix4{
         //defined as X[-1,1] Y[-1,1] Z[1,0] 
         Matrix4 static projectionMatrix(float fov, float AR, float near, float far);
 
+        //Tangent bitangent normal matrix used to get from world space to tangent space
         Matrix4 static TBNMatrix(const Vector3f &tangent, const Vector3f &biTangent, const Vector3f &normal);
 
         //Debug stuff

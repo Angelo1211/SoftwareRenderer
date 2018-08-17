@@ -1,5 +1,12 @@
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-02
+// ===============================
+
+//Headers
 #include "inputManager.h"
 
+//Dummy constructors and destructors
 InputManager::InputManager(){}
 InputManager::~InputManager(){}
 
@@ -7,7 +14,7 @@ bool InputManager::startUp(SceneManager &sceneManager){
     sceneController = &sceneManager;
     sceneCamera = (sceneController->getCurrentScene()->getCurrentCamera());
     
-    //Only really care about relative mouse motion because we're building a space camera
+    //Only really care about relative mouse motion because we're building a free camera
     bool success = !SDL_SetRelativeMouseMode(SDL_TRUE);
     return success;
 }
@@ -16,6 +23,8 @@ void InputManager::shutDown(){
     //Nothing to do yet
 }
 
+//Goes through the list of every event that has occurred since the last call
+//of this function and either performs and exit or sends the result to the even handler
 void InputManager::processInput(bool &done, unsigned int deltaT){
     SDL_Event event;
     while(SDL_PollEvent(&event)){
@@ -33,14 +42,25 @@ void InputManager::processInput(bool &done, unsigned int deltaT){
     }
 }
 
-//Handles user keyboard input
-//TODO: handle mouse input 
+//Handles all the current valid user events:
+//1. User requested quits
+//2. Keyboard presses
+//3. Mouse movement
+//4. Mouse clicks
+//5. Mouse wheel movement
 void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int deltaT){
+    //Normally would be multiplied by deltaT but caused issues with large fps 
+    //differences
     float speed = sceneCamera->camSpeed;// * deltaT;
+
     //Handling keyboard input
     if( event->type == SDL_KEYDOWN ){
-        //keys 1-5 switch to different scene
-        //WASD control strafe movement
+
+        //Keys 1-6 handle scenes switching
+        //Key ESC handles exit
+        //Keys wasdqe handle strafing and moving up and down
+        //Key r handles resetting camera
+        //Key tab handles toggleing orbit mode
         std::string sceneID = "0";
         switch( event->key.keysym.sym )
         {   
@@ -164,7 +184,10 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             sceneCamera->side    = sceneCamera->front.crossProduct(sceneCamera->up);
         }
     }
+    //Handling mouse wheel movement
+    //Changes zoom levels in increments of 5 degrees (2.5 really cause FOV is half angle)
     else if( event->type == SDL_MOUSEWHEEL){
+
         float zoom = 5.0f;
         float fov  = sceneCamera->cameraFrustrum.fov; 
         if(event->wheel.y > 0){ // scroll up
@@ -174,6 +197,7 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             fov += zoom;
         }
 
+        //Limiting the FOV range to avoid low FPS values or weird distortion
         if(fov < 20){
             fov = 20;
         }
@@ -181,6 +205,7 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             fov = 120;
         }
 
+        //Updating the camera frustrum
         sceneCamera->cameraFrustrum.fov = fov;
     }
 }

@@ -1,6 +1,20 @@
 #ifndef VECTOR3D_H
 #define VECTOR3D_H
 
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-18
+// PURPOSE      : Template vector class used for all vector operations, 3d, 2d and 4d
+//                vectors included. It is capable of performing most normal vector 
+//                operations and allows for access using both x,y,z and array indexing
+// ===============================
+// SPECIAL NOTES: Homogeneous coordinates are used with 3D vectors by hiding in the 
+//                implementation a 4th variable w taht contains the 4th coordinate.
+//                In the words of Douglas Adams:
+//   "This has made a lot of people very angry and been widely regarded as a bad move"
+// ===============================
+
+//Headers
 #include <string>
 #include <type_traits>
 #include "math.h"
@@ -75,6 +89,8 @@ struct Vector3{
     T length() const
     {return std::sqrt(x*x + y*y + z*z);}
 
+    //Used to account for edge case of len = 0 but branching impedes SIMD 
+    //auto vectorization
     Vector3 &normalized(){
         T len = length();
         T factor = 1.0f / len;
@@ -85,6 +101,7 @@ struct Vector3{
         return *this;
     }
 
+    //Only used for blinn shading within specular reflection calculations
     static Vector3 reflect(const Vector3 &I, const Vector3 &N){
         return I - ((N * I.dotProduct(N)) * 2.0f);
     }
@@ -109,7 +126,7 @@ struct Vector3{
     }
 };
 
-//Shorthands for the common vector types we use
+//Shorthands for the common vector types
 typedef Vector3<float> Vector3f; 
 typedef Vector3<int> Vector3i; 
 

@@ -1,6 +1,15 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-19
+// PURPOSE      : This file contains all of the geometry classes. Mostly important for
+//                view frustrum culling since it contains the geometry for axis aligned
+//                bounding boxes, planes and frustrums.
+// ===============================
+
+//Headers
 #include "vector3D.h"
 #include "mesh.h"
 #include "matrix.h"
@@ -17,6 +26,8 @@ struct AABox{
     void update(const Matrix4 &modelMatrix);
 };
 
+//Only used in frustrum culling, a frustrum has 6 planes
+//Equation is Ax + By + Cz + D = 0 (or somthing)
 struct Plane{
     Vector3f normal;
     float D;
@@ -25,6 +36,7 @@ struct Plane{
     void setNormalAndPoint(const Vector3f &normal, const Vector3f &point);
 };
 
+//The shape of the camera view area
 class Frustrum{
     private:
     	enum {
@@ -40,6 +52,4 @@ class Frustrum{
         void updatePlanes(Matrix4 &viewMat, const Vector3f &cameraPos) ;
         bool checkIfInside(AABox *bounds);
 };
-
-
 #endif

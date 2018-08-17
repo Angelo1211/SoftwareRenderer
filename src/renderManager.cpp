@@ -1,10 +1,17 @@
-#include "renderManager.h"
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-02
+// ===============================
 
+//Includes
+#include "renderManager.h"
 
 //Dummy constructors / Destructors
 RenderManager::RenderManager(){}
 RenderManager::~RenderManager(){}
 
+//Sets the internal pointers to the screen and the current scene and inits the software
+//renderer instance. 
 bool RenderManager::startUp(DisplayManager &displayManager,SceneManager &sceneManager ){
     screen = &displayManager;
     sceneLocator = &sceneManager;
@@ -22,23 +29,24 @@ void RenderManager::shutDown(){
 }
 
 void RenderManager::render(){
-    //Clear screen and reset current buffers
-    screen->clear();
+    //Reset current buffers
     renderInstance.clearBuffers();
 
     //Build a render Queue for drawing multiple models
     //Also assigns the current camera to the software renderer
+    //And gets info on the number of lights in the scene
     buildRenderQueue();
 
-    //Draw all meshes in the render queue so far we assume they are
-    //normal triangular meshes.
+    //Draw all meshes in the render queue. So far we assume they are
+    //normal triangular meshes. But it could easily be changed to invoke
+    //different methods based on different model types.
     while( !renderObjectQueue->empty() ){
         renderInstance.drawTriangularMesh(renderObjectQueue->front());
         renderObjectQueue->pop();
     }
 
-    //Swapping pixel buffer with final rendered image with the
-    //display buffer
+    //Drawing to the screen by swapping the window's surface with the 
+    //final buffer containing all rendering information
     screen->swapBuffers(renderInstance.getRenderTarget());
 
     //Set camera pointer to null just in case a scene change occurs
@@ -58,7 +66,7 @@ void RenderManager::buildRenderQueue(){
     //Update the pointer to the list of lights in the scene
     renderInstance.setSceneLights(currentScene->getCurrentLights(), currentScene->getLightCount() );
 
-    //Get pointers to the visible model queu
+    //Get pointers to the visible model queue
     renderObjectQueue = currentScene->getVisiblemodels();
 }
 

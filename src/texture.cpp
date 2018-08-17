@@ -1,8 +1,16 @@
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-02
+// ===============================
+
+//Headers
 #include "texture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <cmath>
 
+//Depending on the type of texture the data that is loaded must be 
+//transformed in different ways. 
 Texture::Texture(std::string path, std::string type){
     stbi_set_flip_vertically_on_load(true);  
 
@@ -11,19 +19,19 @@ Texture::Texture(std::string path, std::string type){
     pixelData = new float[width*height*channels];
 
     if (data){
-        if(type == "RGB"){
+        if(type == "RGB"){ //Rgb data requires a gamma correction, float conversion
             for(int i = 0; i < width*height*channels; ++i){
                 pixelData[i] = std::pow((float)data[i] * (1/255.0f), 2.2f);
             }
             tileData();
         }
-        else if (type == "XYZ"){
+        else if (type == "XYZ"){//conversion to float and rescaling to -1 1 bounds
             for(int i = 0; i < width*height*channels; ++i){
                 pixelData[i] = (float)data[i] * (2/255.0f) - 1.0f;
             }
             tileData();
         }
-        else if (type == "BW"){
+        else if (type == "BW"){ //Simple conversion to float
             for(int i = 0; i < width*height*channels; ++i){
                 pixelData[i] = (float)data[i] * (1/255.0f);
             }
@@ -39,6 +47,8 @@ Texture::Texture(std::string path, std::string type){
     stbi_image_free(data);
 }
 
+//Organizes the texture images in tiles to improve cache coherency
+//and reduce the amount of cache misses that getting pixel values would cause
 void Texture::tileData(){
     float *tiledPixelData = new float[width*height*channels];
 
@@ -84,10 +94,10 @@ Texture::~Texture(){
     delete [] pixelData;
 }
 
+//Tiling has invalidated my bilinear filtering code but it is here for posterity
 Vector3f Texture::getPixelVal(float u, float v){
 
     //Simple bilinear filtering
-    //DISABLED FOR NOW since it trashes the FPS
     // float intU;
     // float tU = std::modf(u * (width-1), &intU);
     // int uIntLo = (int)intU; 
@@ -124,9 +134,7 @@ Vector3f Texture::getPixelVal(float u, float v){
     int inTileY = vInt % tileH;
 
     int index = ((tileY * widthInTiles + tileX) * (tileW * tileH)
-                + inTileY * tileW
-                + inTileX)*channels;
-
+                + inTileY * tileW + inTileX)*channels;
 
     return Vector3f{pixelData[index], pixelData[index+1], pixelData[index+2]};
 
@@ -134,7 +142,6 @@ Vector3f Texture::getPixelVal(float u, float v){
 
 float Texture::getIntensityVal(float u, float v){
     //Simple bilinear filtering
-    //DISABLED FOR NOW since it trashes the FPS
     // float intU;
     // float tU = std::modf(u * (width-1), &intU);
     // int uIntLo = (int)intU; 

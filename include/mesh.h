@@ -1,11 +1,22 @@
 #ifndef MESH_H
 #define MESH_H
 
+// ===============================
+// AUTHOR       : Angel Ortiz (angelo12 AT vt DOT edu)
+// CREATE DATE  : 2018-07-03
+// PURPOSE      : Container for all geometry information related to vertices and 
+//                faces. This information is what the renderer uses to build triangles.
+// ===============================
+// SPECIAL NOTES: Once again, this class uses a bunch of vectors instead of arrays and 
+// it's something I would change if I had more time. 
+// ===============================
+
+//Headers
 #include "vector3D.h"
 #include <vector>
 
 //Struct containing information relevant to the renderer about the vertices, normals and
-//texture coordinates of a model. Also keeps track of useful stuff for iterations.
+//texture coordinates of a model. Also keeps track of useful stuff for iterating.
 struct Mesh{
     //Per vertex values
     int numVertices = 0;
