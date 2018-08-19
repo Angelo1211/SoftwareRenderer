@@ -9,20 +9,20 @@ rot 0.0 0.0 0.0
 sca 1.0 1.0 1.0 
 /
 //SECTION: lights
-l 3
-l01 sun fixed
+l 2
+l01 f
 pos 1.0 0.0 0.0
 col 1.0 1.0 1.0
 /
-l02 sun fixed
+l02 f
 pos 1.0 0.0 1.0
 col 1.0 0.0 1.0
 /
-l03 sun fixed
+l03 f
 pos 1.0 0.0 1.0
 col 0.0 0.0 1.0
 /
-l04 sun fixed
+l04 f
 pos 1.0 1.0 1.0
 col 1.0 0.0 1.0
 /

@@ -24,9 +24,9 @@ struct BaseLight{
             case 'o':
                 float orbX   = std::sin(ang) * radius; 
                 float orbZ   = std::cos(ang) * radius;
-                position.x   = orbX;
+                position.x   = orbZ;
                 position.y   = orbX;
-                position.z   = orbZ;
+                position.z   = orbX;
             break;
 
             case 'f':
@@ -38,8 +38,6 @@ struct BaseLight{
                 color.x       = colX;
                 color.y       = 1.0f-colY;
                 color.z       = colY;
-                printf("%f\n",ang);
-                color.print();
             break;
 
             case 'l':
