@@ -22,27 +22,34 @@ struct BaseLight{
         float ang    = static_cast<float>(totalTime) * time;
         switch(type){
             case 'o':
-                float orbX   = std::sin(ang) * radius; 
+            {
+                                float orbX   = std::sin(ang) * radius; 
                 float orbZ   = std::cos(ang) * radius;
                 position.x   = orbZ;
                 position.y   = orbX;
                 position.z   = orbX;
+            }
+
             break;
 
             case 'f':
             break;
 
             case 'c':
+            {
                 float colX    = (std::sin(ang/12e3) + 1)/2.0f ; 
                 float colY    = (std::cos(ang/6e3) + 1)/2.0f ; 
                 color.x       = colX;
                 color.y       = 1.0f-colY;
                 color.z       = colY;
+            }
             break;
 
             case 'l':
+            {
                 float linX    = std::sin(ang) * radius ; 
                 position.x    = linX;
+            }
             break;
 
             default:

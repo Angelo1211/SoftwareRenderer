@@ -283,7 +283,7 @@ struct PBRShader : public IShader {
     //Light Variables
     Vector3f F0{0.04, 0.04, 0.04}, F0corrected; //Default value dielectric
     Vector3f *lightDirVal, *lightCol, *lightPos;
-    float nDotL, nDotV, ambientInt = 0.01;
+    float nDotL, nDotV, ambientInt = 0.01; 
     int numLights;
 
     //Variables set per vertex

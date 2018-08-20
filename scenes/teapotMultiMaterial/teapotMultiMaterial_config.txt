@@ -1,0 +1,51 @@
+s teapotMultiMaterial
+//First line just checks that you are indeed reading the right config file
+/
+//SECTION: models
+m 5
+m01 teapot marble
+pos 00.0 0.0 0.0 
+rot 90.0 0.0 0.0
+sca 0.4 0.4 0.4 
+/
+m02 teapot metal1
+pos 02.0 0.0 0.0 
+rot 90.0 0 0.0
+sca 0.4 0.4 0.4 
+/
+m03 teapot granite
+pos 04.0 0.0 0.0 
+rot 90.0 0 0.0
+sca 0.4 0.4 0.4 
+/
+m04 teapot gold
+pos -2.0 0.0 0.0
+rot 90.0 0.0 0.0
+sca 0.4 0.4 0.4 
+/
+m05 teapot azulejos
+pos -4.0 0.0 0.0 
+rot 90.0 0.0 0.0
+sca 0.4 0.4 0.4 
+/
+//SECTION: lights
+l 4
+l01 f
+pos 1.0 0.0 0.0
+col 1.0 1.0 1.0
+/
+l02 f
+pos 1.0 0.0 2.0
+col 0.0 1.0 0.0
+/
+l03 f
+pos 0.0 0.0 -1.0
+col 0.5 0.0 0.0
+/
+l04 f
+pos 1.0 1.0 1.0
+col 0.0 0.0 1.0
+/
+
+
+

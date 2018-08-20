@@ -17,7 +17,7 @@ Texture::Texture(std::string path, std::string type){
     unsigned char * data = stbi_load(path.c_str(), &width, &height, &channels, 0);
     widthInTiles = (width + tileW -1) / tileW;
     pixelData = new float[width*height*channels];
-
+    
     if (data){
         if(type == "RGB"){ //Rgb data requires a gamma correction, float conversion
             for(int i = 0; i < width*height*channels; ++i){

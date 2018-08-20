@@ -66,15 +66,15 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
         {   
             //SCENE CODE
             case SDLK_1:
-            sceneID = "teapot";
+            sceneID = "teapotSingle";
             break;
 
             case SDLK_2:
-            sceneID = "chest";
+            sceneID = "teapotMultiMaterial";
             break;
 
             case SDLK_3:
-            sceneID = "firehydrant";
+            sceneID = "chest";
             break;
 
             case SDLK_4:
@@ -82,7 +82,15 @@ void InputManager::handleEvent(SDL_Event * event, bool &done, unsigned int delta
             break;
 
             case SDLK_5:
-            sceneID = "firehydrant";
+            sceneID = "cerberus";
+            break;
+
+            case SDLK_6:
+            sceneID = "statue";
+            break;
+
+            case SDLK_7:
+            sceneID = "multipleMesh";
             break;
 
             //WINDOW CONTROL OPTIONS

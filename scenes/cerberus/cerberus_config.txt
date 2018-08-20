@@ -1,0 +1,33 @@
+s cerberus
+//First line just checks that you are indeed reading the right config file
+/
+//SECTION: models
+m 1
+m01 cerberus cerberus
+pos 0.0 0.0 0.0 
+rot 0.0 0.0 0.0
+sca 1.0 1.0 1.0 
+/
+//SECTION: lights
+l 4
+l01 f
+pos 0.0 0.0 -1.0
+col 1.0 0.2 00.0
+/
+l02 f
+pos 1.0 -1.0 -1.0
+col 1.0 0.5 0.2
+/
+l03 f
+pos 1.0 0.0 0.0
+col 1.0 0.5 0.2
+/
+l04 f
+pos 1.0 0.0 1.0
+col 1.0 0.2 0.0
+/
+//SECTION: cameras
+c 
+/
+
+

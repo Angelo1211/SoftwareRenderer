@@ -1,0 +1,31 @@
+s statue
+//First line just checks that you are indeed reading the right config file
+/
+//SECTION: models
+m 1
+m01 statue marble
+pos 0.0 -0.5 0.0 
+rot -90.0 90.0 0.0
+sca 0.5 0.5 0.5 
+/
+//SECTION: lights
+l 1
+l01 l
+lin 4.0 35
+pos 0.0 0.0 -1.0
+col 1.0 1.0 1.0
+/
+l02 f
+pos 1.0 0.0 0.0
+col 1.0 1.0 1.0
+/
+l03 f
+pos 1.0 1.0 1.0
+col 1.0 1.0 1.0
+/
+
+//SECTION: cameras
+c 
+/
+
+
