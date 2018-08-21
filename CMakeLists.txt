@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.7)
 project(softwareRenderer)
 
-
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
-#set(SDL2_PATH "C:\\vs_dev_lib\\SDL2-2.0.8")
+set(SDL2_PATH "C:\\vs_dev_lib\\SDL2-2.0.8")
 find_package(SDL2 REQUIRED)
 find_package(OpenMP REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR} include libs)

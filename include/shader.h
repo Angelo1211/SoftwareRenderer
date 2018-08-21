@@ -378,8 +378,8 @@ struct PBRShader : public IShader {
         const int maxLights = numLights;
 
         //Fresnel, normal distribution function and geometry occlusion 
-        Vector3f F[maxLights];
-        float  NDF[maxLights];
+        Vector3f* F = new Vector3f[maxLights];
+        float*  NDF = new float[maxLights];
         float  G[maxLights];
         
         //Storing in array for vectorizing
@@ -434,6 +434,8 @@ struct PBRShader : public IShader {
 
         //Simplistic ambient term
         ambient =  interpCol * (ambientInt * interpAO);
+
+        delete [] F;
 
         return ambient + radianceOut;
     }
