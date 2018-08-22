@@ -7,6 +7,7 @@
 // ===============================
 
 #include "SDL.h"
+#include <cstring>
 #include <type_traits>
 
 //Templated struct to emulate GPU buffers such as 
@@ -41,7 +42,7 @@ struct Buffer{
             }
 			else{
 				//Set to a 15% white color to make it nicer looking.
-				memset(buffer,0xD, mPitch*mHeight);       
+				std::memset(buffer,0xD, mPitch*mHeight);       
 			}
         }
 };

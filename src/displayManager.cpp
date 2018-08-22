@@ -5,6 +5,8 @@
 
 //Includes
 #include "displayManager.h"
+#include <cstdio>
+#include <cstring>
 
 //Dummy constructors/destructors
 DisplayManager::DisplayManager(){}
@@ -45,7 +47,7 @@ void DisplayManager::swapBuffers(Buffer<Uint32> *pixels){
     SDL_LockSurface(mSurface);
 
     //Copy pixels buffer resuls to screen surface
-    memcpy(mSurface->pixels, pixels->buffer, pixels->mHeight*pixels->mPitch);
+    std::memcpy(mSurface->pixels, pixels->buffer, pixels->mHeight*pixels->mPitch);
     SDL_UnlockSurface(mSurface);
 
     //Apply surface changes to window
