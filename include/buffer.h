@@ -41,7 +41,7 @@ struct Buffer{
             }
 			else{
 				//Set to a 15% white color to make it nicer looking.
-				memset(buffer,0xD, mPitch*mHeight);       
+				memset(buffer,0xFF, mPitch*mHeight);       
 			}
         }
 };
