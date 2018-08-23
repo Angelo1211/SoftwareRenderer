@@ -22,18 +22,20 @@ You can download a demo of it for your machine here:
 ![Orbiting the chest](https://github.com/Angelo1211/SoftwareRenderer/blob/gh-pages/Images/chest2.gif?raw=true)
 
 
-## Background & Development
+## Development & Feedback
 
-I am planning on starting a series of blog posts sometime soon that will go more in depth into the development and background for this project. This was my first foray into Graphics Programming but I know now that it will not be my last! Meanwhile, for here's a quick summary of my goals coming into this project and a link to the slides for an informal talk I just gave about this project: 
+I am planning on starting a series of blog posts sometime soon that will explain some of the cooler components of the engine and how I went about implementing them. I also feel it would be helpful to other beginners to elaborate on some of the components that gave me the most trouble, such as how to design the general architecture of the engine, how to profile, optimize and bug fix your code and lastly how I personally tackled learning Computer Graphics coming from a non-cs background. 
 
 #### Goals
 1. Demonstrate my C++ Knowledge
 2. Satisfy a life long curiosity about computer graphics
-3. Keep the renderer Real-Time (<40ms)
+3. Keep the renderer Real-Time (original goal was 16ms actual ~29ms)
 4. Minimize external library usage to minimum
 5. Multiplatform development
 6. Use modern computer graphics techniques
 7. Learn to self-manage and architect "large" projects
+
+I set these goals above as my learning targets for the project before I began and I have to say that I am very happy with how much progress I managed to make with most of them. If you're interested, I gave a talk that went more in detail about this and the journey in itself and you can find the slides for it here:
 
 ### Talk [Slides](https://docs.google.com/presentation/d/e/2PACX-1vTHXIVnes1OMQwN2EEg8sRDp4TVkgDd3IsLrV8Rdxzk-YlKkhn0JzzeOTrtS6lqpmT1shfQzxf5UGiF/pub?start=false&loop=false&delayms=3000)
 
@@ -87,7 +89,7 @@ I am planning on starting a series of blog posts sometime soon that will go more
 
 ## References
 
-I've moved most of the sources into a separate page on the wiki for easier navigation and indexing. However, here are some of the ones I utilized the most:
+I've moved most of the sources into a separate page [on the wiki](https://github.com/Angelo1211/SoftwareRenderer/wiki/References-&-Sources-Categorized) for easier navigation and indexing. However, here are some of the ones I utilized the most:
 
 * [EDAN35 - High Performance Computer Graphics](http://cs.lth.se/edan35/)
 * [Stanford CS248, Spring 2018 - Interactive Computer Graphics](http://graphics.stanford.edu/courses/cs248-18-spring/)
@@ -95,7 +97,13 @@ I've moved most of the sources into a separate page on the wiki for easier navig
 * [Learn OpenGL](https://learnopengl.com/Introduction)
 * [Tiny Renderer](https://github.com/ssloy/tinyrenderer)
 
+## Model & Texture Acknowledgements
 
+* [Cerberus Gun Mesh & Textures by Andrew Maximov](http://artisaverb.info/Cerberus.html)
+* [Utah Teapot with closed lid Mesh by Nik Clark](https://en.wikipedia.org/wiki/Utah_teapot#/media/File:Utah_teapot_(solid).stl)
+* [Fire Hydrant & Chest by @emackey PBR test models](https://emackey.github.io/testing-pbr/)
+* [Louis XIV de France, Louvre, Paris by HoangHiepVu](https://sketchfab.com/models/a0cc0e7eee384c99838dff2857b8158c)
+* [Gold, Marble, Painted Metal by CC0Textures.com](https://cc0textures.com/home)
 
 
 
