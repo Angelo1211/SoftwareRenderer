@@ -1,6 +1,6 @@
 # Simple Software Graphics Engine(SSGE): A real-time and interactive 3D Renderer built from scratch in C++
 
-SSGE is the result of a two month long learning project with the aim of building a real-time 3D renderer from scratch in C++. It is capable of modern Physically Based Rendering without making use of any third party graphics libraries such as OpenGL, DirectX or Vulkan. It is entirely software based and does not utilize any hardware acceleration throughout it's rendering pipeline. SSGE can run on both Windows and Linux machines by leveraging CMAKE for executable building and compiling and SDL2 for OS and hardware-level abstraction.
+SSGE is the result of a two month long learning project with the aim of building a real-time 3D renderer from scratch in C++. It is capable of modern Physically Based Rendering(PBR) without making use of any third party graphics libraries such as OpenGL, DirectX or Vulkan. It is entirely software based and does not utilize any hardware acceleration throughout it's rendering pipeline. SSGE can run on both Windows and Linux machines by leveraging CMAKE for executable building and compiling and SDL2 for OS and hardware-level abstraction.
 
 Performance wise, it is capable of running scenes containing medium size meshes of ~50k triangles and 4 light sources at a relatively stable frame rate of 30fps (Of course, your mileage may vary) while running the very demanding PBR shader. To achieve this it makes heavy use of multithreading, SIMD directives and various other optimizations such as early backface culling, frustrum culling and texture tiling among others.
 
@@ -24,7 +24,7 @@ You can download a demo of it for your machine here:
 
 ## Development & Feedback
 
-I am planning on starting a series of blog posts sometime soon that will explain some of the cooler components of the engine and how I went about implementing them. I also feel it would be helpful to other beginners to elaborate on some of the components that gave me the most trouble, such as how to design the general architecture of the engine, how to profile, optimize and bug fix your code and lastly how I personally tackled learning Computer Graphics coming from a non-cs background. 
+I am planning on starting a series of blog posts sometime soon that will explain some of the cooler components of the engine and how I went about implementing them. I also feel it would be helpful to other beginners if I were to elaborate on some of the components that gave me the most trouble, such as how to design the general architecture of the engine, how to profile, optimize and bug fix your code and lastly how I personally tackled learning Computer Graphics coming from a non-cs background. 
 
 #### Goals
 1. Demonstrate my C++ Knowledge
@@ -75,7 +75,7 @@ I set these goals above as my learning targets for the project before I began an
 * Texture tiling to reduce cache misses
 * Multithreading per object and vectorization within lighting shader
 * Fully commented for future referencing
-* Image loading through stb-image [LINK]
+* Image loading through [stb-image](https://github.com/nothings/stb)
 * Axis aligned Bounding Box generation and reconstruction
 
 ## Known Issues
