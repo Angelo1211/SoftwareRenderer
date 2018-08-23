@@ -104,6 +104,12 @@ I've moved most of the sources into a separate page [on the wiki](https://github
 * [Fire Hydrant & Chest by @emackey PBR test models](https://emackey.github.io/testing-pbr/)
 * [Louis XIV de France, Louvre, Paris by HoangHiepVu](https://sketchfab.com/models/a0cc0e7eee384c99838dff2857b8158c)
 * [Gold, Marble, Painted Metal by CC0Textures.com](https://cc0textures.com/home)
+* [Azulejos Texture by João Paulo](https://3dtextures.me/2018/07/09/azulejos-tiles-001/)
+* [Elephant, Dragon, Bunny Mesh models from Stanford 3D Scanning Repository](http://graphics.stanford.edu/data/3Dscanrep/)
+
+If any of the above textures or meshes have been mis-acknowledged, are misattributed, or missing a proper reference please send me a DM on Twitter or email me at the address inside the source files and I'll fix it immediately.
+
+
 
 
 
