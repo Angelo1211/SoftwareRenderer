@@ -89,7 +89,7 @@ I set these goals above as my learning targets for the project before I began an
 
 ## References
 
-I've moved most of the sources into a separate page [on the wiki](https://github.com/Angelo1211/SoftwareRenderer/wiki/References-&-Sources-Categorized) for easier navigation and indexing. However, here are some of the ones I utilized the most:
+I've moved most of the sources into a separate page [on the wiki](https://github.com/Angelo1211/SoftwareRenderer/wiki/Rendering-References) for easier navigation and indexing. However, here are some of the ones I utilized the most:
 
 * [EDAN35 - High Performance Computer Graphics](http://cs.lth.se/edan35/)
 * [Stanford CS248, Spring 2018 - Interactive Computer Graphics](http://graphics.stanford.edu/courses/cs248-18-spring/)
