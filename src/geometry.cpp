@@ -18,14 +18,11 @@ void AABox::buildAABB(const Mesh &mesh){
     for(int i = 0; i < mesh.numVertices; ++i){
         //Checking the current vertex for all axes
         for(int ax = 0; ax < 3; ++ax){
+            //Thanks @Erkaman!
             //Setting max values
-            if(mesh.vertices[i].data[ax] > maxVals.data[ax]){
-                maxVals.data[ax] = mesh.vertices[i].data[ax];
-            }
+            maxVals.data[ax] = std::max(mesh.vertices[i].data[ax], maxVals.data[ax]);
             //Setting min values
-            if(mesh.vertices[i].data[ax] < minVals.data[ax]){
-                minVals.data[ax] = mesh.vertices[i].data[ax];
-            }
+            minVals.data[ax] = std::min(mesh.vertices[i].data[ax], minVals.data[ax]);
         }
     }
     minPoints = minVals;
@@ -54,14 +51,11 @@ void AABox::update(const Matrix4 &modelMatrix){
     for(int i = 0; i < 8; ++i){
         //Checking the current vertex for all axes
         for(int ax = 0; ax < 3; ++ax){
+            //Thanks @Erkaman!
             //Setting max values
-            if(vertices[i].data[ax] > maxVals.data[ax]){
-                maxVals.data[ax] = vertices[i].data[ax];
-            }
+            maxVals.data[ax] = std::max(vertices[i].data[ax], maxVals.data[ax]);
             //Setting min values
-            if(vertices[i].data[ax] < minVals.data[ax]){
-                minVals.data[ax] = vertices[i].data[ax];
-            }
+            minVals.data[ax] = std::min(vertices[i].data[ax], minVals.data[ax]);
         }
     }
 
