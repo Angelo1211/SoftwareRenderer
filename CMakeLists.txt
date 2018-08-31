@@ -10,7 +10,7 @@ include_directories(${SDL2_INCLUDE_DIR} include libs)
 file(GLOB source_files "*.h" "*.cpp" "src/*.cpp" "include/*.h" "libs/*.h")
 add_executable(softwareRenderer ${source_files})
 #-fopt-info-vec-all -xCORE-AVX2 -no-prec-sqrt  
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -g  -ffast-math  ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -g  -ffast-math -static -static-libgcc -static-libstdc++ ")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g ")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g ")
 target_link_libraries(softwareRenderer ${SDL2_LIBRARY})
