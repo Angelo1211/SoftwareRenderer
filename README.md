@@ -2,7 +2,7 @@
 
 SSGE is the result of a two month long learning project with the aim of building a real-time 3D renderer from scratch in C++. It is capable of modern Physically Based Rendering(PBR) without making use of any third party graphics libraries such as OpenGL, DirectX or Vulkan. It is entirely software based and does not utilize any hardware acceleration throughout it's rendering pipeline. SSGE can run on both Windows and Linux machines by leveraging CMAKE for executable building and compiling and SDL2 for OS and hardware-level abstraction.
 
-Performance wise, it is capable of running scenes containing medium size meshes of ~50k triangles and 4 light sources at a relatively stable frame rate of 30fps (Of course, your mileage may vary) while running the very demanding PBR shader. To achieve this it makes heavy use of multithreading, SIMD directives and various other optimizations such as early backface culling, frustrum culling and texture tiling among others.
+Performance wise, it is capable of running scenes containing medium size meshes of ~50k triangles and 4 light sources at a relatively stable frame rate of 30fps (Of course, your mileage may vary) while running the very demanding PBR shader. To achieve this it makes heavy use of multithreading, SIMD directives and various other optimizations such as early backface culling, frustum culling and texture tiling among others.
 
 You can download a demo of it for your machine here:
 
