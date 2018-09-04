@@ -5,6 +5,7 @@
 
 //Includes
 #include "displayManager.h"
+#include <stdio.h>
 
 //Dummy constructors/destructors
 DisplayManager::DisplayManager(){}

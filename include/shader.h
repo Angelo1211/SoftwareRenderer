@@ -17,6 +17,7 @@
 #include "vector3D.h"
 #include "matrix.h"
 #include "texture.h"
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 //Shader Interface for a class that emulates modern GPU fragment and vertex shaders
@@ -311,7 +312,7 @@ struct PBRShader : public IShader {
         float NdotH2 = NdotH*NdotH;
         
         float denom = (NdotH2 * (a2 - 1.0f) + 1.0f);
-        denom =  M_1_PIf32/ (denom * denom);
+        denom =  1.0f / (M_PI * denom * denom);
         
         return a2 * denom;
     }
@@ -378,8 +379,8 @@ struct PBRShader : public IShader {
         const int maxLights = numLights;
 
         //Fresnel, normal distribution function and geometry occlusion 
-        Vector3f* F = new Vector3f[maxLights];
-        float*  NDF = new float[maxLights];
+        Vector3f F[maxLights];
+        float  NDF[maxLights];
         float  G[maxLights];
         
         //Storing in array for vectorizing
@@ -422,7 +423,7 @@ struct PBRShader : public IShader {
             kD[light] = (Vector3f(1.0f) - F[light])*invMetal;
 
             //The rendering equation result for a given light
-            radianceLights[light] = (kD[light] * (interpCol * (M_1_PIf32)) + specular[light] ) * nDotL[light] * lightCol[light];
+            radianceLights[light] = (kD[light] * (interpCol * (1.0f / M_PI) + specular[light] )) * nDotL[light] * lightCol[light];
         }
 
         //Summing up all radiance values since SIMD won't work if I do this within the
@@ -434,8 +435,6 @@ struct PBRShader : public IShader {
 
         //Simplistic ambient term
         ambient =  interpCol * (ambientInt * interpAO);
-
-        delete [] F;
 
         return ambient + radianceOut;
     }

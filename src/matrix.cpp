@@ -5,6 +5,7 @@
 
 //Headers
 #include "matrix.h"
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 //The full matrix vector multiplication routine 

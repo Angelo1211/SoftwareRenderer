@@ -5,6 +5,7 @@
 
 //Headers
 #include "camera.h"
+#include "SDL.h"
 
 Camera::Camera(){
     side = front.crossProduct(up).normalized();

@@ -8,6 +8,7 @@
 
 #include "SDL.h"
 #include <type_traits>
+#include <string.h>
 
 //Templated struct to emulate GPU buffers such as 
 //the frame buffer and the ZBuffer 

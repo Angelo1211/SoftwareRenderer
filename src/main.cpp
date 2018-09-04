@@ -5,9 +5,9 @@
 // ===============================
 
 #include "engine.h"
+#include "SDL.h"
 
-int main(int argc, char *argv[]){
-
+int main( int argc, char* args[] ){
     Engine SSGE; //"Simple" Software Graphics Engine
     if(SSGE.startUp()){
         SSGE.run();
