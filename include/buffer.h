@@ -7,6 +7,7 @@
 // ===============================
 
 #include "SDL.h"
+#include <cstring>
 #include <type_traits>
 #include <string.h>
 
@@ -42,7 +43,7 @@ struct Buffer{
             }
 			else{
 				//Set to a 15% white color to make it nicer looking.
-				memset(buffer,0xD, mPitch*mHeight);       
+				std::memset(buffer,0xD, mPitch*mHeight);       
 			}
         }
 };
