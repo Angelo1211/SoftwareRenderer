@@ -15,7 +15,7 @@
 //Just a namespace for functions related to loading data from wavefront OBJ files
 namespace OBJ{
     //Assumes that the path given is valid
-    Mesh& buildMeshFromFile(Mesh &mesh, std::string path);
+    void buildMeshFromFile(Mesh &mesh, std::string path);
 
     //Checks if the path actually contains a valid file
     bool fileExists(std::string &path);

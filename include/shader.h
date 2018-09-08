@@ -379,20 +379,21 @@ struct PBRShader : public IShader {
         const int maxLights = numLights;
 
         //Fresnel, normal distribution function and geometry occlusion 
-        Vector3f F[maxLights];
-        float  NDF[maxLights];
-        float  G[maxLights];
+		Vector3f *F = new Vector3f[maxLights];
+        float  *NDF = new float[maxLights];
+        float    *G = new float[maxLights];
         
         //Storing in array for vectorizing
-        Vector3f radianceLights[maxLights];
-        Vector3f interpLightDir[maxLights];
-        Vector3f halfwayDir[maxLights];
-        float  nDotL[maxLights];
-        Vector3f numerator[maxLights];
-        float  invDenominator[maxLights];
-        Vector3f specular[maxLights];
-        Vector3f kD[maxLights];
-        
+        Vector3f *radianceLights = new Vector3f[maxLights];
+        Vector3f *interpLightDir = new Vector3f[maxLights];
+        Vector3f *halfwayDir     = new Vector3f[maxLights];
+		Vector3f *numerator      = new Vector3f[maxLights];
+		Vector3f *specular       = new Vector3f[maxLights];
+		Vector3f *kD		     = new Vector3f[maxLights];
+
+        float  *nDotL            = new float[maxLights];
+        float  *invDenominator   = new float[maxLights];
+                
         //Interpolating each light direction for every light
         int val;
         for(int i = 0; i < maxLights; ++i ){
@@ -403,7 +404,6 @@ struct PBRShader : public IShader {
         //Per light illumination calculations that can be simdified
         //Currently uses widest SIMD array to perform all light iterations in one trip
         //Which I believe leaves some extra 
-        #pragma omp simd
         for(int light = 0; light < maxLights; ++light ){
             halfwayDir[light] = (interpLightDir[light] + interpViewDir);
             halfwayDir[light] = halfwayDir[light].normalized();
@@ -435,6 +435,19 @@ struct PBRShader : public IShader {
 
         //Simplistic ambient term
         ambient =  interpCol * (ambientInt * interpAO);
+
+		//Deleting dynamically allocated arrays
+		delete radianceLights;
+		delete interpLightDir;
+		delete halfwayDir;
+		delete numerator;
+		delete specular;
+		delete kD;
+		delete F;
+		delete NDF;
+		delete G;
+		delete nDotL;
+		delete invDenominator;
 
         return ambient + radianceOut;
     }

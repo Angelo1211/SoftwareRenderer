@@ -56,8 +56,8 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
     shader.metalT    = currentModel->getMetallic();
 
     //Setting up lighting
-    Vector3f lightPositions[mNumLights];
-    Vector3f lColor[mNumLights];
+    Vector3f *lightPositions = new Vector3f[mNumLights];
+    Vector3f *lColor         = new Vector3f[mNumLights];
     for(int x = 0; x < mNumLights; ++x){
         lColor[x] = mLights[x].color;
         lightPositions[x] = mLights[x].position;
@@ -94,7 +94,7 @@ void SoftwareRenderer::drawTriangularMesh(Model * currentModel){
         Vector3i u = (*tIndices)[j];
 
         //Last setup of shader light variables
-        Vector3f lightDir[mNumLights * 3 ];
+		Vector3f *lightDir = new Vector3f[mNumLights * 3];
         shader.lightDirVal = lightDir;    
 
         //Pack vertex, normal and UV data into triangles
