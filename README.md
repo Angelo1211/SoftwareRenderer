@@ -9,6 +9,11 @@ You can download a demo of it for your machine here:
 * [Windows demo](https://drive.google.com/drive/folders/1IlvRr0weQiB42MVNkHjej-9scYlN7rdb)
 * [Linux demo](https://drive.google.com/drive/folders/1IlvRr0weQiB42MVNkHjej-9scYlN7rdb)
 
+### Project is now on hold :(
+
+Unfortunately this project is no longer maintained. I got hired to work at Rockstar Games as a Graphics Programmer shortly after posting this and don't have the time to work on a sideproject of this size anymore. I plan on keeping it up (as well as my other major graphics project [HRE](https://github.com/Angelo1211/HybridRenderingEngine)) so others can see what it took me to break into the industry. I will still be helping anyone who runs into any issues with it or has any questions about it. Feel free to reach me here or at [my twitter](https://twitter.com/aortizelguero) about this or any other GFX topic you'd like to talk about! Thanks to everyone who checked this project out! :D 
+
+
 ## Render Samples
 
 ![Louis XIV de France, Louvre, Paris. Scan by HoangHiepVu](https://raw.githubusercontent.com/Angelo1211/SoftwareRenderer/gh-pages/Images/SoftwareRenderer_062.png)
