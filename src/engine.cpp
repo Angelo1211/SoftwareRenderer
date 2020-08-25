@@ -87,7 +87,7 @@ void Engine::run(){
         gInputManager.processInput(done, deltaT);
         
         //Update all models, camera and lighting in the current scene
-        //Also performs view frustrum culling to determine which objects aare visible
+        //Also performs view frustrum culling to determine which objects are visible
         gSceneManager.update(deltaT);
 
         //Contains the render setup and actual software rendering loop
