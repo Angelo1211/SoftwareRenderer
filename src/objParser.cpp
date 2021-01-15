@@ -17,6 +17,7 @@ Mesh& OBJ::buildMeshFromFile(Mesh &mesh, std::string path){
     loadFileData(mesh, file);
 
     file.close(); 
+    return mesh;
 }
 
 bool OBJ::fileExists(std::string &path){
